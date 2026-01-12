@@ -78,7 +78,7 @@ const App: React.FC = () => {
       } else if (_event === 'SIGNED_OUT') {
         setProfile(null);
         setFavorites({});
-        setProducts([]); // Opcional: Limpiar si quieres forzar login para ver
+        setProducts([]);
       }
     });
 
@@ -133,13 +133,27 @@ const App: React.FC = () => {
       const t = searchTerm.toLowerCase();
       result = result.filter(p => p.nombre.toLowerCase().includes(t) || p.ticker?.toLowerCase().includes(t));
     }
-    if (trendFilter) result = result.filter(p => trendFilter === 'up' ? p.stats.isUp : p.stats.isDown);
+    
+    // Solo aplicar filtro de tendencia si no estamos en el Chango
+    if (trendFilter && currentTab !== 'favs') {
+      result = result.filter(p => trendFilter === 'up' ? p.stats.isUp : p.stats.isDown);
+    }
     
     return result;
   }, [products, history, currentTab, searchTerm, trendFilter, favorites]);
 
   const toggleFavorite = (id: number) => {
     if (!user) { setIsAuthOpen(true); return; }
+    const isFav = !!favorites[id];
+    const isPro = profile?.subscription === 'pro' || profile?.subscription === 'premium';
+    const favCount = Object.keys(favorites).length;
+
+    // Limitación para usuarios FREE: máximo 5 favoritos
+    if (!isPro && !isFav && favCount >= 5) {
+      alert("Límite de 5 favoritos para usuarios FREE. ¡Pasate a PRO para ilimitados!");
+      return;
+    }
+
     setFavorites(prev => {
       const next = { ...prev };
       if (next[id]) delete next[id];
@@ -148,7 +162,7 @@ const App: React.FC = () => {
     });
   };
 
-  if (loading && products.length === 0) return <div className="min-h-screen flex items-center justify-center dark:bg-black dark:text-white font-mono text-xs uppercase tracking-widest">Cargando mercado...</div>;
+  if (loading && products.length === 0) return <div className="min-h-screen flex items-center justify-center dark:bg-black dark:text-white font-mono text-xs uppercase tracking-widest animate-pulse">Cargando mercado...</div>;
 
   const isProductTab = ['home', 'carnes', 'verdu', 'varios', 'favs'].includes(currentTab);
 
@@ -161,6 +175,7 @@ const App: React.FC = () => {
         subscription={profile?.subscription} trendFilter={trendFilter}
         setTrendFilter={setTrendFilter} showHero={currentTab === 'home' && !searchTerm}
         onNavigate={setCurrentTab}
+        currentTab={currentTab}
       />
       <main className="pb-24">
         {error && <div className="p-4 bg-red-50 text-red-600 text-xs font-bold text-center border-b border-red-100">{error}</div>}

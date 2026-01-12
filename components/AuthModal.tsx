@@ -44,9 +44,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, user, profile, o
         });
         if (error) throw error;
         if (data.user) {
+          // Todo usuario nuevo es PRO por defecto actualmente
           await supabase.from('perfiles').insert([{ 
             id: data.user.id, nombre, apellido, fecha_nacimiento: fechaNac, 
-            subscription: 'free', membresias: [] 
+            subscription: 'pro', membresias: [] 
           }]);
         }
         alert("¡Cuenta creada! Ya podés ingresar.");
@@ -54,7 +55,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, user, profile, o
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        onClose(); // Cerramos el modal, App.tsx detectará el cambio
+        onClose();
       }
     } catch (err: any) { alert(err.message); }
     setLoading(false);
@@ -69,7 +70,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, user, profile, o
     
     try {
       await updateMemberships(user.id, updated);
-      // No recargamos, dejamos que el estado fluya o se refresque mediante el componente padre si es necesario
     } catch (err) { alert("Error al actualizar membresías."); }
   };
 
@@ -83,8 +83,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, user, profile, o
         {view === 'welcome' && (
           <div className="text-center">
             <h2 className="text-2xl font-black mb-6 dark:text-white">Bienvenido Trader</h2>
-            <button onClick={() => { setMode('register'); setView('form'); }} className="w-full bg-slate-900 dark:bg-white dark:text-black text-white py-4 rounded-xl font-bold mb-3">Crear Cuenta</button>
-            <button onClick={() => { setMode('login'); setView('form'); }} className="w-full border border-slate-200 dark:border-slate-800 py-4 rounded-xl font-bold dark:text-white">Ya tengo cuenta</button>
+            <button onClick={() => { setMode('register'); setView('form'); }} className="w-full bg-slate-900 dark:bg-white dark:text-black text-white py-4 rounded-xl font-bold mb-3 transition-transform active:scale-95">Crear Cuenta</button>
+            <button onClick={() => { setMode('login'); setView('form'); }} className="w-full border border-slate-200 dark:border-slate-800 py-4 rounded-xl font-bold dark:text-white transition-transform active:scale-95">Ya tengo cuenta</button>
           </div>
         )}
 
@@ -93,51 +93,54 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, user, profile, o
             <h2 className="text-xl font-black mb-4 dark:text-white">{mode === 'login' ? 'Ingreso' : 'Registro'}</h2>
             {mode === 'register' && (
               <>
-                <input type="text" placeholder="Nombre" value={nombre} onChange={e => setNombre(e.target.value)} className="w-full p-3 bg-slate-100 dark:bg-slate-900 rounded-lg dark:text-white" required />
-                <input type="text" placeholder="Apellido" value={apellido} onChange={e => setApellido(e.target.value)} className="w-full p-3 bg-slate-100 dark:bg-slate-900 rounded-lg dark:text-white" required />
-                <input type="date" value={fechaNac} onChange={e => setFechaNac(e.target.value)} className="w-full p-3 bg-slate-100 dark:bg-slate-900 rounded-lg dark:text-white text-xs" required />
+                <input type="text" placeholder="Nombre" value={nombre} onChange={e => setNombre(e.target.value)} className="w-full p-3 bg-slate-100 dark:bg-slate-900 rounded-lg dark:text-white border border-transparent focus:border-slate-300 outline-none" required />
+                <input type="text" placeholder="Apellido" value={apellido} onChange={e => setApellido(e.target.value)} className="w-full p-3 bg-slate-100 dark:bg-slate-900 rounded-lg dark:text-white border border-transparent focus:border-slate-300 outline-none" required />
+                <input type="date" value={fechaNac} onChange={e => setFechaNac(e.target.value)} className="w-full p-3 bg-slate-100 dark:bg-slate-900 rounded-lg dark:text-white text-xs border border-transparent focus:border-slate-300 outline-none" required />
               </>
             )}
-            <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="w-full p-3 bg-slate-100 dark:bg-slate-900 rounded-lg dark:text-white" required />
-            <input type="password" placeholder="Contraseña" value={password} onChange={e => setPassword(e.target.value)} className="w-full p-3 bg-slate-100 dark:bg-slate-900 rounded-lg dark:text-white" required />
-            <button type="submit" disabled={loading} className="w-full bg-slate-900 dark:bg-white dark:text-black text-white py-4 rounded-xl font-bold">
+            <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="w-full p-3 bg-slate-100 dark:bg-slate-900 rounded-lg dark:text-white border border-transparent focus:border-slate-300 outline-none" required />
+            <input type="password" placeholder="Contraseña" value={password} onChange={e => setPassword(e.target.value)} className="w-full p-3 bg-slate-100 dark:bg-slate-900 rounded-lg dark:text-white border border-transparent focus:border-slate-300 outline-none" required />
+            <button type="submit" disabled={loading} className="w-full bg-slate-900 dark:bg-white dark:text-black text-white py-4 rounded-xl font-bold transition-transform active:scale-95 disabled:opacity-50">
               {loading ? 'Cargando...' : 'Continuar'}
             </button>
-            <button type="button" onClick={() => setView('welcome')} className="w-full text-xs text-slate-400 mt-4">Volver</button>
+            <button type="button" onClick={() => setView('welcome')} className="w-full text-xs text-slate-400 mt-4 uppercase font-bold tracking-widest">Volver</button>
           </form>
         )}
 
         {view === 'profile' && profile && (
           <div className="text-center">
             <h2 className="text-xl font-black mb-1 dark:text-white uppercase tracking-tighter">{profile.nombre} {profile.apellido}</h2>
-            <p className="text-slate-400 text-[10px] mb-6 font-mono">{user.email}</p>
+            <div className="flex items-center justify-center gap-2 mb-6">
+              <span className="text-slate-400 text-[10px] font-mono">{user.email}</span>
+              <span className="bg-amber-100 text-amber-600 text-[8px] font-black px-1.5 py-0.5 rounded uppercase">{profile.subscription}</span>
+            </div>
             <div className="text-left mb-6">
-              <h3 className="text-[10px] font-black uppercase text-slate-400 mb-3">Membresías Activas</h3>
+              <h3 className="text-[10px] font-black uppercase text-slate-400 mb-3 tracking-widest">Membresías Activas</h3>
               <div className="grid grid-cols-2 gap-2">
                 {profile.membresias?.map(m => (
-                  <div key={m.slug} className="p-2 border border-green-500 rounded-lg text-[10px] font-bold text-green-500 flex justify-between items-center">
-                    {m.slug} <button onClick={() => toggleMembership({slug: m.slug} as any)} className="text-red-500 ml-1">&times;</button>
+                  <div key={m.slug} className="p-2 border border-green-500 rounded-lg text-[10px] font-bold text-green-500 flex justify-between items-center bg-green-50 dark:bg-green-900/10">
+                    {m.slug} <button onClick={() => toggleMembership({slug: m.slug} as any)} className="text-red-500 ml-1 hover:scale-110 transition-transform">&times;</button>
                   </div>
                 ))}
-                <button onClick={() => setView('membresias')} className="p-2 border border-dashed border-slate-300 rounded-lg text-[10px] text-slate-400 font-bold">+ Agregar</button>
+                <button onClick={() => setView('membresias')} className="p-2 border border-dashed border-slate-300 rounded-lg text-[10px] text-slate-400 font-bold hover:bg-slate-50 dark:hover:bg-slate-900">+ Agregar</button>
               </div>
             </div>
-            <button onClick={async () => { await supabase.auth.signOut(); onSignOut(); onClose(); }} className="w-full text-red-500 font-bold py-2">Cerrar Sesión</button>
+            <button onClick={async () => { await supabase.auth.signOut(); onSignOut(); onClose(); }} className="w-full text-red-500 font-bold py-2 hover:underline">Cerrar Sesión</button>
           </div>
         )}
 
         {view === 'membresias' && (
           <div className="space-y-2">
-            <h2 className="text-lg font-black mb-4 dark:text-white">Catálogo</h2>
+            <h2 className="text-lg font-black mb-4 dark:text-white">Catálogo de Beneficios</h2>
             <div className="max-h-60 overflow-y-auto pr-2 space-y-2">
               {catalogo.map(m => (
-                <div key={m.slug} onClick={() => toggleMembership(m)} className="flex items-center justify-between p-3 border border-slate-100 dark:border-slate-800 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900">
+                <div key={m.slug} onClick={() => toggleMembership(m)} className="flex items-center justify-between p-3 border border-slate-100 dark:border-slate-800 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">
                   <span className="text-xs font-bold dark:text-white">{m.nombre}</span>
                   <i className={`fa-solid ${profile?.membresias?.some(x => x.slug === m.slug) ? 'fa-check text-green-500' : 'fa-plus text-slate-300'}`}></i>
                 </div>
               ))}
             </div>
-            <button onClick={() => setView('profile')} className="w-full text-xs text-slate-400 mt-6">Volver</button>
+            <button onClick={() => setView('profile')} className="w-full text-xs text-slate-400 mt-6 uppercase font-bold tracking-widest">Volver</button>
           </div>
         )}
       </div>

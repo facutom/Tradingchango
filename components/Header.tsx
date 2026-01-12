@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { TabType } from '../types';
 
@@ -14,6 +13,7 @@ interface HeaderProps {
   setTrendFilter: (val: 'up' | 'down' | null) => void;
   showHero: boolean;
   onNavigate: (tab: TabType) => void;
+  currentTab: TabType;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
@@ -27,7 +27,8 @@ const Header: React.FC<HeaderProps> = ({
   trendFilter,
   setTrendFilter,
   showHero,
-  onNavigate
+  onNavigate,
+  currentTab
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -113,13 +114,13 @@ const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-2 sm:gap-4">
             <button 
               onClick={onUserClick}
-              className={`w-10 h-10 flex items-center justify-center text-xl ${getUserIconColor()}`}
+              className={`w-10 h-10 flex items-center justify-center text-xl transition-colors ${getUserIconColor()}`}
             >
               <i className="fa-solid fa-circle-user"></i>
             </button>
             <button 
               onClick={toggleTheme} 
-              className="w-10 h-10 flex items-center justify-center text-xl text-slate-900 dark:text-white"
+              className="w-10 h-10 flex items-center justify-center text-xl text-slate-900 dark:text-white hover:scale-110 transition-transform"
             >
               <i className={`fa-solid ${theme === 'dark' ? 'fa-sun' : 'fa-moon'}`}></i>
             </button>
@@ -146,28 +147,30 @@ const Header: React.FC<HeaderProps> = ({
         )}
       </div>
 
-      <div className="flex gap-2">
-        <button 
-          onClick={() => setTrendFilter(trendFilter === 'down' ? null : 'down')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all border ${
-            trendFilter === 'down' 
-              ? 'bg-green-500 text-white border-green-500' 
-              : 'bg-white dark:bg-black text-green-500 border-slate-200 dark:border-slate-800'
-          }`}
-        >
-          <i className="fa-solid fa-arrow-trend-down"></i> Precios Bajando
-        </button>
-        <button 
-          onClick={() => setTrendFilter(trendFilter === 'up' ? null : 'up')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all border ${
-            trendFilter === 'up' 
-              ? 'bg-red-500 text-white border-red-500' 
-              : 'bg-white dark:bg-black text-red-500 border-slate-200 dark:border-slate-800'
-          }`}
-        >
-          <i className="fa-solid fa-arrow-trend-up"></i> Precios Subiendo
-        </button>
-      </div>
+      {currentTab !== 'favs' && (
+        <div className="flex gap-2 animate-in fade-in duration-300">
+          <button 
+            onClick={() => setTrendFilter(trendFilter === 'down' ? null : 'down')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all border ${
+              trendFilter === 'down' 
+                ? 'bg-green-500 text-white border-green-500' 
+                : 'bg-white dark:bg-black text-green-500 border-slate-200 dark:border-slate-800'
+            }`}
+          >
+            <i className="fa-solid fa-arrow-trend-down"></i> Precios Bajando
+          </button>
+          <button 
+            onClick={() => setTrendFilter(trendFilter === 'up' ? null : 'up')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all border ${
+              trendFilter === 'up' 
+                ? 'bg-red-500 text-white border-red-500' 
+                : 'bg-white dark:bg-black text-red-500 border-slate-200 dark:border-slate-800'
+            }`}
+          >
+            <i className="fa-solid fa-arrow-trend-up"></i> Precios Subiendo
+          </button>
+        </div>
+      )}
 
       {showHero && (
         <div className="mt-8 text-center px-4 animate-in fade-in slide-in-from-top-4 duration-500">
