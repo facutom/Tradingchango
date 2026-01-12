@@ -1,0 +1,7 @@
+{
+  "name": "TradingChango Pro",
+  "description": "A professional supermarket price comparator and shopping cart optimizer. Compare prices across major retailers, track historical trends, and find the best place to shop based on your specific cart and active memberships.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
