@@ -42,9 +42,10 @@ const App: React.FC = () => {
           supabase.auth.getSession()
         ]);
 
-        setProducts(prodData);
-        setHistory(histData);
-        setConfig(configData);
+        console.log(`Cargados ${prodData?.length || 0} productos`);
+        setProducts(prodData || []);
+        setHistory(histData || []);
+        setConfig(configData || {});
         setUser(session?.user || null);
 
         if (session?.user) {
@@ -135,11 +136,24 @@ const App: React.FC = () => {
 
   const filteredProducts = useMemo(() => {
     let result = processedProducts;
-    if (currentTab === 'carnes') result = result.filter(p => p.categoria.toLowerCase() === 'carnes');
-    else if (currentTab === 'verdu') result = result.filter(p => p.categoria.toLowerCase() === 'verdu');
-    else if (currentTab === 'varios') result = result.filter(p => p.categoria.toLowerCase() === 'varios');
-    else if (currentTab === 'favs') result = result.filter(p => favorites[p.id]);
+    
+    // Improved Category Filtering
+    if (currentTab === 'carnes') {
+      result = result.filter(p => p.categoria?.toLowerCase().includes('carne'));
+    } else if (currentTab === 'verdu') {
+      result = result.filter(p => p.categoria?.toLowerCase().includes('verdu') || p.categoria?.toLowerCase().includes('fruta'));
+    } else if (currentTab === 'varios') {
+      // Varios acts as a catch-all for everything else
+      result = result.filter(p => 
+        !p.categoria?.toLowerCase().includes('carne') && 
+        !p.categoria?.toLowerCase().includes('verdu') &&
+        !p.categoria?.toLowerCase().includes('fruta')
+      );
+    } else if (currentTab === 'favs') {
+      result = result.filter(p => favorites[p.id]);
+    }
 
+    // Search Filter
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       result = result.filter(p => 
@@ -148,9 +162,11 @@ const App: React.FC = () => {
       );
     }
 
+    // Trend Filter
     if (trendFilter) {
       result = result.filter(p => trendFilter === 'up' ? p.stats.isUp : p.stats.isDown);
     }
+    
     return result;
   }, [processedProducts, currentTab, searchTerm, trendFilter, favorites]);
 
@@ -189,6 +205,12 @@ const App: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const clearFilters = () => {
+    setSearchTerm('');
+    setTrendFilter(null);
+    if (currentTab === 'favs') setCurrentTab('home');
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-white dark:bg-black">
@@ -223,13 +245,14 @@ const App: React.FC = () => {
 
     return (
       <>
-        {currentTab === 'favs' && (
+        {currentTab === 'favs' && filteredProducts.length > 0 && (
           <CartSummary 
             items={filteredProducts} 
             favorites={favorites} 
             benefits={benefits}
           />
         )}
+        
         <ProductList 
           products={filteredProducts} 
           onProductClick={(id) => setSelectedProductId(id)}
@@ -239,12 +262,26 @@ const App: React.FC = () => {
           quantities={favorites}
           onUpdateQuantity={updateQuantity}
         />
+        
         {filteredProducts.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-20 text-slate-400 opacity-50">
-             <i className={`fa-solid ${currentTab === 'favs' ? 'fa-cart-shopping' : 'fa-magnifying-glass'} text-6xl mb-4`}></i>
-             <p className="text-sm font-semibold uppercase tracking-wider">
-               {currentTab === 'favs' ? 'Tu chango está vacío' : 'No hay resultados'}
+          <div className="flex flex-col items-center justify-center py-20 px-10 text-center text-slate-400">
+             <i className={`fa-solid ${currentTab === 'favs' ? 'fa-cart-shopping' : 'fa-magnifying-glass'} text-6xl mb-6 opacity-20`}></i>
+             <p className="text-sm font-bold uppercase tracking-wider mb-2">
+               {currentTab === 'favs' ? 'Tu chango está vacío' : 'No encontramos resultados'}
              </p>
+             <p className="text-xs mb-8 max-w-[200px] leading-relaxed">
+               {currentTab === 'favs' 
+                 ? 'Agregá productos desde el inicio para empezar a comparar.' 
+                 : 'Probá ajustando la búsqueda o limpiando los filtros de tendencia.'}
+             </p>
+             {(searchTerm || trendFilter || currentTab === 'favs') && (
+               <button 
+                onClick={clearFilters}
+                className="bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-transform active:scale-95"
+               >
+                 {currentTab === 'favs' ? 'Ver todos los productos' : 'Limpiar Filtros'}
+               </button>
+             )}
           </div>
         )}
         <Footer />
