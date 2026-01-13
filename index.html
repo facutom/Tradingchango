@@ -59,20 +59,20 @@
             transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
         }
         
-        /* Logo CSS Especificado */
+        /* Logo CSS Especificado Exactamente */
         .logo-link {
-            text-decoration: none;
+            text-decoration: none !important;
             color: inherit;
             cursor: pointer;
         }
         .logo {
-            font-weight: 800;
-            font-size: 22px;
-            letter-spacing: -1px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-main);
+            font-weight: 800 !important;
+            font-size: 22px !important;
+            letter-spacing: -1px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            color: var(--text-main) !important;
         }
         .logo-icon-wrapper {
             position: relative;
@@ -86,6 +86,13 @@
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        /* Ajuste para que el gráfico no se vea aplastado en móvil */
+        @media (max-width: 768px) {
+          .chart-container {
+            height: 280px !important;
+          }
+        }
     </style>
 <script type="importmap">
 {

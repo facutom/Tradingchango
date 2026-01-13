@@ -94,9 +94,8 @@ const App: React.FC = () => {
         const prof = await getProfile(sessionUser.id);
         setProfile(prof);
         const saved = await getSavedCart(sessionUser.id);
-        if (saved) {
-          setFavorites(saved);
-        } else {
+        if (saved) setFavorites(saved);
+        else {
           const local = localStorage.getItem(`favs_${sessionUser.id}`);
           if (local) setFavorites(JSON.parse(local));
         }

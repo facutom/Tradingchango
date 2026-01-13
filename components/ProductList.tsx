@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Product } from '../types';
 
@@ -65,7 +64,7 @@ const ProductList: React.FC<ProductListProps> = ({
             <div className="flex-1 flex items-center justify-between pr-4">
               <div className="flex flex-col gap-0.5">
                 <div className="flex items-center flex-wrap gap-1.5">
-                  <span className="font-[700] text-primary dark:text-[#ffffff] text-[16px] tracking-tight uppercase font-mono">
+                  <span className="font-[800] text-primary dark:text-[#ffffff] text-[15px] md:text-[16px] tracking-tight uppercase font-mono block">
                     {p.ticker || p.nombre.substring(0, 5).toUpperCase()}
                   </span>
                   {badges && badges.map((b, idx) => (
@@ -74,7 +73,7 @@ const ProductList: React.FC<ProductListProps> = ({
                     </span>
                   ))}
                 </div>
-                <span className="text-[13px] font-medium text-muted dark:text-muted-dark line-clamp-1 font-sans">
+                <span className="text-[12px] md:text-[13px] font-medium text-muted dark:text-muted-dark line-clamp-1 font-sans">
                   {p.nombre}
                 </span>
               </div>
