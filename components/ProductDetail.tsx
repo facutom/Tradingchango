@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useMemo } from 'react';
+
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { getProductHistory } from '../services/supabase';
 import { Product, PriceHistory } from '../types';
@@ -14,20 +15,32 @@ interface ProductDetailProps {
 
 const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFavoriteToggle, isFavorite, products, theme }) => {
   const [history, setHistory] = useState<PriceHistory[]>([]);
-  const [days, setDays] = useState(90); // 3M default as screenshot
+  const [days, setDays] = useState(90);
   const [loading, setLoading] = useState(true);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   const product = products.find(p => p.id === productId);
 
   useEffect(() => {
     if (product) {
       setLoading(true);
-      getProductHistory(product.nombre, 365).then(data => {
-        setHistory(data);
-        setLoading(false);
-      });
+      getProductHistory(product.nombre, 365)
+        .then(data => setHistory(data || []))
+        .catch(() => setHistory([]))
+        .finally(() => setLoading(false));
     }
   }, [product]);
+
+  // Click outside listener
+  useEffect(() => {
+    const handleOutside = (e: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [onClose]);
 
   const STORES = [
     { name: "COTO", key: 'p_coto', url: 'url_coto', color: "#f23645" },
@@ -38,6 +51,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
   ] as const;
 
   const chartData = useMemo(() => {
+    if (!history.length) return [];
     const filtered = history.filter(h => {
         const hDate = new Date(h.fecha);
         const limitDate = new Date();
@@ -53,7 +67,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
   const minPrice = useMemo(() => {
     if (!product) return 0;
     const prices = [product.p_coto, product.p_carrefour, product.p_dia, product.p_jumbo, product.p_masonline].filter(p => p > 0);
-    return Math.min(...prices);
+    return prices.length > 0 ? Math.min(...prices) : 0;
   }, [product]);
 
   const bestStoreName = useMemo(() => {
@@ -88,10 +102,10 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
   const format = (n: number) => new Intl.NumberFormat('es-AR').format(n);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col md:items-center md:justify-center bg-black/80 md:backdrop-blur-sm transition-opacity duration-300">
+    <div className="fixed inset-0 z-50 flex flex-col md:items-center md:justify-center bg-black/80 md:backdrop-blur-sm animate-in fade-in duration-300">
       <div 
+        ref={modalRef}
         className="w-full md:max-w-xl h-full md:h-auto md:max-h-[96vh] bg-white dark:bg-black md:rounded-[2rem] flex flex-col overflow-hidden shadow-2xl"
-        onClick={e => e.stopPropagation()}
       >
         {/* Detail Header */}
         <div className="p-4 flex justify-between items-center border-b border-slate-100 dark:border-[#121212] bg-white dark:bg-black">
@@ -158,8 +172,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
             
             <div className="h-72 w-full">
               {loading ? (
-                <div className="h-full flex items-center justify-center font-mono text-[10px] text-slate-400 animate-pulse">ANALIZANDO MERCADO...</div>
-              ) : (
+                <div className="h-full flex items-center justify-center font-mono text-[10px] text-slate-400 animate-pulse uppercase tracking-[0.2em]">Cargando tendencias...</div>
+              ) : chartData.length > 1 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={chartData}>
                     <defs>
@@ -167,7 +181,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
                         <stop offset="5%" stopColor={trendColor} stopOpacity={0.05}/><stop offset="95%" stopColor={trendColor} stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme === 'dark' ? 'transparent' : '#f1f5f9'} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme === 'dark' ? '#1a1a1a' : '#f1f5f9'} />
                     <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fontSize: 9, fill: '#94a3b8', fontWeight: 'bold'}} minTickGap={40} />
                     <YAxis orientation="right" axisLine={false} tickLine={false} tick={{fontSize: 9, fill: '#94a3b8', fontWeight: 'bold'}} tickFormatter={v => `$${format(v)}`} domain={['auto', 'auto']} />
                     <Tooltip 
@@ -185,9 +199,12 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
                       fill="url(#colorPrice)" 
                       animationDuration={1000}
                       baseValue="dataMin"
+                      connectNulls
                     />
                   </AreaChart>
                 </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center font-mono text-[10px] text-slate-400">SIN HISTORIAL SUFICIENTE</div>
               )}
             </div>
           </div>
@@ -198,6 +215,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
             <div className="space-y-4">
               {STORES.map((s) => {
                 const price = (product as any)[s.key];
+                const productUrl = (product as any)[s.url];
                 if (!price || price === 0) return null;
                 const isBest = price === minPrice;
                 const ofRaw = product.oferta_gondola;
@@ -205,12 +223,12 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
                 if (ofRaw) {
                    try {
                      const ofObj = typeof ofRaw === 'string' ? JSON.parse(ofRaw) : ofRaw;
-                     of = ofObj[s.name.toLowerCase()];
+                     of = ofObj[s.name.toLowerCase().replace(' ', '')] || ofObj[s.name.toLowerCase()];
                    } catch(e) { /* ignore */ }
                 }
 
                 return (
-                  <div key={s.name} className="flex items-center justify-between border-b border-dashed border-slate-100 dark:border-[#2a2a2a] pb-4">
+                  <div key={s.name} className="flex items-center justify-between border-b border-dashed border-slate-100 dark:border-[#2a2a2a] pb-4 group">
                     <div className="flex items-center gap-3">
                       <div className="w-2.5 h-2.5 rounded-full" style={{backgroundColor: s.color}}></div>
                       <span className="text-sm font-[800] text-black dark:text-white uppercase tracking-tight">{s.name}</span>
@@ -220,9 +238,20 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
                         </span>
                       )}
                     </div>
-                    <div className={`font-mono text-[16px] font-[700] ${isBest ? 'text-[#00c853]' : 'text-black dark:text-white'}`}>
-                      ${format(price)}
-                    </div>
+                    {productUrl ? (
+                      <a 
+                        href={productUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className={`font-mono text-[16px] font-[700] hover:underline ${isBest ? 'text-[#00c853]' : 'text-black dark:text-white'}`}
+                      >
+                        ${format(price)}
+                      </a>
+                    ) : (
+                      <div className={`font-mono text-[16px] font-[700] ${isBest ? 'text-[#00c853]' : 'text-black dark:text-white'}`}>
+                        ${format(price)}
+                      </div>
+                    )}
                   </div>
                 );
               })}

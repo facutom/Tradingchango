@@ -15,7 +15,7 @@ export interface Product {
   url_jumbo?: string;
   url_masonline?: string;
   imagen_url?: string;
-  oferta_gondola?: any; // JSON with super keys
+  oferta_gondola?: any;
 }
 
 export interface PriceHistory {
@@ -41,12 +41,15 @@ export interface UserMembership {
 
 export interface Profile {
   id: string;
+  email: string;
   nombre?: string;
   apellido?: string;
   fecha_nacimiento?: string;
   subscription: 'free' | 'pro' | 'premium';
-  subscription_end?: string | null;
+  created_at: string;
   membresias: UserMembership[];
+  subscription_end?: string | null;
+  last_cart?: any;
 }
 
 export interface Benefit {
