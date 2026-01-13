@@ -43,12 +43,6 @@ const Header: React.FC<HeaderProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const navItems = [
-    { id: 'about', label: 'Acerca de', icon: 'fa-circle-info' },
-    { id: 'terms', label: 'Términos', icon: 'fa-file-shield' },
-    { id: 'contact', label: 'Contacto', icon: 'fa-headset' }
-  ];
-
   const handleNav = (id: string) => {
     onNavigate(id as TabType);
     setIsMenuOpen(false);
@@ -61,67 +55,52 @@ const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 dark:bg-black/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 p-4">
+    <header className="sticky top-0 z-40 bg-white dark:bg-black p-4">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => onNavigate('home')}>
           <div className="relative flex items-center justify-center h-8 w-8">
             <i className="fa-solid fa-cart-shopping text-xl text-black dark:text-white"></i>
-            <i className="fa-solid fa-arrow-trend-up text-[9px] text-green-500 absolute -top-1 -right-1 bg-white dark:bg-black rounded-full p-0.5"></i>
+            <i className="fa-solid fa-arrow-trend-up text-[10px] text-[#00a650] absolute -top-1.5 -right-1 bg-white dark:bg-black rounded-full p-0.5"></i>
           </div>
-          <span className="font-extrabold text-xl tracking-tighter text-black dark:text-white">TradingChango</span>
+          <span className="font-extrabold text-2xl tracking-tighter text-black dark:text-white">TradingChango</span>
         </div>
 
-        <div className="flex items-center gap-4">
-          <nav className="hidden md:flex items-center gap-6 border-r border-slate-200 dark:border-slate-800 pr-6">
-            {navItems.map(item => (
-              <button key={item.id} onClick={() => handleNav(item.id)} className="text-[11px] font-black uppercase tracking-widest text-slate-400 hover:text-black dark:hover:text-white transition-colors">
-                {item.label}
-              </button>
-            ))}
-          </nav>
-
-          <div className="relative md:hidden" ref={menuRef}>
-            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-400">
-              <i className={`fa-solid ${isMenuOpen ? 'fa-xmark' : 'fa-circle-info'} text-xl`}></i>
-            </button>
-            {isMenuOpen && (
-              <div className="absolute right-0 mt-3 w-56 bg-white dark:bg-black border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-2 animate-in fade-in zoom-in-95 duration-200 z-50">
-                {navItems.map(item => (
-                  <button key={item.id} onClick={() => handleNav(item.id)} className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-900 text-left transition-colors">
-                    <i className={`fa-solid ${item.icon} text-slate-400 w-5`}></i>
-                    <span className="text-xs font-black text-black dark:text-white uppercase tracking-widest">{item.label}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button onClick={onUserClick} className={`w-8 h-8 flex items-center justify-center text-2xl transition-all ${getUserIconColor()}`}>
-              <i className="fa-solid fa-circle-user"></i>
-            </button>
-            <button onClick={toggleTheme} className="w-8 h-8 flex items-center justify-center text-xl text-black dark:text-white transition-transform active:scale-90">
-              <i className={`fa-solid ${theme === 'dark' ? 'fa-sun' : 'fa-moon'}`}></i>
-            </button>
-          </div>
+        <div className="flex items-center gap-3">
+          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="w-8 h-8 flex items-center justify-center text-black dark:text-white">
+            <i className="fa-solid fa-circle-info text-xl"></i>
+          </button>
+          <button onClick={onUserClick} className={`w-8 h-8 flex items-center justify-center text-black dark:text-white`}>
+            <i className="fa-solid fa-circle-user text-xl"></i>
+          </button>
+          <button onClick={toggleTheme} className="w-8 h-8 flex items-center justify-center text-black dark:text-white">
+            <i className={`fa-solid ${theme === 'dark' ? 'fa-sun' : 'fa-moon'} text-xl`}></i>
+          </button>
         </div>
       </div>
 
       <div className="relative mb-3">
         <i className="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
         <input 
-          type="text" placeholder="BUSCAR PRODUCTO..." value={searchTerm}
+          type="text" 
+          placeholder="BUSCAR PRODUCTO..." 
+          value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-4 pl-12 pr-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all text-black dark:text-white"
+          className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-slate-800 rounded-lg py-3 pl-12 pr-4 text-sm font-medium focus:outline-none transition-all text-black dark:text-white"
         />
       </div>
 
       {currentTab !== 'favs' && (
         <div className="flex gap-2">
-          <button onClick={() => setTrendFilter(trendFilter === 'down' ? null : 'down')} className={`flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest border transition-all ${trendFilter === 'down' ? 'bg-green-500 text-white border-green-500' : 'bg-white dark:bg-black text-green-500 border-slate-200 dark:border-slate-800'}`}>
+          <button 
+            onClick={() => setTrendFilter(trendFilter === 'down' ? null : 'down')} 
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-md text-[11px] font-bold uppercase border transition-all ${trendFilter === 'down' ? 'bg-[#00a650] text-white border-[#00a650]' : 'bg-white dark:bg-black text-[#00a650] border-slate-200 dark:border-slate-800'}`}
+          >
             <i className="fa-solid fa-arrow-trend-down"></i> Precios Bajando
           </button>
-          <button onClick={() => setTrendFilter(trendFilter === 'up' ? null : 'up')} className={`flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest border transition-all ${trendFilter === 'up' ? 'bg-red-500 text-white border-red-500' : 'bg-white dark:bg-black text-red-500 border-slate-200 dark:border-slate-800'}`}>
+          <button 
+            onClick={() => setTrendFilter(trendFilter === 'up' ? null : 'up')} 
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-md text-[11px] font-bold uppercase border transition-all ${trendFilter === 'up' ? 'bg-[#f23645] text-white border-[#f23645]' : 'bg-white dark:bg-black text-[#f23645] border-slate-200 dark:border-slate-800'}`}
+          >
             <i className="fa-solid fa-arrow-trend-up"></i> Precios Subiendo
           </button>
         </div>
@@ -129,8 +108,8 @@ const Header: React.FC<HeaderProps> = ({
 
       {showHero && (
         <div className="mt-8 text-center px-4 animate-in fade-in duration-500">
-          <h2 className="text-2xl font-black text-black dark:text-white leading-none tracking-tighter">Los precios del super como nunca los viste</h2>
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 font-medium">Analizá tendencias y compará antes de comprar</p>
+          <h2 className="text-[22px] font-black text-black dark:text-white leading-none tracking-tighter">Los precios del super como nunca los viste</h2>
+          <p className="mt-3 text-sm text-slate-500 dark:text-slate-400 font-medium tracking-tight">Analizá los precios, tendencias, y compará antes de comprar</p>
         </div>
       )}
     </header>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Product } from '../types';
 
@@ -51,54 +50,47 @@ const ProductList: React.FC<ProductListProps> = ({
           <div 
             key={p.id} 
             onClick={() => onProductClick(p.id)}
-            className="group flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-950 cursor-pointer transition-colors"
+            className="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-950 cursor-pointer transition-colors"
           >
             <div className="flex-1 flex items-center justify-between pr-4">
-              <div className="flex flex-col gap-0.5">
+              {/* Left Side: Ticker and Name */}
+              <div className="flex flex-col">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono font-bold text-slate-900 dark:text-white text-base">
+                  <span className="font-bold text-slate-900 dark:text-white text-base tracking-tight uppercase">
                     {p.ticker || p.nombre.substring(0, 4).toUpperCase()}
                   </span>
                   {promoLabel && (
-                    <span className="bg-green-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded uppercase shadow-sm">
+                    <span className="bg-[#00a650] text-white text-[9px] font-black px-1.5 py-0.5 rounded uppercase">
                       {promoLabel}
                     </span>
                   )}
                 </div>
-                <span className="text-xs font-medium text-slate-500 dark:text-slate-400 line-clamp-1 max-w-[150px]">
+                <span className="text-xs font-medium text-slate-400 dark:text-slate-500 line-clamp-1">
                   {p.nombre}
                 </span>
               </div>
 
-              <div className="text-right">
+              {/* Right Side: Price and Change */}
+              <div className="text-right flex flex-col items-end">
                 <span className="font-mono font-bold text-slate-900 dark:text-white text-base">
                   ${format(p.stats.min)}
                 </span>
-                <div className={`mt-1 font-mono text-[10px] font-bold ${p.stats.trendClass}`}>
-                  {p.stats.icon} {p.stats.spread}%
-                </div>
+                <span className="font-mono text-[11px] font-bold text-slate-400 dark:text-slate-500 mt-0.5">
+                  - {p.stats.spread}%
+                </span>
               </div>
             </div>
 
+            {/* Actions: Quantity or Favorite */}
             <div className="flex items-center gap-3">
               {isCartView && onUpdateQuantity && (
                 <div 
-                  className="flex items-center gap-3 bg-slate-100 dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800"
+                  className="flex items-center gap-3 bg-slate-100 dark:bg-slate-900 px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-800"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <button 
-                    onClick={() => onUpdateQuantity(p.id, -1)}
-                    className="text-slate-500 hover:text-slate-900 dark:hover:text-white font-bold"
-                  >
-                    -
-                  </button>
-                  <span className="font-mono text-sm font-bold min-w-[20px] text-center">{qty}</span>
-                  <button 
-                    onClick={() => onUpdateQuantity(p.id, 1)}
-                    className="text-slate-500 hover:text-slate-900 dark:hover:text-white font-bold"
-                  >
-                    +
-                  </button>
+                  <button onClick={() => onUpdateQuantity(p.id, -1)} className="text-slate-500 hover:text-white font-bold px-1">-</button>
+                  <span className="font-mono text-sm font-bold min-w-[15px] text-center">{qty}</span>
+                  <button onClick={() => onUpdateQuantity(p.id, 1)} className="text-slate-500 hover:text-white font-bold px-1">+</button>
                 </div>
               )}
               
@@ -107,7 +99,7 @@ const ProductList: React.FC<ProductListProps> = ({
                   e.stopPropagation();
                   onFavoriteToggle(p.id);
                 }}
-                className={`text-xl transition-transform active:scale-90 ${fav ? 'text-amber-500' : 'text-slate-300 dark:text-slate-700'}`}
+                className={`text-lg transition-transform active:scale-90 ${fav ? 'text-amber-500' : 'text-slate-800 dark:text-slate-200'}`}
               >
                 <i className="fa-solid fa-cart-shopping"></i>
               </button>
