@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase, getProducts, getPriceHistory, getProfile, getConfig, getBenefits, getSavedCartData, saveCartData } from './services/supabase';
@@ -60,7 +59,6 @@ const App: React.FC = () => {
 
     window.addEventListener('hashchange', handleHash);
     handleHash();
-
     return () => window.removeEventListener('hashchange', handleHash);
   }, []);
 
@@ -121,20 +119,8 @@ const App: React.FC = () => {
         if (cartData) {
           setFavorites(cartData.active || {});
           setSavedCarts(cartData.saved || []);
-        } else {
-          const local = localStorage.getItem(`favs_data_${sessionUser.id}`);
-          if (local) {
-            const parsed = JSON.parse(local);
-            setFavorites(parsed.active || {});
-            setSavedCarts(parsed.saved || []);
-          }
         }
-      } else {
-        setProfile(null);
-        setFavorites({});
-        setSavedCarts([]);
       }
-
       const day = new Date().getDay();
       const benefitData = await getBenefits(day);
       setBenefits(benefitData);
@@ -160,7 +146,6 @@ const App: React.FC = () => {
         setFavorites({}); 
         setSavedCarts([]);
         setPurchasedItems(new Set());
-        localStorage.removeItem('supabase.auth.token');
       }
     });
     return () => subscription.unsubscribe();
@@ -169,7 +154,6 @@ const App: React.FC = () => {
   useEffect(() => {
     if (user) {
       const dataToSave = { active: favorites, saved: savedCarts };
-      localStorage.setItem(`favs_data_${user.id}`, JSON.stringify(dataToSave));
       saveCartData(user.id, dataToSave).catch(console.error);
     }
   }, [favorites, savedCarts, user]);
@@ -211,10 +195,7 @@ const App: React.FC = () => {
   }, [products, history, currentTab, searchTerm, trendFilter, favorites]);
 
   const toggleFavorite = (id: number) => {
-    if (!user) { 
-      setIsAuthOpen(true); 
-      return; 
-    }
+    if (!user) { setIsAuthOpen(true); return; }
     setFavorites(prev => {
       const next = { ...prev };
       if (next[id]) {
@@ -222,8 +203,7 @@ const App: React.FC = () => {
         const newPurchased = new Set(purchasedItems);
         newPurchased.delete(id);
         setPurchasedItems(newPurchased);
-      }
-      else next[id] = 1;
+      } else next[id] = 1;
       return next;
     });
   };
@@ -248,17 +228,17 @@ const App: React.FC = () => {
 
   const handleLoadSavedCart = (index: number) => {
     setFavorites(savedCarts[index].items);
-    setPurchasedItems(new Set()); // Reset tachado al cargar nuevo
+    setPurchasedItems(new Set());
     navigateTo('favs');
   };
 
-  if (loading && products.length === 0) return <div className="min-h-screen flex items-center justify-center dark:bg-black dark:text-white font-mono text-[10px] uppercase tracking-[0.2em] animate-pulse">Analizando mercado...</div>;
+  if (loading && products.length === 0) return <div className="min-h-screen flex items-center justify-center dark:bg-black dark:text-white font-mono text-[9px] uppercase tracking-[0.2em]">Analizando precios...</div>;
 
   return (
-    <div className="max-w-screen-md mx-auto min-h-screen bg-white dark:bg-black shadow-2xl transition-colors font-sans selection:bg-green-500 selection:text-white">
+    <div className="max-w-screen-md mx-auto min-h-screen bg-white dark:bg-black shadow-2xl transition-colors font-sans">
       {showPwaPill && (
-        <div onClick={handleInstallClick} className="fixed bottom-[85px] left-1/2 -translate-x-1/2 z-[1000] bg-black dark:bg-white text-white dark:text-black px-4 py-2.5 rounded-full flex items-center gap-3 shadow-2xl cursor-pointer">
-          <span className="text-[11px] font-[800] uppercase tracking-wider">Instalar App 🛒</span>
+        <div onClick={handleInstallClick} className="fixed bottom-[80px] left-1/2 -translate-x-1/2 z-[1000] bg-black dark:bg-white text-white dark:text-black px-4 py-2 rounded-full flex items-center gap-2 shadow-2xl cursor-pointer">
+          <span className="text-[9px] font-[800] uppercase tracking-wider">Instalar App 🛒</span>
         </div>
       )}
       <Header 
@@ -272,7 +252,16 @@ const App: React.FC = () => {
       <main className="pb-24">
         {['home', 'carnes', 'verdu', 'varios', 'favs'].includes(currentTab) ? (
           <>
-            {currentTab === 'favs' && filteredProducts.length > 0 && <CartSummary items={filteredProducts} favorites={favorites} benefits={benefits} userMemberships={profile?.membresias} />}
+            {currentTab === 'favs' && filteredProducts.length > 0 && (
+              <CartSummary 
+                items={filteredProducts} 
+                favorites={favorites} 
+                benefits={benefits} 
+                userMemberships={profile?.membresias} 
+                onSaveCart={handleSaveCurrentCart}
+                canSave={user && savedCarts.length < 2}
+              />
+            )}
             <ProductList 
               products={filteredProducts as any} 
               onProductClick={id => window.location.hash = `product/${id}`}

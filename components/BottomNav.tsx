@@ -13,7 +13,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ currentTab, setCurrentTab, cartCo
     { id: 'carnes', label: 'Carnes', icon: 'fa-drumstick-bite' },
     { id: 'verdu', label: 'Verdu', icon: 'fa-carrot' },
     { id: 'varios', label: 'Varios', icon: 'fa-layer-group' },
-    { id: 'favs', label: 'Chango', icon: 'fa-cart-shopping', badge: cartCount }
+    { id: 'favs', label: 'Lista', icon: 'fa-cart-shopping', badge: cartCount }
   ];
 
   return (
@@ -24,11 +24,11 @@ const BottomNav: React.FC<BottomNavProps> = ({ currentTab, setCurrentTab, cartCo
           onClick={() => setCurrentTab(tab.id)}
           className={`relative flex flex-col items-center gap-1 w-1/5 transition-all ${currentTab === tab.id ? 'text-black dark:text-white' : 'text-neutral-400'}`}
         >
-          <i className={`fa-solid ${tab.icon} text-[20px]`}></i>
-          <span className={`text-[10px] font-[800] tracking-tight ${currentTab === tab.id ? 'opacity-100' : 'opacity-60'}`}>{tab.label}</span>
+          <i className={`fa-solid ${tab.icon} text-[18px]`}></i>
+          <span className={`text-[9px] font-[800] tracking-tight ${currentTab === tab.id ? 'opacity-100' : 'opacity-60'}`}>{tab.label}</span>
           
           {tab.badge !== undefined && tab.badge > 0 && (
-            <span className="absolute -top-1.5 right-[15%] bg-black dark:bg-white text-white dark:text-black text-[9px] font-[800] min-w-[16px] h-4 rounded-full flex items-center justify-center px-1 animate-in zoom-in border border-white dark:border-black">
+            <span className="absolute -top-1.5 right-[15%] bg-black dark:bg-white text-white dark:text-black text-[8px] font-[800] min-w-[14px] h-3.5 rounded-full flex items-center justify-center px-1 border border-white dark:border-black">
               {tab.badge}
             </span>
           )}

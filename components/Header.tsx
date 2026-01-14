@@ -92,7 +92,7 @@ const Header: React.FC<HeaderProps> = ({
           placeholder="BUSCAR PRODUCTO..." 
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg py-3.5 pl-12 pr-10 text-sm font-medium focus:outline-none transition-all text-black dark:text-white placeholder:text-neutral-500"
+          className="w-full bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg py-3 pl-12 pr-10 text-sm font-medium focus:outline-none transition-all text-black dark:text-white placeholder:text-neutral-500"
         />
         {searchTerm && (
           <button 
@@ -108,23 +108,23 @@ const Header: React.FC<HeaderProps> = ({
         <div className="flex gap-2">
           <button 
             onClick={() => setTrendFilter(trendFilter === 'down' ? null : 'down')} 
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-md text-[11px] font-[800] uppercase border transition-all ${trendFilter === 'down' ? 'bg-green-500 text-white border-green-500 shadow-lg shadow-green-500/20' : 'bg-white dark:bg-black text-green-500 border-neutral-100 dark:border-neutral-900'}`}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-[10px] font-[800] uppercase border transition-all ${trendFilter === 'down' ? 'bg-green-500 text-white border-green-500 shadow-lg shadow-green-500/20' : 'bg-white dark:bg-black text-green-500 border-neutral-100 dark:border-neutral-900'}`}
           >
-            <i className="fa-solid fa-arrow-trend-down"></i> Bajando
+            <i className="fa-solid fa-arrow-trend-down"></i> Precios bajando
           </button>
           <button 
             onClick={() => setTrendFilter(trendFilter === 'up' ? null : 'up')} 
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-md text-[11px] font-[800] uppercase border transition-all ${trendFilter === 'up' ? 'bg-red-500 text-white border-red-500 shadow-lg shadow-red-500/20' : 'bg-white dark:bg-black text-red-500 border-neutral-100 dark:border-neutral-900'}`}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-[10px] font-[800] uppercase border transition-all ${trendFilter === 'up' ? 'bg-red-500 text-white border-red-500 shadow-lg shadow-red-500/20' : 'bg-white dark:bg-black text-red-500 border-neutral-100 dark:border-neutral-900'}`}
           >
-            <i className="fa-solid fa-arrow-trend-up"></i> Subiendo
+            <i className="fa-solid fa-arrow-trend-up"></i> Precios subiendo
           </button>
         </div>
       )}
 
       {showHero && (
         <div className="mt-8 text-center px-4 animate-in fade-in duration-500">
-          <h2 className="text-[22px] font-[800] text-black dark:text-white leading-none tracking-tight font-sans">Los precios del super como nunca los viste</h2>
-          <p className="mt-3 text-sm text-neutral-600 dark:text-neutral-500 font-medium tracking-tight">Analizá tendencias y ahorrá en cada compra.</p>
+          <h2 className="text-[20px] font-[800] text-black dark:text-white leading-none tracking-tight font-sans">Los precios del super como nunca los viste</h2>
+          <p className="mt-2 text-xs text-neutral-600 dark:text-neutral-500 font-medium tracking-tight">Analizá tendencias y ahorrá en cada compra.</p>
         </div>
       )}
     </header>
