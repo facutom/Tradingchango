@@ -93,8 +93,16 @@ const Header: React.FC<HeaderProps> = ({
           placeholder="BUSCAR PRODUCTO..." 
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full bg-[#f9f9f9] dark:bg-[#121212] border border-border-light dark:border-border-dark rounded-lg py-3.5 pl-12 pr-4 text-sm font-medium focus:outline-none transition-all text-primary dark:text-[#ffffff] placeholder:text-muted"
+          className="w-full bg-[#f9f9f9] dark:bg-[#121212] border border-border-light dark:border-border-dark rounded-lg py-3.5 pl-12 pr-10 text-sm font-medium focus:outline-none transition-all text-primary dark:text-[#ffffff] placeholder:text-muted"
         />
+        {searchTerm && (
+          <button 
+            onClick={() => setSearchTerm('')}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-primary dark:hover:text-white transition-colors w-6 h-6 flex items-center justify-center"
+          >
+            <i className="fa-solid fa-xmark text-lg"></i>
+          </button>
+        )}
       </div>
 
       {!['favs', 'about', 'terms', 'contact'].includes(currentTab) && (
