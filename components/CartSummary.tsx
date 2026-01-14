@@ -136,7 +136,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, favorites, benefits, u
             </div>
             
             <div className="text-right">
-              <span className="text-[10px] font-black uppercase text-slate-400 tracking-[0.1em] block mb-1">Pagas en total</span>
+              <span className="text-[10px] font-black uppercase text-slate-400 tracking-[0.1em] block mb-1">Pagas en total*</span>
               <div className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter font-mono">${format(Math.round(best.totalChango))}</div>
             </div>
           </div>
@@ -149,8 +149,8 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, favorites, benefits, u
             </div>
             
             <div className="flex items-center gap-4 text-[10px] font-bold text-slate-400 uppercase tracking-tight ml-auto">
-              <div>Sub: <span className="font-mono text-slate-600 dark:text-slate-300">${format(Math.round(best.subtotal))}</span></div>
-              <div>Góndola: <span className="font-mono text-green-500">-${format(Math.round(best.gondolaDiscount))}</span></div>
+              <div>Subtotal: <span className="font-mono text-slate-600 dark:text-slate-300">${format(Math.round(best.subtotal))}</span></div>
+              <div>Descuentos: <span className="font-mono text-green-500">-${format(Math.round(best.gondolaDiscount))}</span></div>
             </div>
           </div>
 
@@ -201,8 +201,8 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, favorites, benefits, u
         </div>
       )}
 
-      <p className="text-[9px] text-center text-slate-400 font-bold tracking-tight py-2 uppercase">
-        *Cálculo optimizado para el stock completo ({items.length} productos).
+      <p className="text-[9px] text-center text-slate-400 font-bold tracking-tight py-2 px-4 leading-relaxed uppercase">
+        *Es un valor informativo. El ahorro real depende de los T&C de cada entidad, la disponibilidad en góndola y la forma de pago elegida al finalizar la compra.
       </p>
     </div>
   );
