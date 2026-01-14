@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase, getCatalogoMembresias, updateMemberships } from '../services/supabase';
 import { Profile, Membership, UserMembership } from '../types';
@@ -41,7 +40,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, user, profile, o
     }
   }, [user]);
 
-  // Fix: Implemented toggleMembership to handle adding/removing bank benefits
   const toggleMembership = async (slug: string, tipo: string = 'standard') => {
     if (!user || !profile) return;
     
@@ -55,7 +53,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, user, profile, o
     setError(null);
     try {
       await updateMemberships(user.id, next);
-      // Notify parent to refresh profile data
       if (onProfileUpdate) onProfileUpdate();
     } catch (err: any) {
       setError(err.message);
@@ -86,7 +83,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, user, profile, o
 
         if (signUpError) throw signUpError;
         
-        // Intentar crear el perfil manualmente si no hay trigger en la DB
         if (data.user) {
           await supabase.from('perfiles').upsert({
             id: data.user.id,
@@ -98,13 +94,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, user, profile, o
           });
         }
 
-        setSuccess('¡Cuenta creada con éxito! Ahora podés iniciar sesión.');
+        setSuccess('¡Cuenta creada! Ya podés iniciar sesión.');
         setMode('login');
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-        if (signInError) throw new Error('Email o contraseña incorrectos.');
+        if (signInError) throw new Error('Credenciales incorrectas.');
         
-        setSuccess(`¡Hola de nuevo! Cargando tu configuración...`);
+        setSuccess(`¡Cargando perfil!`);
         setTimeout(onClose, 1500);
       }
     } catch (err: any) {
@@ -128,8 +124,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, user, profile, o
       <div ref={modalRef} className="bg-white dark:bg-slate-950 w-full max-w-sm rounded-[2.5rem] p-8 relative shadow-2xl border border-slate-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto no-scrollbar">
         <button onClick={onClose} className="absolute top-6 right-6 text-slate-400 text-xl hover:text-slate-600 transition-colors">&times;</button>
         
-        {success && <div className="mb-4 p-4 bg-green-500/10 border border-green-500/20 text-green-500 text-xs font-bold rounded-2xl text-center animate-in zoom-in">{success}</div>}
-        {error && <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold rounded-2xl text-center animate-in shake">{error}</div>}
+        {success && <div className="mb-4 p-4 bg-green-500/10 border border-green-500/20 text-green-500 text-xs font-bold rounded-2xl text-center">{success}</div>}
+        {error && <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold rounded-2xl text-center">{error}</div>}
 
         {view === 'welcome' && (
           <div className="text-center py-4">
@@ -151,7 +147,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, user, profile, o
         {view === 'form' && (
           <form onSubmit={handleAuth} className="space-y-3">
             <h3 className="text-xl font-black dark:text-white mb-6 uppercase tracking-tighter">
-              {mode === 'login' ? 'Bienvenido' : 'Nueva Cuenta'}
+              {mode === 'login' ? 'Entrar' : 'Registrarme'}
             </h3>
             
             {mode === 'register' && (
@@ -171,7 +167,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, user, profile, o
             <input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Contraseña" required className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl dark:text-white text-xs" />
             
             <button disabled={loading} className="w-full bg-green-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-lg shadow-green-500/20 active:scale-95 transition-all mt-4">
-              {loading ? 'Procesando...' : (mode === 'login' ? 'Entrar' : 'Registrarme')}
+              {loading ? '...' : (mode === 'login' ? 'Entrar' : 'Crear Cuenta')}
             </button>
             <button type="button" onClick={() => setView('welcome')} className="w-full text-[10px] font-black text-slate-400 uppercase tracking-widest mt-4">Volver</button>
           </form>
@@ -189,7 +185,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, user, profile, o
             
             <div className="space-y-3">
               <button onClick={() => setView('membresias')} className="w-full bg-slate-50 dark:bg-slate-900 p-5 rounded-2xl text-left flex items-center justify-between border border-slate-100 dark:border-slate-800 active:scale-[0.98] transition-all">
-                <span className="text-xs font-bold dark:text-white uppercase tracking-tight">Mis Membresías Bancarias</span>
+                <span className="text-xs font-bold dark:text-white uppercase tracking-tight">Beneficios Bancarios</span>
                 <i className="fa-solid fa-chevron-right text-slate-300"></i>
               </button>
               <button onClick={handleSignOut} className="w-full text-red-500 text-[10px] font-black uppercase tracking-widest py-6 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-2xl transition-all">Cerrar Sesión</button>
@@ -199,7 +195,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, user, profile, o
 
         {view === 'membresias' && (
           <div className="max-h-[60vh]">
-            <h3 className="text-lg font-black dark:text-white mb-6 sticky top-0 bg-white dark:bg-slate-950 pb-2 z-10 uppercase tracking-tighter">Vincular Beneficios</h3>
+            <h3 className="text-lg font-black dark:text-white mb-6 uppercase tracking-tighter">Vincular Beneficios</h3>
             <div className="space-y-6">
               {catalogo.map(m => (
                 <div key={m.slug} className="border-b border-slate-100 dark:border-slate-800 pb-4 last:border-0">
@@ -210,13 +206,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, user, profile, o
                   <div className="flex flex-wrap gap-2">
                     {m.opciones?.length ? m.opciones.map(opt => {
                       const active = profile?.membresias?.some(um => um.slug === m.slug && um.tipo === opt);
-                      return <button key={opt} onClick={() => toggleMembership(m.slug, opt)} className={`text-[9px] font-black px-4 py-2.5 rounded-xl border transition-all ${active ? 'bg-green-500 text-white border-green-500 shadow-lg shadow-green-500/20' : 'bg-slate-50 dark:bg-slate-900 text-slate-400 border-slate-200 dark:border-slate-800'}`}>{opt}</button>
-                    }) : <button onClick={() => toggleMembership(m.slug)} className={`text-[9px] font-black px-4 py-2.5 rounded-xl border transition-all ${profile?.membresias?.some(um => um.slug === m.slug) ? 'bg-green-500 text-white border-green-500 shadow-lg shadow-green-500/20' : 'bg-slate-50 dark:bg-slate-900 text-slate-400 border-slate-200 dark:border-slate-800'}`}>Activar {m.nombre}</button>}
+                      return <button key={opt} onClick={() => toggleMembership(m.slug, opt)} className={`text-[9px] font-black px-4 py-2.5 rounded-xl border transition-all ${active ? 'bg-green-500 text-white border-green-500' : 'bg-slate-50 dark:bg-slate-900 text-slate-400'}`}>{opt}</button>
+                    }) : <button onClick={() => toggleMembership(m.slug)} className={`text-[9px] font-black px-4 py-2.5 rounded-xl border transition-all ${profile?.membresias?.some(um => um.slug === m.slug) ? 'bg-green-500 text-white border-green-500' : 'bg-slate-50 dark:bg-slate-900 text-slate-400'}`}>Activar</button>}
                   </div>
                 </div>
               ))}
             </div>
-            <button onClick={() => setView('profile')} className="w-full bg-slate-900 dark:bg-white dark:text-black text-white py-4 rounded-2xl font-black mt-10 shadow-xl uppercase tracking-widest text-[10px]">Guardar y Volver</button>
+            <button onClick={() => setView('profile')} className="w-full bg-slate-900 dark:bg-white dark:text-black text-white py-4 rounded-2xl font-black mt-10 shadow-xl uppercase tracking-widest text-[10px]">Volver</button>
           </div>
         )}
       </div>

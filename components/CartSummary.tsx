@@ -24,12 +24,15 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, favorites, benefits, u
     return STORES.map((store) => {
       let subtotal = 0;
       let totalGondolaDiscount = 0;
+      let hasAllItems = true;
 
       items.forEach(item => {
         const price = item.prices[store.index];
         const qty = favorites[item.id] || 1;
+        
+        // Si el producto no tiene precio en este super, marcamos como incompleto
         if (price <= 0) {
-          subtotal += 999999;
+          hasAllItems = false;
           return;
         }
 
@@ -65,15 +68,36 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, favorites, benefits, u
         subtotal, 
         gondolaDiscount: totalGondolaDiscount,
         totalChango: subtotal - totalGondolaDiscount,
-        storeBenefits 
+        storeBenefits,
+        hasAllItems
       };
-    }).sort((a, b) => a.totalChango - b.totalChango);
+    })
+    // REGLA CRÍTICA: Solo supermercados con el chango COMPLETO
+    .filter(r => r.hasAllItems && items.length > 0)
+    .sort((a, b) => a.totalChango - b.totalChango);
   }, [items, favorites, benefits]);
 
+  if (items.length === 0) return null;
+
+  // Si ningún supermercado tiene todos los productos
+  if (results.length === 0) {
+    return (
+      <div className="p-4 animate-in fade-in duration-700">
+        <div className="bg-white dark:bg-slate-950 border-2 border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-8 shadow-xl text-center">
+          <div className="w-16 h-16 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
+            <i className="fa-solid fa-circle-exclamation text-2xl"></i>
+          </div>
+          <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest mb-2">Chango Incompleto</h3>
+          <p className="text-xs text-slate-400 font-medium">Ningún supermercado tiene stock de todos los productos de tu lista. Probá quitando alguno para comparar totales.</p>
+        </div>
+      </div>
+    );
+  }
+
   const best = results[0];
-  const others = results.slice(1).filter(r => r.subtotal < 500000);
+  const others = results.slice(1);
   
-  // Ahorro total relativo a la opción más cara viable
+  // Ahorro total relativo a la opción más cara viable que tenga todo el chango
   const worstOption = others.length > 0 ? others[others.length - 1] : best;
   const potentialSavings = worstOption.totalChango - best.totalChango;
 
@@ -96,8 +120,6 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, favorites, benefits, u
 
     return { owned, recommend };
   }, [best, userMemberships]);
-
-  if (items.length === 0) return null;
 
   return (
     <div className="p-4 space-y-4 animate-in fade-in duration-700">
@@ -138,7 +160,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, favorites, benefits, u
 
           {/* Disclaimer */}
           <p className="mt-4 text-[9px] text-center text-slate-400 font-medium leading-tight">
-            *Es un valor informativo. El ahorro real depende de los T&C de cada entidad y la disponibilidad en góndola.
+            *Comparación basada en el stock completo ({items.length} productos) disponible en este mercado.
           </p>
 
           {/* Estrategia de Pago */}
