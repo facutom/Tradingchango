@@ -84,21 +84,33 @@ export const updateMemberships = async (userId: string, memberships: UserMembers
   if (error) throw error;
 };
 
-export const saveCart = async (userId: string, items: Record<number, number>) => {
+// Guardamos un objeto que contiene el carrito activo y los changos guardados (máximo 2)
+export const saveCartData = async (userId: string, data: { active: Record<number, number>, saved: any[] }) => {
   const { error } = await supabase
     .from('carritos_guardados')
-    .upsert({ user_id: userId, items, updated_at: new Date().toISOString() });
+    .upsert({ 
+      user_id: userId, 
+      items: data, 
+      updated_at: new Date().toISOString() 
+    });
   if (error) throw error;
 };
 
-export const getSavedCart = async (userId: string): Promise<Record<number, number> | null> => {
+export const getSavedCartData = async (userId: string): Promise<{ active: Record<number, number>, saved: any[] } | null> => {
   const { data, error } = await supabase
     .from('carritos_guardados')
     .select('items')
     .eq('user_id', userId)
     .maybeSingle();
   if (error) return null;
-  return data?.items || null;
+  
+  // Si los datos no tienen la estructura nueva, los convertimos
+  const items = data?.items;
+  if (items && !items.active && !items.saved) {
+    return { active: items, saved: [] };
+  }
+  
+  return items || { active: {}, saved: [] };
 };
 
 export const getCatalogoMembresias = async () => {

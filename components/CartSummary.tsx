@@ -1,3 +1,4 @@
+
 import React, { useMemo, useState } from 'react';
 import { Product, Benefit, UserMembership } from '../types';
 
@@ -110,16 +111,14 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, favorites, benefits, u
 
   return (
     <div className="p-4 space-y-3 animate-in fade-in duration-700">
-      {/* Tarjeta de Ganador - Más Compacta */}
       <div className="bg-white dark:bg-neutral-950 border-[3px] border-black dark:border-white rounded-[1.5rem] p-5 shadow-xl relative">
         <div className="flex flex-col gap-4 relative z-10">
           
-          {/* Fila 1: Ganador y Ahorro */}
           <div className="flex justify-between items-end">
             <div className="space-y-0.5">
               <span className="text-[9px] font-black uppercase text-neutral-500 tracking-[0.15em] block">Mejor opción:</span>
               <h2 className="text-xl font-black text-black dark:text-white uppercase tracking-tighter leading-none flex items-center gap-2">
-                <i className="fa-solid fa-trophy text-star-gold text-base"></i>
+                <i className="fa-solid fa-trophy text-star-gold text-lg animate-bounce"></i>
                 {best.name}
               </h2>
             </div>
@@ -136,7 +135,6 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, favorites, benefits, u
             </div>
           </div>
 
-          {/* Fila 3: Desglose Compacto */}
           <div className="bg-neutral-50 dark:bg-neutral-900 rounded-xl p-3.5 space-y-1.5">
             <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-tight">
               <span className="text-neutral-500">Subtotal:</span>
@@ -148,10 +146,9 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, favorites, benefits, u
             </div>
           </div>
 
-          {/* Fila 4: Membresías y Referidos */}
           <div className="space-y-2 pt-1">
             {paymentAdvice?.owned && (
-              <div className="flex items-center gap-2 text-left bg-black/5 dark:bg-white/5 p-2.5 rounded-xl border border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center gap-2 text-left bg-green-500/5 dark:bg-green-500/10 p-2.5 rounded-xl border border-green-500/10">
                 <i className="fa-solid fa-circle-check text-green-500 text-sm"></i>
                 <p className="text-[10px] font-black uppercase text-black dark:text-white leading-tight">
                   Con <span className="underline underline-offset-2">{paymentAdvice.owned.entidad_nombre}</span> ahorrás hasta <span className="text-green-500">{paymentAdvice.owned.descuento}%</span>*
@@ -164,27 +161,29 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, favorites, benefits, u
                 href={paymentAdvice.recommend.link_referido} 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="flex items-center gap-3 text-left p-3 rounded-xl border border-dashed border-neutral-300 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors group"
+                className="flex items-center gap-3 text-left p-3 rounded-xl border-2 border-dashed border-indigo-500/30 bg-gradient-to-r from-indigo-500/5 to-purple-500/5 hover:from-indigo-500/10 hover:to-purple-500/10 transition-all group scale-[1.02]"
               >
-                <i className="fa-solid fa-rocket text-black dark:text-white text-xs shrink-0"></i>
-                <div>
-                   <p className="text-[9px] font-black uppercase text-black dark:text-white leading-tight">🚀 Extra:</p>
-                   <p className="text-[9px] font-bold text-neutral-500 dark:text-neutral-400 uppercase leading-none">Sacá la {paymentAdvice.recommend.entidad_nombre} y ahorrá {paymentAdvice.recommend.descuento}%*</p>
+                <div className="w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-transform">
+                  <i className="fa-solid fa-rocket text-[10px]"></i>
                 </div>
+                <div>
+                   <p className="text-[9px] font-black uppercase text-indigo-600 dark:text-indigo-400 leading-tight">🚀 ¡Súper Oportunidad!</p>
+                   <p className="text-[9px] font-bold text-neutral-600 dark:text-neutral-300 uppercase leading-none">Sacá la {paymentAdvice.recommend.entidad_nombre} y ahorrá {paymentAdvice.recommend.descuento}%*</p>
+                </div>
+                <i className="fa-solid fa-chevron-right text-indigo-300 ml-auto"></i>
               </a>
             )}
           </div>
         </div>
       </div>
 
-      {/* Otros Mercados - Más Comprimido */}
       {others.length > 0 && (
         <div className="px-1">
           <button 
             onClick={() => setIsExpanded(!isExpanded)}
             className="w-full flex items-center justify-between text-[9px] font-black text-neutral-500 dark:text-neutral-400 uppercase tracking-[0.2em] py-2 hover:text-black dark:hover:text-white transition-colors"
           >
-            <span>Ver otros ({others.length})</span>
+            <span>Otros mercados ({others.length})</span>
             <i className={`fa-solid fa-chevron-${isExpanded ? 'up' : 'down'} transition-transform text-[7px]`}></i>
           </button>
           
@@ -204,7 +203,6 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, favorites, benefits, u
         </div>
       )}
 
-      {/* Disclaimer - Más pequeño */}
       <div className="bg-neutral-50/50 dark:bg-neutral-950 p-4 rounded-xl">
         <p className="text-[8px] text-neutral-500 dark:text-neutral-500 font-bold tracking-tight leading-normal uppercase">
           *El monto final se calculará al pagar en la web de {best.name}. Descuentos bancarios y T&C dependen de cada entidad. Sujeto a disponibilidad.

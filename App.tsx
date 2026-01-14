@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { User } from '@supabase/supabase-js';
-import { supabase, getProducts, getPriceHistory, getProfile, getConfig, getBenefits, getSavedCart, saveCart } from './services/supabase';
+import { supabase, getProducts, getPriceHistory, getProfile, getConfig, getBenefits, getSavedCartData, saveCartData } from './services/supabase';
 import { Product, PriceHistory, Profile, TabType, ProductStats, Benefit } from './types';
 import Header from './components/Header';
 import ProductList from './components/ProductList';
@@ -26,6 +26,8 @@ const App: React.FC = () => {
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [favorites, setFavorites] = useState<Record<number, number>>({});
+  const [purchasedItems, setPurchasedItems] = useState<Set<number>>(new Set());
+  const [savedCarts, setSavedCarts] = useState<any[]>([]);
   const [showPwaPill, setShowPwaPill] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [theme, setTheme] = useState<'light' | 'dark'>(
@@ -33,7 +35,6 @@ const App: React.FC = () => {
   );
 
   useEffect(() => {
-    // 1. Configuración del Tema al cargar
     const savedTheme = localStorage.getItem('theme');
     const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
@@ -44,7 +45,6 @@ const App: React.FC = () => {
       setTheme('light');
     }
 
-    // 2. Manejo de Navegación por Hash
     const handleHash = () => {
       const hash = window.location.hash.replace('#', '');
       if (hash.startsWith('product/')) {
@@ -117,15 +117,22 @@ const App: React.FC = () => {
       if (sessionUser) {
         const prof = await getProfile(sessionUser.id);
         setProfile(prof);
-        const saved = await getSavedCart(sessionUser.id);
-        if (saved) setFavorites(saved);
-        else {
-          const local = localStorage.getItem(`favs_${sessionUser.id}`);
-          if (local) setFavorites(JSON.parse(local));
+        const cartData = await getSavedCartData(sessionUser.id);
+        if (cartData) {
+          setFavorites(cartData.active || {});
+          setSavedCarts(cartData.saved || []);
+        } else {
+          const local = localStorage.getItem(`favs_data_${sessionUser.id}`);
+          if (local) {
+            const parsed = JSON.parse(local);
+            setFavorites(parsed.active || {});
+            setSavedCarts(parsed.saved || []);
+          }
         }
       } else {
         setProfile(null);
         setFavorites({});
+        setSavedCarts([]);
       }
 
       const day = new Date().getDay();
@@ -151,7 +158,9 @@ const App: React.FC = () => {
       else if (_event === 'SIGNED_OUT') { 
         setProfile(null); 
         setFavorites({}); 
-        localStorage.removeItem('supabase.auth.token'); // Asegurar limpieza profunda
+        setSavedCarts([]);
+        setPurchasedItems(new Set());
+        localStorage.removeItem('supabase.auth.token');
       }
     });
     return () => subscription.unsubscribe();
@@ -159,10 +168,11 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (user) {
-      localStorage.setItem(`favs_${user.id}`, JSON.stringify(favorites));
-      saveCart(user.id, favorites).catch(console.error);
+      const dataToSave = { active: favorites, saved: savedCarts };
+      localStorage.setItem(`favs_data_${user.id}`, JSON.stringify(dataToSave));
+      saveCartData(user.id, dataToSave).catch(console.error);
     }
-  }, [favorites, user]);
+  }, [favorites, savedCarts, user]);
 
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
@@ -170,11 +180,11 @@ const App: React.FC = () => {
     const v = p.filter(x => x > 0);
     if (v.length === 0) return { min: 0, spread: '0.0', trendClass: '', icon: '-', isUp: false, isDown: false };
     const min = Math.min(...v);
-    let diff = 0, tc = 'text-slate-500', icon = '-', isUp = false, isDown = false;
+    let diff = 0, tc = 'text-neutral-500', icon = '-', isUp = false, isDown = false;
     if (h > 0) {
       diff = ((min - h) / h) * 100;
-      if (diff > 0.1) { tc = 'text-[#f23645]'; icon = '▲'; isUp = true; }
-      else if (diff < -0.1) { tc = 'text-[#00c853]'; icon = '▼'; isDown = true; }
+      if (diff > 0.1) { tc = 'text-red-500'; icon = '▲'; isUp = true; }
+      else if (diff < -0.1) { tc = 'text-green-500'; icon = '▼'; isDown = true; }
     }
     return { min, spread: Math.abs(diff).toFixed(1), trendClass: tc, icon, isUp, isDown };
   };
@@ -207,10 +217,39 @@ const App: React.FC = () => {
     }
     setFavorites(prev => {
       const next = { ...prev };
-      if (next[id]) delete next[id];
+      if (next[id]) {
+        delete next[id];
+        const newPurchased = new Set(purchasedItems);
+        newPurchased.delete(id);
+        setPurchasedItems(newPurchased);
+      }
       else next[id] = 1;
       return next;
     });
+  };
+
+  const togglePurchased = (id: number) => {
+    const newPurchased = new Set(purchasedItems);
+    if (newPurchased.has(id)) newPurchased.delete(id);
+    else newPurchased.add(id);
+    setPurchasedItems(newPurchased);
+  };
+
+  const handleSaveCurrentCart = (name: string) => {
+    if (savedCarts.length >= 2) return;
+    setSavedCarts([...savedCarts, { name, items: { ...favorites }, date: new Date().toISOString() }]);
+  };
+
+  const handleDeleteSavedCart = (index: number) => {
+    const next = [...savedCarts];
+    next.splice(index, 1);
+    setSavedCarts(next);
+  };
+
+  const handleLoadSavedCart = (index: number) => {
+    setFavorites(savedCarts[index].items);
+    setPurchasedItems(new Set()); // Reset tachado al cargar nuevo
+    navigateTo('favs');
   };
 
   if (loading && products.length === 0) return <div className="min-h-screen flex items-center justify-center dark:bg-black dark:text-white font-mono text-[10px] uppercase tracking-[0.2em] animate-pulse">Analizando mercado...</div>;
@@ -243,6 +282,8 @@ const App: React.FC = () => {
               quantities={favorites}
               onUpdateQuantity={(id, d) => setFavorites(p => ({...p, [id]: Math.max(1, (p[id]||1)+d)}))}
               searchTerm={searchTerm}
+              purchasedItems={purchasedItems}
+              onTogglePurchased={togglePurchased}
             />
           </>
         ) : (
@@ -255,14 +296,18 @@ const App: React.FC = () => {
       </main>
       <BottomNav currentTab={currentTab} setCurrentTab={navigateTo} cartCount={Object.keys(favorites).length} />
       {selectedProductId && <ProductDetail productId={selectedProductId} onClose={() => navigateTo(currentTab)} onFavoriteToggle={toggleFavorite} isFavorite={!!favorites[selectedProductId]} products={products} theme={theme} />}
-      {/* Fix: Added onProfileUpdate prop to ensure the app data is refreshed when memberships are toggled */}
       {isAuthOpen && <AuthModal 
         isOpen={isAuthOpen} 
         onClose={() => setIsAuthOpen(false)} 
         user={user} 
         profile={profile} 
         onSignOut={() => setUser(null)} 
-        onProfileUpdate={() => loadData(user)} 
+        onProfileUpdate={() => loadData(user)}
+        savedCarts={savedCarts}
+        onSaveCart={handleSaveCurrentCart}
+        onDeleteCart={handleDeleteSavedCart}
+        onLoadCart={handleLoadSavedCart}
+        currentActiveCartSize={Object.keys(favorites).length}
       />}
       <Footer />
     </div>

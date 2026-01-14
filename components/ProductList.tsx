@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Product } from '../types';
 
@@ -21,6 +22,8 @@ interface ProductListProps {
   quantities?: Record<number, number>;
   onUpdateQuantity?: (id: number, delta: number) => void;
   searchTerm?: string;
+  purchasedItems?: Set<number>;
+  onTogglePurchased?: (id: number) => void;
 }
 
 const ProductList: React.FC<ProductListProps> = ({ 
@@ -31,7 +34,9 @@ const ProductList: React.FC<ProductListProps> = ({
   isCartView,
   quantities,
   onUpdateQuantity,
-  searchTerm
+  searchTerm,
+  purchasedItems,
+  onTogglePurchased
 }) => {
   const format = (n: number) => new Intl.NumberFormat('es-AR').format(n);
 
@@ -52,34 +57,33 @@ const ProductList: React.FC<ProductListProps> = ({
 
   if (products.length === 0 && searchTerm) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 px-8 text-center animate-in fade-in zoom-in duration-500">
-        <div className="w-16 h-16 bg-neutral-100 dark:bg-neutral-900 rounded-2xl flex items-center justify-center text-neutral-400 mb-5 text-2xl">
+      <div className="flex flex-col items-center justify-center py-16 px-6 text-center animate-in fade-in zoom-in duration-500">
+        <div className="w-14 h-14 bg-neutral-100 dark:bg-neutral-900 rounded-xl flex items-center justify-center text-neutral-500 mb-4 text-xl">
           <i className="fa-solid fa-magnifying-glass"></i>
         </div>
-        <h3 className="text-base font-black text-black dark:text-white mb-2 uppercase tracking-tighter">Sin resultados</h3>
-        <p className="text-xs text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed">Probá con otros términos.</p>
+        <h3 className="text-sm font-black text-neutral-900 dark:text-neutral-100 uppercase tracking-tighter">Sin resultados</h3>
+        <p className="text-[11px] text-neutral-500 dark:text-neutral-500 font-medium">Probá con otros términos.</p>
       </div>
     );
   }
 
   if (products.length === 0 && isCartView) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 px-8 text-center animate-in fade-in zoom-in duration-700">
-        <div className="w-20 h-20 bg-neutral-100 dark:bg-neutral-900 rounded-[2rem] flex items-center justify-center text-neutral-400 mb-6 text-3xl">
+      <div className="flex flex-col items-center justify-center py-20 px-6 text-center animate-in fade-in zoom-in duration-700">
+        <div className="w-16 h-16 bg-neutral-100 dark:bg-neutral-900 rounded-2xl flex items-center justify-center text-neutral-500 mb-5 text-2xl">
           <i className="fa-solid fa-cart-shopping"></i>
         </div>
-        <h3 className="text-lg font-black text-black dark:text-white mb-3 uppercase tracking-tighter">Tu chango está vacío</h3>
-        <p className="text-xs text-neutral-600 dark:text-neutral-400 font-medium leading-relaxed max-w-[240px]">
-          Agregá productos para comparar y ahorrar.
-        </p>
+        <h3 className="text-base font-black text-neutral-900 dark:text-neutral-100 uppercase tracking-tighter">Tu chango está vacío</h3>
+        <p className="text-[11px] text-neutral-500 dark:text-neutral-500 font-medium max-w-[200px]">Agregá productos para empezar a ahorrar.</p>
       </div>
     );
   }
 
   return (
-    <div className="divide-y divide-neutral-100 dark:divide-neutral-900 border-b border-neutral-100 dark:border-neutral-900">
+    <div className="divide-y divide-neutral-100 dark:divide-neutral-900 border-b border-neutral-100 dark:divide-neutral-900">
       {products.map((p) => {
         const fav = isFavorite(p.id);
+        const purchased = purchasedItems?.has(p.id);
         const qty = quantities ? (quantities[p.id] || 1) : 1;
         const badges = getPromoBadges(p.oferta_gondola);
 
@@ -87,56 +91,69 @@ const ProductList: React.FC<ProductListProps> = ({
           <div 
             key={p.id} 
             onClick={() => onProductClick(p.id)}
-            className="flex items-center justify-between px-4 py-3 bg-white dark:bg-black hover:bg-neutral-50 dark:hover:bg-neutral-900/50 cursor-pointer transition-colors"
+            className={`flex items-center justify-between px-4 py-2.5 bg-white dark:bg-black hover:bg-neutral-50 dark:hover:bg-neutral-900/30 cursor-pointer transition-all ${purchased ? 'opacity-40 grayscale-[0.5]' : ''}`}
           >
-            <div className="flex-1 flex items-center justify-between pr-3">
-              <div className="flex flex-col gap-0">
+            <div className="flex items-center gap-3 shrink-0">
+               {isCartView && (
+                 <button 
+                  onClick={(e) => { e.stopPropagation(); onTogglePurchased?.(p.id); }}
+                  className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${purchased ? 'bg-green-500 border-green-500 text-white' : 'border-neutral-300 dark:border-neutral-700'}`}
+                 >
+                   {purchased && <i className="fa-solid fa-check text-[10px]"></i>}
+                 </button>
+               )}
+            </div>
+
+            <div className="flex-1 flex items-center justify-between pr-3 min-w-0">
+              <div className="flex flex-col gap-0 min-w-0">
                 <div className="flex items-center flex-wrap gap-1.5">
-                  <span className="font-[800] text-black dark:text-white text-[15px] tracking-tight uppercase font-mono leading-none">
+                  <span className={`font-[800] text-black dark:text-white text-[14px] tracking-tight uppercase font-mono leading-none ${purchased ? 'line-through' : ''}`}>
                     {p.ticker || p.nombre.substring(0, 5).toUpperCase()}
                   </span>
-                  {badges && badges.map((b, idx) => (
-                    <span key={idx} className="bg-green-500 text-white text-[8px] font-[900] px-1 py-0.5 rounded-[2px] uppercase leading-none font-sans">
+                  {badges && !purchased && badges.map((b, idx) => (
+                    <span key={idx} className="bg-green-500 text-white text-[7px] font-[900] px-1 py-0.5 rounded-[2px] uppercase leading-none font-sans">
                       {b}
                     </span>
                   ))}
                 </div>
-                <span className="text-[12px] font-medium text-neutral-700 dark:text-neutral-400 line-clamp-1 font-sans mt-0.5">
+                <span className={`text-[11px] font-medium text-neutral-700 dark:text-neutral-400 line-clamp-1 font-sans mt-0.5 ${purchased ? 'line-through' : ''}`}>
                   {p.nombre}
                 </span>
               </div>
 
-              <div className="text-right flex flex-col items-end min-w-[90px]">
-                <span className="font-mono font-[800] text-black dark:text-white text-[16px] leading-none">
+              <div className="text-right flex flex-col items-end min-w-[85px]">
+                <span className="font-mono font-[800] text-black dark:text-white text-[15px] leading-none">
                   ${format(p.stats.min)}
                 </span>
-                <span className={`font-mono text-[11px] font-[700] mt-1 ${p.stats.trendClass} leading-none`}>
+                <span className={`font-mono text-[10px] font-[700] mt-1 ${p.stats.trendClass} leading-none`}>
                   {p.stats.icon} {p.stats.spread}%
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              {isCartView && onUpdateQuantity && (
+            <div className="flex items-center gap-2">
+              {isCartView && onUpdateQuantity && !purchased && (
                 <div 
                   className="flex items-center bg-neutral-100 dark:bg-neutral-900 px-1 rounded-lg border border-neutral-200 dark:border-neutral-800"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <button onClick={() => onUpdateQuantity(p.id, -1)} className="text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white px-1.5 py-1 font-black text-xs">-</button>
-                  <span className="font-mono text-[12px] font-black min-w-[16px] text-center text-black dark:text-white">{qty}</span>
-                  <button onClick={() => onUpdateQuantity(p.id, 1)} className="text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white px-1.5 py-1 font-black text-xs">+</button>
+                  <button onClick={() => onUpdateQuantity(p.id, -1)} className="text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white px-1 py-0.5 font-black text-[10px]">-</button>
+                  <span className="font-mono text-[10px] font-black min-w-[14px] text-center text-black dark:text-white">{qty}</span>
+                  <button onClick={() => onUpdateQuantity(p.id, 1)} className="text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white px-1 py-0.5 font-black text-[10px]">+</button>
                 </div>
               )}
               
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onFavoriteToggle(p.id);
-                }}
-                className={`transition-all flex items-center justify-center active:scale-90 p-1.5 ${fav ? 'text-star-gold' : 'text-neutral-300 dark:text-neutral-700'}`}
-              >
-                <i className="fa-solid fa-cart-shopping text-[18px]"></i>
-              </button>
+              {!isCartView && (
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onFavoriteToggle(p.id);
+                  }}
+                  className={`transition-all flex items-center justify-center active:scale-90 p-1.5 ${fav ? 'text-star-gold' : 'text-neutral-300 dark:text-neutral-800'}`}
+                >
+                  <i className="fa-solid fa-cart-shopping text-[16px]"></i>
+                </button>
+              )}
             </div>
           </div>
         );
