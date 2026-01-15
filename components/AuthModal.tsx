@@ -22,7 +22,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
   savedCarts = [], onSaveCart, onDeleteCart, onLoadCart,
   currentActiveCartSize
 }) => {
-  const [view, setView] = useState<'main' | 'mis_changos' | 'membresias'>('main');
+  const [view, setView] = useState<'main' | 'mis_changos' | 'membresias' | 'profile' | 'welcome' | 'form'>('main');
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
