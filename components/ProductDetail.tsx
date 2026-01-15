@@ -279,54 +279,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
             </div>
           </div>
 
-          <div>
-            <div className="mt-6">
-              <h2 className="text-sm font-bold text-black dark:text-white mb-2">Comparativa por Mercado</h2>
-              {STORES.map(s => {
-                const price = (product as any)[s.key];
-                const url = (product as any)[s.url];
-                const ofertaGondola = (product as any).oferta_gondola;
-                const storeKey = s.key.substring(2);
-                const promo = ofertaGondola?.[storeKey]?.etiqueta;
-                if (!price || price <= 0) return null;
-                
-                const storeColors: { [key: string]: string } = {
-                  COTO: 'bg-red-500',
-                  CARREFOUR: 'bg-blue-500',
-                  DIA: 'bg-red-500',
-                  JUMBO: 'bg-green-500',
-                  'MAS ONLINE': 'bg-green-500',
-                };
-
-                const priceClassName = `text-sm font-mono font-black ${price === minPrice ? 'text-green-500' : 'text-black dark:text-white'}`;
-
-                return (
-                  <div key={s.name} className="flex items-center justify-between py-1.5 border-b border-neutral-50 dark:border-neutral-900 last:border-0">
-                    <div className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full ${storeColors[s.name]}`}></span>
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-[11px] font-black text-black dark:text-white uppercase">{s.name}</span>
-                        {promo && <span className="bg-green-600 text-white text-[8px] font-[900] px-1 py-0.5 rounded-[1px] uppercase leading-none font-sans">{promo}</span>}
-                      </div>
-                    </div>
-                    {url ? (
-                      <a href={url} target="_blank" rel="noopener noreferrer" className={priceClassName}>
-                        ${format(price)}
-                      </a>
-                    ) : (
-                      <span className={priceClassName}>
-                        ${format(price)}
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-4 text-center">
-              Analizá los precios, tendencias, y compará antes de comprar
-            </p>
-          </div>
-
           <div className="w-full sticky bottom-0 bg-white/95 dark:bg-neutral-950/95 backdrop-blur-md pb-2 pt-1">
             <button 
               onClick={() => onFavoriteToggle(product.id)} 

@@ -261,7 +261,7 @@ const App: React.FC = () => {
     navigateTo('home');
   };
 
-  if (loading && products.length === 0) return <div className="min-h-screen flex items-center justify-center dark:bg-black dark:text-white font-mono text-[11px] uppercase tracking-[0.2em]">Analizando precios...</div>;
+  if (loading && products.length === 0) return <div className="min-h-screen flex items-center justify-center dark:bg-black dark:text-white font-mono text-[11px] uppercase tracking-[0.2em]">Cargando...</div>;
 
   return (
     <div className="max-w-screen-md mx-auto min-h-screen bg-white dark:bg-black shadow-2xl transition-colors font-sans">
