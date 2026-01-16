@@ -184,8 +184,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
             <h4 className="font-black dark:text-white text-xl mb-1 truncate tracking-tighter uppercase">
               ¡Hola, {profile?.nombre || user.email.split('@')[0]}!
             </h4>
-            <p className="text-[9px] font-black text-green-500 uppercase tracking-widest mb-6">Nivel: {profile?.subscription || 'Ahorrista'}</p>
-            
+                <p className="text-[9px] font-black text-green-500 uppercase tracking-widest mb-6"> Nivel: {profile?.subscription} </p>            
             <div className="space-y-2.5">
               <button onClick={() => setView('mis_changos')} className="w-full bg-neutral-50 dark:bg-neutral-900 p-4 rounded-xl text-left flex items-center justify-between border border-neutral-100 dark:border-neutral-800 hover:border-black dark:hover:border-white transition-all">
                 <div className="flex items-center gap-3">
