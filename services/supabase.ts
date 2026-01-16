@@ -183,6 +183,6 @@ export const getConfig = async () => {
   const { data, error } = await supabase.from('configuracion').select('*');
   if (error) throw error;
   const config: Record<string, string> = {};
-  data?.forEach(row => config[row.clave] = row.valor);
+    data?.forEach((row: any) => { config[row.clave as keyof typeof config] = row.valor; });
   return config;
 };
