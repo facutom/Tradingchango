@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase, getProducts, getPriceHistory, getProfile, getConfig, getBenefits, getSavedCartData, saveCartData } from './services/supabase';
@@ -174,6 +173,13 @@ const App: React.FC = () => {
     return { min, spread: Math.abs(diff).toFixed(1), trendClass: tc, icon, isUp, isDown };
   };
 
+  /** LOGICA DE SUSCRIPCION PRO **/
+  const isPro = useMemo(() => {
+    if (!profile || profile.subscription !== 'PRO') return false;
+    // Comprueba si la fecha de vencimiento es posterior a hoy
+    return profile.subscription_end ? new Date(profile.subscription_end) > new Date() : false;
+  }, [profile]);
+
   const filteredProducts = useMemo(() => {
     let result = products.map(p => {
       const prices = [p.p_coto, p.p_carrefour, p.p_dia, p.p_jumbo, p.p_masonline];
@@ -201,9 +207,9 @@ const App: React.FC = () => {
       return;
     }
 
-    const isPro = profile?.subscription_end === 'PRO';
     const favoritesCount = Object.keys(favorites).length;
 
+    // APLICA EL LIMITE SI NO ES PRO
     if (!isPro && favoritesCount >= 5 && !favorites[id]) {
       alert('Los usuarios FREE solo pueden tener hasta 5 productos en favoritos.');
       return;
@@ -278,7 +284,7 @@ const App: React.FC = () => {
   if (loading && products.length === 0) return <div className="min-h-screen flex items-center justify-center dark:bg-black dark:text-white font-mono text-[11px] uppercase tracking-[0.2em]">Cargando...</div>;
 
   return (
-    <div className="max-w-screen-md mx-auto min-h-screen bg-white dark:bg-black shadow-2xl transition-colors font-sans pb-24">
+    <div className="max-w-screen-md mx-auto min-h-screen bg-white dark:bg-black shadow-2xl transition-colors font-sans pb-4">
       {showPwaPill && (
         <div onClick={handleInstallClick} className="fixed bottom-[80px] left-1/2 -translate-x-1/2 z-[1000] bg-black dark:bg-white text-white dark:text-black px-4 py-2 rounded-full flex items-center gap-2 shadow-2xl cursor-pointer">
           <span className="text-[10px] font-[800] uppercase tracking-wider">Instalar App 🛒</span>
