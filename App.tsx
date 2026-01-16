@@ -175,7 +175,7 @@ const App: React.FC = () => {
 
   /** LOGICA DE SUSCRIPCION PRO **/
   const isPro = useMemo(() => {
-    if (!profile || profile.subscription !== 'PRO') return false;
+    if (!profile || profile.subscription !== 'pro') return false;
     // Comprueba si la fecha de vencimiento es posterior a hoy
     return profile.subscription_end ? new Date(profile.subscription_end) > new Date() : false;
   }, [profile]);
