@@ -144,12 +144,12 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, favorites, benefits, u
           </div>
 
           <div className="bg-neutral-50 dark:bg-neutral-900 rounded-xl p-3 space-y-1.5">
-            <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-tight">
-              <span className="text-neutral-500">Subtotal:</span>
+            <div className="flex justify-between items-center text-[12px] font-bold uppercase tracking-tight">
+              <span className="text-black dark:text-white">Subtotal:</span>
               <span className="text-black dark:text-white font-mono">${format(Math.round(best.subtotal))}</span>
             </div>
-            <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-tight">
-              <span className="text-neutral-500">Descuentos:</span>
+            <div className="flex justify-between items-center text-[12px] font-bold uppercase tracking-tight">
+              <span className="text-black dark:text-white">Descuentos:</span>
               <span className="text-green-500 font-mono">-$ {format(Math.round(best.gondolaDiscount))}</span>
             </div>
           </div>
@@ -182,7 +182,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, favorites, benefits, u
                 </a>
               )}
             </div>
-            <p className="text-[8px] text-neutral-500 dark:text-neutral-400 text-center pt-2">
+            <p className="text-[8px] text-black dark:text-white text-center pt-2">
               *Valores estimados. La aplicación de beneficios y el precio final en caja dependen exclusivamente de las condiciones vigentes de cada comercio y entidad emisora.
             </p>
           </div>
