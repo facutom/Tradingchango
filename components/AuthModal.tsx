@@ -135,7 +135,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) throw new Error('Credenciales incorrectas.');
-        setSuccess(`¡Hola! Iniciando sesión...`);
+        setSuccess(`¡Hola Trader!`);
         setTimeout(() => {
            if (onProfileUpdate) onProfileUpdate();
         }, 1000);
