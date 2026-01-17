@@ -129,7 +129,6 @@ const App: React.FC = () => {
             
             // 2. Actualizar el objeto local para que la App ya lo vea como FREE
             prof = { ...prof, subscription: 'free' };
-            console.log("Suscripción expirada. Usuario actualizado a FREE.");
           }
         }
         // --- FIN CAMBIO ---
@@ -315,6 +314,7 @@ const App: React.FC = () => {
         searchTerm={searchTerm} setSearchTerm={setSearchTerm} 
         toggleTheme={toggleTheme} theme={theme}
         onUserClick={() => setIsAuthOpen(true)} user={user}
+        profile={profile}
         trendFilter={trendFilter} setTrendFilter={setTrendFilter} 
         showHero={currentTab === 'home' && !searchTerm && !trendFilter}
         onNavigate={navigateTo} currentTab={currentTab}

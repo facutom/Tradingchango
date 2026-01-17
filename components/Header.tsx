@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { TabType } from '../types';
+import { TabType, Profile } from '../types';
 
 interface HeaderProps {
   searchTerm: string;
@@ -9,7 +9,7 @@ interface HeaderProps {
   theme: 'light' | 'dark';
   onUserClick: () => void;
   user: any;
-  subscription?: string;
+  profile: Profile | null;
   trendFilter: 'up' | 'down' | null;
   setTrendFilter: (val: 'up' | 'down' | null) => void;
   showHero: boolean;
@@ -24,7 +24,7 @@ const Header: React.FC<HeaderProps> = ({
   theme, 
   onUserClick, 
   user,
-  subscription = 'free',
+  profile,
   trendFilter,
   setTrendFilter,
   showHero,
@@ -43,6 +43,8 @@ const Header: React.FC<HeaderProps> = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const isPro = profile?.subscription === 'pro' && profile.subscription_end && new Date(profile.subscription_end) > new Date();
 
   return (
     <header className="sticky top-0 z-40 bg-white dark:bg-black p-4 border-b border-neutral-100 dark:border-neutral-900">
@@ -78,7 +80,7 @@ const Header: React.FC<HeaderProps> = ({
           </div>
 
           <button onClick={onUserClick} className="w-8 h-8 flex items-center justify-center text-black dark:text-white">
-            <i className="fa-solid fa-circle-user text-xl"></i>
+            <i className={`fa-solid fa-circle-user text-xl ${isPro ? 'text-green-600' : ''}`}></i>
           </button>
           <button onClick={toggleTheme} className="text-black dark:text-white hover:opacity-70 transition-opacity">
             <i className={`fa-solid ${theme === 'dark' ? 'fa-sun' : 'fa-moon'} text-xl`}></i>

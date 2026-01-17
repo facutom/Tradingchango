@@ -43,6 +43,18 @@ const AuthModal: React.FC<AuthModalProps> = ({
   }, [view]);
 
   useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [onClose]);
+
+  useEffect(() => {
     if (user) setView('profile');
     else {
       setView('welcome');
@@ -126,7 +138,6 @@ const AuthModal: React.FC<AuthModalProps> = ({
         setSuccess(`¡Hola! Iniciando sesión...`);
         setTimeout(() => {
            if (onProfileUpdate) onProfileUpdate();
-           onClose();
         }, 1000);
       }
     } catch (err: any) {
@@ -199,7 +210,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
                 <span className="text-[10px] font-black text-neutral-400">{savedCarts.length}/2</span>
               </button>
               
-              <button onClick={() => setView('membresias')} className="w-full bg-neutral-50 dark:bg-neutral-900 p-4 rounded-xl text-left flex items-center justify-between border border-neutral-100 dark:border-neutral-800 hover:border-black dark:hover:border-white transition-all">
+              <button onClick={() => setView('membresias')} className="w-full bg-neutral-50 dark:bg-neutral-900 p-4 rounded-xl text-left flex items-center justify-between border border-neutral-100 dark:border-neutral-800 hover:border-black dark:hover:border-white transition-all hidden">
                 <div className="flex items-center gap-3">
                   <i className="fa-solid fa-id-card text-neutral-400"></i>
                   <span className="text-[11px] font-bold dark:text-white uppercase">Bancos & Membresías</span>
