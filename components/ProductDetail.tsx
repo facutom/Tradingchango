@@ -183,7 +183,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
               <img src={product.imagen_url || ''} alt={product.nombre} className="w-full h-full object-contain" />
             </div>
             <div className="flex flex-col flex-1">
-              <h1 className="text-lg md:text-2xl font-black text-black dark:text-white leading-tight mb-1 tracking-tighter">
+              <h1 className="text-xl md:text-2xl font-black text-black dark:text-white leading-tight mb-1 tracking-tighter">
                 {product.nombre}
               </h1>
               <div className="flex flex-col">
