@@ -231,7 +231,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
           </div>
 
           {/* Variación y Gráfico */}
-          <div className="mb-3 w-full">
+          <div className="mb-1 w-full">
             <div className="flex flex-col items-center text-center mb-2">
               <div className="flex items-center gap-1.5">
                  <span className={`text-xs font-black px-1.5 py-0.5 rounded-md ${isTrendUp ? 'bg-red-500/10 text-red-500' : 'bg-green-500/10 text-green-500'}`}>
@@ -253,7 +253,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
                       </linearGradient>
                     </defs>
                     <CartesianGridComponent vertical={false} strokeDasharray="3 3" stroke={theme === 'dark' ? '#262626' : '#f0f0f0'} />
-                    <XAxisComponent dataKey="date" tick={{fontSize: 8, fill: theme === 'dark' ? '#e5e5e5' : '#737373'}} tickLine={false} axisLine={false} />
+                    <XAxisComponent dataKey="date" tickLine={false} axisLine={false} interval="preserveStartEnd" tick={{ fontSize: 8, fill: theme === 'dark' ? '#e5e5e5' : '#737373' }} tickFormatter={(value: string, index: number) => { const total = chartData.length; const middle = Math.floor(total / 2); if (index === 0 || index === middle || index === total - 1) { return value; } return ''; }} />
                     <YAxisComponent orientation="right" width={36} axisLine={false} tickLine={false} tick={{ fontSize: 8, fill: theme === 'dark' ? '#e5e5e5' : '#737373' }} domain={['auto', 'auto']} tickFormatter={(val: number) => `$${formatCurrency(val)}`} />
                     <TooltipComponent content={<CustomTooltip />} />
                     <AreaComponent type="monotone" dataKey="price" stroke={trendColor} strokeWidth={2} fill="url(#colorPrice)" />
