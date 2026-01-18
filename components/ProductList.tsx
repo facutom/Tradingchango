@@ -125,7 +125,7 @@ const ProductList: React.FC<ProductListProps> = ({
               </div>
 
               <div className="text-right flex flex-col items-end min-w-[80px]">
-                <span className="font-mono font-[800] text-black dark:text-white text-[17px] leading-none">
+                <span className="font-mono font-[800] text-black dark:text-white text-[15px] leading-none">
                   ${format(p.stats.min)}
                 </span>
                 <span 
@@ -158,7 +158,7 @@ const ProductList: React.FC<ProductListProps> = ({
                   className={`transition-all flex items-center justify-center active:scale-90 p-1.5 ${fav ? 'text-star-gold' : 'text-neutral-300 dark:text-neutral-800'}`}
                   style={{ transform: 'scale(0.95)' }}
                 >
-                  <i className="fa-solid fa-cart-shopping text-[22px]"></i>
+                  <i className="fa-solid fa-cart-shopping text-[20px]"></i>
                 </button>
               )}
             </div>
