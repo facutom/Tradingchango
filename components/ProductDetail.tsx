@@ -80,29 +80,42 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
 
   const { chartData, percentageChange, isTrendUp } = useMemo(() => {
     if (!history.length) return { chartData: [], percentageChange: 0, isTrendUp: false };
+    
     const limitDate = new Date();
     limitDate.setDate(limitDate.getDate() - days);
+    limitDate.setHours(0, 0, 0, 0); // Resetear hora para comparar solo días
     
-    const filtered = history
-      .filter(h => new Date(h.fecha) >= limitDate)
-      .map(h => ({
-        date: new Date(h.fecha).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' }),
-        fullDate: new Date(h.fecha).toLocaleDateString('es-AR', { day: 'numeric', month: 'long' }),
-        price: h.precio_minimo,
-        store: h.supermercado
-      }));
+    const filtered: ChartDataItem[] = history
+      .filter(h => {
+        // CORRECCIÓN 1: Para filtrar también evitamos el desfase
+        const [y, m, d] = h.fecha.split('T')[0].split('-').map(Number);
+        const itemDate = new Date(y, m - 1, d); // Mes es 0-indexado
+        return itemDate >= limitDate;
+      })
+      .map(h => {
+        // CORRECCIÓN 2: Crear el objeto Date usando año, mes y día por separado
+        // h.fecha suele ser "YYYY-MM-DD" o "YYYY-MM-DDTHH:mm:ss"
+        const datePart = h.fecha.split('T')[0];
+        const [year, month, day] = datePart.split('-').map(Number);
+        
+        // Al pasar los parámetros por separado, JS asume HORA LOCAL, no UTC
+        const localDate = new Date(year, month - 1, day);
+
+        return {
+          date: localDate.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' }),
+          fullDate: localDate.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' }),
+          price: h.precio_minimo,
+          store: h.supermercado
+        };
+      });
 
     if (filtered.length < 2) return { chartData: filtered, percentageChange: 0, isTrendUp: false };
-
+    
     const firstPrice = filtered[0].price;
     const lastPrice = filtered[filtered.length - 1].price;
     const change = ((lastPrice - firstPrice) / firstPrice) * 100;
 
-    return { 
-      chartData: filtered, 
-      percentageChange: change, 
-      isTrendUp: change > 0 
-    };
+    return { chartData: filtered, percentageChange: change, isTrendUp: change > 0 };
   }, [history, days]);
 
   if (!product) return null;
