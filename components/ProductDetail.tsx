@@ -284,9 +284,14 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
                         {promo && <span className="bg-green-600 text-white text-[9px] font-black px-1 py-0.5 rounded-[1px] uppercase leading-none">{promo}</span>}
                       </div>
                     </div>
-                    <span className={`text-base font-mono font-black ${price === minPrice ? 'text-green-500' : 'text-black dark:text-white'}`}>
+                      <a 
+                      href={url || '#'} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className={`text-base font-mono font-black hover:underline cursor-pointer ${price === minPrice ? 'text-green-500' : 'text-black dark:text-white'}`}
+                    >
                       ${formatCurrency(price)}
-                    </span>
+                    </a>
                   </div>
                 );
               })}
