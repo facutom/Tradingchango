@@ -341,7 +341,7 @@ const App: React.FC = () => {
     
     {showPwaPill && (
   /* El md:hidden asegura que en PC/Escritorio no se vea */
-  <div className="fixed bottom-[100px] left-1/2 -translate-x-1/2 z-[9999] w-[85%] max-w-[320px] md:hidden animate-in slide-in-from-bottom-5 duration-500">
+  <div className="fixed bottom-[85px] left-1/2 -translate-x-1/2 z-[9999] w-[85%] max-w-[320px] md:hidden animate-in slide-in-from-bottom-5 duration-500">
     <div className="bg-neutral-900 dark:bg-white text-white dark:text-black p-3.5 rounded-2xl shadow-[0_15px_45px_rgba(0,0,0,0.4)] flex items-center justify-between relative border border-neutral-800 dark:border-neutral-100">
       
       {/* BOTÓN X - Más pequeño */}
