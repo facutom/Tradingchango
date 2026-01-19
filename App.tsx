@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import type { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { supabase, getProducts, getPriceHistory, getProfile, getConfig, getBenefits, getSavedCartData, saveCartData } from './services/supabase';
 import { Product, PriceHistory, Profile, TabType, ProductStats, Benefit } from './types';
@@ -33,35 +33,36 @@ const App: React.FC = () => {
     (localStorage.getItem('theme') as 'light' | 'dark') || 'light'
   );
 
+  // Referencia para evitar que el useEffect de guardado se dispare al cargar la página
+  const isInitialMount = useRef(true);
+
   useEffect(() => {
-  const savedTheme = localStorage.getItem('theme') as 'light' | 'dark';
-
-  if (savedTheme === 'dark') {
-    document.documentElement.classList.add('dark');
-    setTheme('dark');
-  } else {
-    document.documentElement.classList.remove('dark');
-    setTheme('light');
-  }
-
-  const handleHash = () => {
-    const hash = window.location.hash.replace('#', '');
-    if (hash.startsWith('product/')) {
-      const id = parseInt(hash.split('/')[1]);
-      if (!isNaN(id)) setSelectedProductId(id);
-    } else if (['about', 'terms', 'contact', 'home', 'carnes', 'verdu', 'varios', 'favs'].includes(hash)) {
-      setCurrentTab(hash as TabType);
-      setSelectedProductId(null);
-    } else if (!hash) {
-      window.location.hash = 'home';
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark';
+    if (savedTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+      setTheme('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      setTheme('light');
     }
-  };
 
-  window.addEventListener('hashchange', handleHash);
-  handleHash();
-  return () => window.removeEventListener('hashchange', handleHash);
-}, []);
+    const handleHash = () => {
+      const hash = window.location.hash.replace('#', '');
+      if (hash.startsWith('product/')) {
+        const id = parseInt(hash.split('/')[1]);
+        if (!isNaN(id)) setSelectedProductId(id);
+      } else if (['about', 'terms', 'contact', 'home', 'carnes', 'verdu', 'varios', 'favs'].includes(hash)) {
+        setCurrentTab(hash as TabType);
+        setSelectedProductId(null);
+      } else if (!hash) {
+        window.location.hash = 'home';
+      }
+    };
 
+    window.addEventListener('hashchange', handleHash);
+    handleHash();
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: any) => {
@@ -78,11 +79,8 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    if (theme === 'dark') document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
     localStorage.setItem('theme', theme);
   }, [theme]);
 
@@ -114,38 +112,33 @@ const App: React.FC = () => {
       setConfig(configData || {});
 
       if (sessionUser) {
-        let prof = await getProfile(sessionUser.id); // Cambié const por let para poder editarlo
+        let prof = await getProfile(sessionUser.id);
 
-        // --- INICIO CAMBIO AQUÍ: VERIFICACIÓN Y ACTUALIZACIÓN FÍSICA ---
         if (prof && prof.subscription === 'pro' && prof.subscription_end) {
           const expiryDate = new Date(prof.subscription_end);
-          const today = new Date();
-
-          if (expiryDate < today) {
-            // 1. Actualizar físicamente la base de datos
-            await supabase
-              .from('perfiles')
-              .update({ subscription: 'free' })
-              .eq('id', sessionUser.id);
-            
-            // 2. Actualizar el objeto local para que la App ya lo vea como FREE
+          if (expiryDate < new Date()) {
+            await supabase.from('perfiles').update({ subscription: 'free' }).eq('id', sessionUser.id);
             prof = { ...prof, subscription: 'free' };
           }
         }
-        // --- FIN CAMBIO ---
 
         setProfile(prof);
+        
+        // CARGA DE LISTAS GUARDADAS
         const cartData = await getSavedCartData(sessionUser.id);
-        if (cartData) {
-          setFavorites(cartData.active || {});
-          setSavedCarts(cartData.saved || []);
+        if (cartData && cartData.items) {
+          setFavorites(cartData.items.active || {});
+          setSavedCarts(cartData.items.saved || []);
         }
       }
       
       const day = new Date().getDay();
       const benefitData = await getBenefits(day);
       setBenefits(benefitData);
+      
+      // Importante: Marcar que terminó la carga inicial
       setLoading(false);
+      isInitialMount.current = true; // Reiniciamos el mount para el persist
     } catch (err: any) {
       console.error("Error loading app data:", err);
       setLoading(false);
@@ -153,16 +146,14 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-  const auth = supabase.auth as any; // Esto salta la restricción del editor
+    const auth = supabase.auth as any;
+    auth.getSession().then(({ data: { session } }: any) => {
+      const sessionUser = session?.user ?? null;
+      setUser(sessionUser);
+      loadData(sessionUser);
+    });
 
-  auth.getSession().then(({ data: { session } }: any) => {
-    const sessionUser = session?.user ?? null;
-    setUser(sessionUser);
-    loadData(sessionUser);
-  });
-
-  const { data: { subscription } } = auth.onAuthStateChange(
-    (_event: any, session: any) => {
+    const { data: { subscription } } = auth.onAuthStateChange((_event: any, session: any) => {
       const sessionUser = session?.user ?? null;
       setUser(sessionUser);
       if (_event === 'SIGNED_IN') loadData(sessionUser);
@@ -172,30 +163,32 @@ const App: React.FC = () => {
         setSavedCarts([]);
         setPurchasedItems(new Set());
       }
-    }
-  );
+    });
+    return () => subscription.unsubscribe();
+  }, [loadData]);
 
-  return () => subscription.unsubscribe();
-}, [loadData]);
-
+  // --- PERSISTENCIA AUTOMÁTICA MEJORADA ---
   useEffect(() => {
-  const persistData = async () => {
-    // Si no hay usuario, no hacemos nada
-    if (!user) return;
+    // Si no hay usuario, o la app está en proceso de carga inicial, no guardamos nada
+    if (!user || loading) return;
 
-    try {
-      const dataToSave = { 
-        active: favorites, 
-        saved: savedCarts 
-      };
-      await saveCartData(user.id, dataToSave);
-    } catch (error) {
-      console.error("Error al guardar datos en Supabase:", error);
+    // Evitamos el primer guardado vacío justo después de montar
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
     }
-  };
 
-  persistData();
-}, [favorites, savedCarts, user]);
+    const timer = setTimeout(async () => {
+      try {
+        const dataToSave = { active: favorites, saved: savedCarts };
+        await saveCartData(user.id, dataToSave);
+      } catch (e) {
+        console.error("Error persistiendo datos:", e);
+      }
+    }, 1500); // 1.5 seg de debounce para asegurar que se guarde al "minimizar" o dejar de tocar
+
+    return () => clearTimeout(timer);
+  }, [favorites, savedCarts, user, loading]);
 
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
@@ -212,10 +205,8 @@ const App: React.FC = () => {
     return { min, spread: Math.abs(diff).toFixed(1), trendClass: tc, icon, isUp, isDown };
   };
 
-  /** LOGICA DE SUSCRIPCION PRO **/
   const isPro = useMemo(() => {
     if (!profile || profile.subscription !== 'pro') return false;
-    // Comprueba si la fecha de vencimiento es posterior a hoy
     return profile.subscription_end ? new Date(profile.subscription_end) > new Date() : false;
   }, [profile]);
 
@@ -245,15 +236,11 @@ const App: React.FC = () => {
       setIsAuthOpen(true);
       return;
     }
-
     const favoritesCount = Object.keys(favorites).length;
-
-    // APLICA EL LIMITE SI NO ES PRO
     if (!isPro && favoritesCount >= 5 && !favorites[id]) {
       alert('Los usuarios FREE solo pueden tener hasta 5 productos en favoritos.');
       return;
     }
-
     setFavorites(prev => {
       const next = { ...prev };
       if (next[id]) {
@@ -274,11 +261,6 @@ const App: React.FC = () => {
       if (newQty <= 0) {
         const next = { ...prev };
         delete next[id];
-        setPurchasedItems(p => {
-          const newP = new Set(p);
-          newP.delete(id);
-          return newP;
-        });
         return next;
       }
       return { ...prev, [id]: newQty };
@@ -293,14 +275,20 @@ const App: React.FC = () => {
   };
 
   const handleSaveCurrentCart = (name: string) => {
-    if (savedCarts.length >= 2) return;
-    setSavedCarts([...savedCarts, { name, items: { ...favorites }, date: new Date().toISOString() }]);
+    const limit = isPro ? 10 : 2;
+    if (savedCarts.length >= limit) {
+      alert(`Límite de listas alcanzado (${limit}).`);
+      return;
+    }
+    setSavedCarts(prev => [...prev, { name, items: { ...favorites }, date: new Date().toISOString() }]);
   };
 
   const handleDeleteSavedCart = (index: number) => {
-    const next = [...savedCarts];
-    next.splice(index, 1);
-    setSavedCarts(next);
+    setSavedCarts(prev => {
+      const next = [...prev];
+      next.splice(index, 1);
+      return next;
+    });
   };
 
   const handleLoadSavedCart = (index: number) => {
@@ -310,6 +298,7 @@ const App: React.FC = () => {
   };
 
   const handleSignOut = async () => {
+    setLoading(true); // Bloqueamos el useEffect de guardado
     await (supabase.auth as any).signOut();
     setUser(null);
     setProfile(null);
@@ -317,6 +306,7 @@ const App: React.FC = () => {
     setSavedCarts([]);
     setPurchasedItems(new Set());
     setIsAuthOpen(false);
+    setLoading(false);
     navigateTo('home');
   };
 
@@ -348,7 +338,7 @@ const App: React.FC = () => {
                 benefits={benefits} 
                 userMemberships={profile?.membresias} 
                 onSaveCart={handleSaveCurrentCart}
-                canSave={!!user && savedCarts.length < 2}
+                canSave={!!user}
                 savedCarts={savedCarts}
                 onLoadCart={handleLoadSavedCart}
                 onDeleteCart={handleDeleteSavedCart}
