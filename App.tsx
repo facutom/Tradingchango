@@ -33,15 +33,6 @@ const App: React.FC = () => {
     (localStorage.getItem('theme') as 'light' | 'dark') || 'light'
   );
 
-  // 1. Cargar datos locales al montar la app
-  useEffect(() => {
-    const localFavs = localStorage.getItem('guest_favorites');
-    if (localFavs) {
-      setFavorites(JSON.parse(localFavs));
-    }
-  }, []);
-
-
   useEffect(() => {
   const savedTheme = localStorage.getItem('theme') as 'light' | 'dark';
 
@@ -173,6 +164,7 @@ const App: React.FC = () => {
       if (_event === 'SIGNED_IN') loadData(sessionUser);
       else if (_event === 'SIGNED_OUT') { 
         setProfile(null); 
+        setFavorites({}); 
         setSavedCarts([]);
         setPurchasedItems(new Set());
       }
@@ -181,12 +173,13 @@ const App: React.FC = () => {
   }, [loadData]);
 
   useEffect(() => {
-     localStorage.setItem('guest_favorites', JSON.stringify(favorites));
-    if (user) {
-      const dataToSave = { active: favorites, saved: savedCarts };
-      saveCartData(user.id, dataToSave).catch(console.error);
-    }
-  }, [favorites, savedCarts, user]);
+  // Solo guardamos si hay un usuario logueado 
+  // Y si favorites tiene contenido (para evitar borrar la DB al limpiar el estado en el logout)
+  if (user && Object.keys(favorites).length > 0) {
+    const dataToSave = { active: favorites, saved: savedCarts };
+    saveCartData(user.id, dataToSave).catch(console.error);
+  }
+}, [favorites, savedCarts, user]);
 
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
@@ -311,12 +304,12 @@ const App: React.FC = () => {
     navigateTo('home');
   };
 
-  if (loading && products.length === 0) return <div className="min-h-screen flex items-center justify-center dark:bg-black dark:text-white font-mono text-[11px] uppercase tracking-[0.2em]">Conectando a Mercado...</div>;
+  if (loading && products.length === 0) return <div className="min-h-screen flex items-center justify-center dark:bg-primary dark:text-white font-mono text-[11px] uppercase tracking-[0.2em]">Conectando a Mercado...</div>;
 
   return (
-    <div className="max-w-screen-md mx-auto min-h-screen bg-white dark:bg-black shadow-2xl transition-colors font-sans pb-24">
+    <div className="max-w-screen-md mx-auto min-h-screen bg-white dark:bg-primary shadow-2xl transition-colors font-sans pb-24">
       {showPwaPill && (
-        <div onClick={handleInstallClick} className="fixed bottom-[80px] left-1/2 -translate-x-1/2 z-[1000] bg-black dark:bg-white text-white dark:text-black px-4 py-2 rounded-full flex items-center gap-2 shadow-2xl cursor-pointer">
+        <div onClick={handleInstallClick} className="fixed bottom-[80px] left-1/2 -translate-x-1/2 z-[1000] bg-primary dark:bg-white text-white dark:text-black px-4 py-2 rounded-full flex items-center gap-2 shadow-2xl cursor-pointer">
           <span className="text-[10px] font-[800] uppercase tracking-wider">Instalar App 🛒</span>
         </div>
       )}
