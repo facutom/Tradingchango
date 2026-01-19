@@ -148,11 +148,11 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, favorites, benefits, u
           <div className="bg-neutral-50 dark:bg-[#1f2c34] rounded-xl p-3 space-y-1.5 border dark:border-[#233138]">
             <div className="flex justify-between items-center text-[12px] font-bold uppercase tracking-tight">
               <span className="text-black dark:text-[#e9edef]">Subtotal:</span>
-              <span className="text-black dark:text-[#e9edef] font-mono">${format(Math.round(best.subtotal))}</span>
+              <span className="text-[12px] text-black dark:text-[#e9edef] font-mono">${format(Math.round(best.subtotal))}</span>
             </div>
             <div className="flex justify-between items-center text-[12px] font-bold uppercase tracking-tight">
               <span className="text-black dark:text-[#e9edef]">Descuentos:</span>
-              <span className="text-green-500 font-mono">-$ {format(Math.round(best.gondolaDiscount))}</span>
+              <span className="text-[12px] text-green-500 font-mono">-$ {format(Math.round(best.gondolaDiscount))}</span>
             </div>
           </div>
 
