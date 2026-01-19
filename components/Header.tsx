@@ -89,10 +89,10 @@ const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      <div className="relative mb-3">
-        <i className="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500"></i>
        {!hideSearch && (
-        <div className="relative flex-1 max-w-md"> 
+      <div className="relative mb-3">
+      <div className="relative flex-1 max-w-md"> 
+      <i className="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500"></i>
         <input 
           type="text" 
           placeholder="BUSCAR PRODUCTO..." 
