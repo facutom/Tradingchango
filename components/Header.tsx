@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { TabType, Profile } from '../types';
 
@@ -30,7 +29,8 @@ const Header: React.FC<HeaderProps> = ({
   setTrendFilter,
   showHero,
   onNavigate,
-  currentTab
+  currentTab,
+  hideSearch // <--- AGREGADO AQUÍ
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -50,7 +50,7 @@ const Header: React.FC<HeaderProps> = ({
   return (
     <header className="sticky top-0 z-40 bg-white dark:bg-primary p-4 border-b border-neutral-100 dark:border-[#233138]">
       <div className="flex justify-between items-center mb-4">
-        <div className="logo-link" onClick={() => onNavigate('home')}>
+        <div className="logo-link cursor-pointer" onClick={() => onNavigate('home')}>
           <div className="logo">
             <div className="logo-icon-wrapper">
                <i className="fa-solid fa-cart-shopping" style={{ fontSize: '18px' }}></i>
@@ -89,33 +89,34 @@ const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-       {!hideSearch && (
-      <div className="relative mb-3">
-      <div className="relative flex-1 max-w-md"> 
-      <i className="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500"></i>
-        <input 
-          type="text" 
-          placeholder="BUSCAR PRODUCTO..." 
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          /* CAMBIO: bg-neutral-900 por #1f2c34 y borde por #233138 */
-          className="w-full bg-neutral-50 dark:bg-[#1f2c34] border border-neutral-200 dark:border-[#233138] rounded-lg py-3 pl-12 pr-10 text-sm font-medium focus:outline-none transition-all text-black dark:text-[#e9edef] placeholder:text-neutral-500"
-        />
-        {searchTerm && (
-          <button 
-            onClick={() => setSearchTerm('')}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-black dark:hover:text-white transition-colors w-6 h-6 flex items-center justify-center"
-          >
-            <i className="fa-solid fa-xmark text-lg"></i>
-          </button>
-        )}
-      </div>
+      {/* ÁREA DE BÚSQUEDA Y FILTROS */}
+      {!hideSearch && (
+        <div className="relative mb-3">
+          <div className="relative flex-1 max-w-md"> 
+            <i className="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500"></i>
+            <input 
+              type="text" 
+              placeholder="BUSCAR PRODUCTO..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-neutral-50 dark:bg-[#1f2c34] border border-neutral-200 dark:border-[#233138] rounded-lg py-3 pl-12 pr-10 text-sm font-medium focus:outline-none transition-all text-black dark:text-[#e9edef] placeholder:text-neutral-500"
+            />
+            {searchTerm && (
+              <button 
+                onClick={() => setSearchTerm('')}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-black dark:hover:text-white transition-colors w-6 h-6 flex items-center justify-center"
+              >
+                <i className="fa-solid fa-xmark text-lg"></i>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {!['favs', 'about', 'terms', 'contact'].includes(currentTab) && (
         <div className="flex gap-2">
           <button 
             onClick={() => setTrendFilter(trendFilter === 'down' ? null : 'down')} 
-            /* CAMBIO: dark:bg-primary y dark:border-[#233138] */
             className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-[11px] font-[800] uppercase border transition-all ${trendFilter === 'down' ? 'bg-green-600 text-white border-green-600 shadow-lg shadow-green-600/20' : 'bg-white dark:bg-primary text-green-600 border-neutral-100 dark:border-[#233138]'}`}
           >
             <i className="fa-solid fa-arrow-trend-down"></i> Precios bajando
