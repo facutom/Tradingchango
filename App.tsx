@@ -165,11 +165,7 @@ const App: React.FC = () => {
     const { data: { subscription } } = auth.onAuthStateChange((_event: any, session: any) => {
       const sessionUser = session?.user ?? null;
       setUser(sessionUser);
-
-      if (_event === 'SIGNED_IN') {
-        // Solo carga si no hay perfil. Esto evita que el modal se resetee al minimizar.
-        if (!profile) loadData(sessionUser); 
-      } 
+      if (_event === 'SIGNED_IN') loadData(sessionUser);
       else if (_event === 'SIGNED_OUT') { 
         setProfile(null); 
         setFavorites({}); 
@@ -177,9 +173,8 @@ const App: React.FC = () => {
         setPurchasedItems(new Set());
       }
     });
-
     return () => subscription.unsubscribe();
-  }, [loadData, profile]); // <--- IMPORTANTE: Agregá "profile" acá
+  }, [loadData]);
 
   // --- MODIFICACIÓN: PERSISTENCIA HÍBRIDA (LOCAL + NUBE) ---
   useEffect(() => {
