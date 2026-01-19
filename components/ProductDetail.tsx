@@ -286,8 +286,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
                     <div className="flex items-center gap-2">
                       <span className={`w-2 h-2 rounded-full ${storeColors[s.name]}`}></span>
                       <div className="flex items-baseline gap-1.5">
-                         {promo && <span className="bg-green-600 text-white text-[9px] font-black px-1 py-0.5 rounded-[1px] uppercase leading-none">{promo}</span>}
                         <span className="text-[13px] font-black text-black dark:text-[#e9edef] uppercase">{s.name}</span>
+                         {promo && <span className="bg-green-600 text-white text-[9px] font-black px-1 py-0.5 rounded-[1px] uppercase leading-none">{promo}</span>}
                       </div>
                     </div>
                       <a 
