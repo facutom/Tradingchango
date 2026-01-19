@@ -89,7 +89,7 @@ const App: React.FC = () => {
       // Forzamos la aparición del botón después de 1 segundo
       setTimeout(() => {
         setShowPwaPill(true);
-      }, 2000);
+      }, 1000);
     }
   };
 
@@ -337,12 +337,51 @@ const App: React.FC = () => {
   if (loading && products.length === 0) return <div className="min-h-screen flex items-center justify-center dark:bg-primary dark:text-white font-mono text-[11px] uppercase tracking-[0.2em]">Conectando a Mercado...</div>;
 
   return (
-    <div className="max-w-screen-md mx-auto min-h-screen bg-white dark:bg-primary shadow-2xl transition-colors font-sans pb-16">
-      {showPwaPill && (
-        <div onClick={handleInstallClick} className="fixed bottom-[80px] left-1/2 -translate-x-1/2 z-[1000] bg-primary dark:bg-white text-white dark:text-black px-4 py-2 rounded-full flex items-center gap-2 shadow-2xl cursor-pointer">
-          <span className="text-[10px] font-[800] uppercase tracking-wider">Instalar App 🛒</span>
+  <div className="max-w-screen-md mx-auto min-h-screen bg-white dark:bg-primary shadow-2xl transition-colors font-sans pb-16">
+    
+    {/* BOTÓN EMERGENTE MEJORADO */}
+    {showPwaPill && (
+      <div className="fixed bottom-[90px] left-1/2 -translate-x-1/2 z-[1000] w-[92%] max-w-[360px] animate-in slide-in-from-bottom-10 duration-500">
+        <div className="bg-neutral-900 dark:bg-white text-white dark:text-black p-4 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-neutral-800 dark:border-neutral-200 flex items-center justify-between relative">
+          
+          {/* Botón X para cerrar (Esquina superior derecha o lateral) */}
+          <button 
+            onClick={(e) => {
+              e.stopPropagation(); // Evita que se dispare otros eventos
+              setShowPwaPill(false);
+            }}
+            className="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform"
+          >
+            <i className="fa-solid fa-xmark text-[12px]"></i>
+          </button>
+
+          <div className="flex items-center gap-3">
+            {/* Icono de la App */}
+            <div className="w-11 h-11 bg-green-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-green-500/20">
+              <i className="fa-solid fa-cart-shopping text-lg"></i>
+            </div>
+            
+            <div className="flex flex-col">
+              <span className="text-[12px] font-black uppercase tracking-tight leading-none mb-1">
+                TradingChango App
+              </span>
+              <span className="text-[10px] font-bold opacity-60 uppercase tracking-widest leading-none">
+                Instalá y ahorrá más
+              </span>
+            </div>
+          </div>
+
+          {/* Botón de Acción Principal */}
+          <button 
+            onClick={handleInstallClick}
+            className="bg-green-500 hover:bg-green-600 text-white px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 shadow-lg shadow-green-500/20"
+          >
+            Instalar
+          </button>
+
         </div>
-      )}
+      </div>
+    )}
       <Header 
         searchTerm={searchTerm} setSearchTerm={setSearchTerm} 
         toggleTheme={toggleTheme} theme={theme}
