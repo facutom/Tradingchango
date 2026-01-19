@@ -15,6 +15,7 @@ interface HeaderProps {
   showHero: boolean;
   onNavigate: (tab: TabType) => void;
   currentTab: TabType;
+  hideSearch?: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
@@ -90,6 +91,8 @@ const Header: React.FC<HeaderProps> = ({
 
       <div className="relative mb-3">
         <i className="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500"></i>
+       {!hideSearch && (
+        <div className="relative flex-1 max-w-md"> 
         <input 
           type="text" 
           placeholder="BUSCAR PRODUCTO..." 
