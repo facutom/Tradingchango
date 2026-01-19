@@ -261,7 +261,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
                       <p className="text-[9px] text-neutral-400 font-bold uppercase">{Object.keys(cart.items).length} productos</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <button onClick={() => { onLoadCart?.(idx); onClose(); }} className="w-8 h-8 rounded-lg bbg-primary dark:bg-white text-white dark:text-black flex items-center justify-center text-[11px] hover:scale-110 transition-transform">
+                      <button onClick={() => { onLoadCart?.(idx); onClose(); }} className="w-8 h-8 rounded-lg bg-primary dark:bg-white text-white dark:text-black flex items-center justify-center text-[11px] hover:scale-110 transition-transform">
                         <i className="fa-solid fa-upload"></i>
                       </button>
                       <button onClick={() => onDeleteCart?.(idx)} className="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center text-[11px] hover:scale-110 transition-transform">
@@ -329,3 +329,4 @@ const AuthModal: React.FC<AuthModalProps> = ({
 
 
 export default AuthModal;
+
