@@ -172,10 +172,9 @@ const App: React.FC = () => {
     return () => subscription.unsubscribe();
   }, [loadData]);
 
-  useEffect(() => {
-  // Solo guardamos si hay un usuario logueado 
-  // Y si favorites tiene contenido (para evitar borrar la DB al limpiar el estado en el logout)
-  if (user && Object.keys(favorites).length > 0) {
+ // ASÍ ESTÁ AHORA:
+useEffect(() => {
+  if (user) {
     const dataToSave = { active: favorites, saved: savedCarts };
     saveCartData(user.id, dataToSave).catch(console.error);
   }
