@@ -503,7 +503,14 @@ useEffect(() => {
               )}
               <ProductList 
                 products={filteredProducts as any} 
-                onProductClick={id => navigate(`/product/${id}`)}
+                  onProductClick={(id: number) => {
+                    const p = products.find(x => x.id === id);
+                    if (p) {
+                      const cat = p.categoria?.toLowerCase() || 'producto';
+                      const nameSlug = slugify(p.nombre);
+                      navigate(`/${cat}/${nameSlug}`);
+                    }
+                  }}                
                 onFavoriteToggle={toggleFavorite} 
                 isFavorite={id => !!favorites[id]}
                 isCartView={true} 
