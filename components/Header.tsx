@@ -31,7 +31,7 @@ const Header: React.FC<HeaderProps> = ({
   const location = useLocation();
 
   const showHero = location.pathname === '/' && !searchTerm && !trendFilter;
-  const hideSearch = ['/about', '/terms', '/contact'].includes(location.pathname);
+const hideSearch = ['/acerca-de', '/terminos', '/contacto'].includes(location.pathname);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

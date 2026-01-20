@@ -210,6 +210,11 @@ useEffect(() => {
   localStorage.setItem('tc_favs', JSON.stringify(favorites));
   localStorage.setItem('tc_saved_lists', JSON.stringify(savedCarts));
 
+  useEffect(() => {
+  setSearchTerm('');      // Borra el texto del buscador
+  setTrendFilter(null);   // Opcional: También borra el filtro de "Precios bajando/subiendo"
+}, [location.pathname]);
+
   const sincronizarConNube = async () => {
     if (user && !loading) {
       try {
