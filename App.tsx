@@ -82,6 +82,40 @@ const App: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // --- 1. ÚNICO EFECTO DE RECUPERACIÓN (Poner al principio de App) ---
+  useEffect(() => {
+    const handleRecovery = async () => {
+      const hash = window.location.hash;
+        if (!hash.includes('type=recovery')) return;
+
+      // Extraemos el código que viene en la URL
+      const params = new URLSearchParams(hash.replace('#', ''));
+      const code = params.get('code');
+
+      if (code) {
+        try {
+          // CANJEAMOS EL CÓDIGO POR UNA SESIÓN REAL
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) throw error;
+
+        console.log("Sesión de recuperación establecida correctamente");
+        
+        // Preparamos el modal
+        localStorage.setItem('active_auth_view', 'update_password');
+        setIsAuthOpen(true);
+
+        // LIMPIAMOS LA URL para que no se ejecute dos veces si el usuario refresca
+        window.history.replaceState({}, '', '/');
+      } catch (err) {
+        console.error("Error en el intercambio de código:", err);
+      }
+    }
+  };
+
+  handleRecovery();
+  }, []);
+
+
   useEffect(() => {
     // Solo borramos si NO estamos en la misma página (evita bucles)
     setSearchTerm('');
@@ -204,30 +238,6 @@ const App: React.FC = () => {
 
     }, []);
 
-// 1. Procesar recovery desde la URL
-  useEffect(() => {
-  const handleRecoverySession = async () => {
-    const hash = window.location.hash;
-
-    if (hash.includes('type=recovery')) {
-      const params = new URLSearchParams(hash.replace('#', ''));
-      const code = params.get('code');
-
-      if (!code) {
-        console.error('Recovery sin code');
-        return;
-      }
-
-      const { error } = await supabase.auth.exchangeCodeForSession(code);
-
-      if (error) {
-        console.error('Error procesando recovery:', error);
-      }
-     }
-    };
-
-      handleRecoverySession();
-      }, []);
 
 // 2. Sesión inicial + auth listener
   useEffect(() => {
@@ -240,45 +250,36 @@ const App: React.FC = () => {
   });
 
   // Suscripción a cambios de auth
-  const { data: { subscription } } =
-    supabase.auth.onAuthStateChange(async (event, session) => {
+  useEffect(() => {
+  const auth = supabase.auth as any;
 
-      const sessionUser = session?.user ?? null;
-      setUser(sessionUser);
+  // Cargamos productos siempre
+  loadData(null);
 
-      switch (event) {
-        case 'SIGNED_IN':
-          loadData(sessionUser);
-          break;
+  auth.getSession().then(({ data: { session } }: any) => {
+    const sessionUser = session?.user ?? null;
+    setUser(sessionUser);
+    if (sessionUser) loadData(sessionUser);
+  });
 
-        case 'PASSWORD_RECOVERY':
-          console.log("Recuperación detectada");
-          localStorage.setItem('active_auth_view', 'update_password');
-          setIsAuthOpen(true);
+  const { data: { subscription } } = auth.onAuthStateChange((event, session) => {
+    const sessionUser = session?.user ?? null;
+    setUser(sessionUser);
+    
+    if (event === 'SIGNED_IN') loadData(sessionUser);
+    
+    // IMPORTANTE: Borramos el caso PASSWORD_RECOVERY de acá.
+    // Ya lo manejamos en el useEffect de arriba.
 
-          setTimeout(() => {
-            window.dispatchEvent(new Event('storage'));
-            window.dispatchEvent(new CustomEvent('forceUpdatePasswordView'));
-          }, 200);
-          break;
+    if (event === 'SIGNED_OUT') { 
+      setProfile(null); 
+      setFavorites({}); 
+      setSavedCarts([]);
+      setPurchasedItems(new Set());
+    }
+  });
 
-        case 'USER_UPDATED':
-          console.log("Usuario actualizado correctamente");
-          break;
-
-        case 'SIGNED_OUT':
-          setProfile(null);
-          setFavorites({});
-          setSavedCarts([]);
-          setPurchasedItems(new Set());
-          break;
-      }
-    });
-
-  return () => {
-    subscription.unsubscribe();
-  };
-
+  return () => subscription.unsubscribe();
 }, [loadData]);
 
 // --- PERSISTENCIA MEJORADA (LOCAL + NUBE + MINIMIZADO) ---

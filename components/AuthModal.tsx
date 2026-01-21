@@ -143,55 +143,36 @@ const AuthModal: React.FC<AuthModalProps> = ({
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
   e.preventDefault();
-
-  if (newPassword.length < 6) {
-    setError("Mínimo 6 caracteres.");
-    return;
-  }
-
+  if (newPassword.length < 6) { setError("Mínimo 6 caracteres."); return; }
+  
   setLoading(true);
   setError(null);
   setSuccess(null);
 
   try {
-    // 1. Esperamos sesión REAL
-    let session = null;
+    const auth = supabase.auth as any;
 
-    for (let i = 0; i < 5; i++) {
-      const { data } = await supabase.auth.getSession();
-      session = data.session;
-      if (session) break;
-      await new Promise(res => setTimeout(res, 500));
-    }
-
-    if (!session) {
-      throw new Error("No se pudo establecer la sesión de recuperación.");
-    }
-
-    // 2. Ahora sí, actualizar contraseña
-    const { error } = await supabase.auth.updateUser({
-      password: newPassword,
+    // Intentamos actualizar directamente (la sesión ya fue inyectada por App.tsx)
+    const { error: updateError } = await auth.updateUser({ 
+      password: newPassword 
     });
 
-    if (error) throw error;
+    if (updateError) throw updateError;
 
-    // 3. Éxito
-    setSuccess("¡Contraseña actualizada con éxito!");
-
+    setSuccess("¡Contraseña actualizada! Entrando...");
     localStorage.removeItem('active_auth_view');
-    window.history.replaceState({}, '', '/');
 
     setTimeout(() => {
       setView('profile');
-    }, 1500);
+      if (onProfileUpdate) onProfileUpdate();
+    }, 2000);
 
   } catch (err: any) {
-    console.error(err);
-    setError(err.message || "Error al actualizar contraseña");
+    setError(err.message || "Error al actualizar la contraseña.");
   } finally {
     setLoading(false);
   }
-    };
+};
 
 
   const handleSignOut = async () => {
