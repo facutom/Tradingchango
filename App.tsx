@@ -135,7 +135,7 @@ const App: React.FC = () => {
     }
   }, []);
 
- useEffect(() => {
+  useEffect(() => {
   const handleBeforeInstallPrompt = (e: any) => {
     console.log("Evento de instalación capturado");
     // 1. Prevenimos el cartel por defecto de Chrome
@@ -158,7 +158,7 @@ const App: React.FC = () => {
   window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
   return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-}, []);
+  }, []);
 
   useEffect(() => {
     if (theme === 'dark') document.documentElement.classList.add('dark');
@@ -176,7 +176,7 @@ const App: React.FC = () => {
     }
   };
 
-  const loadData = useCallback(async (sessionUser: User | null) => {
+    const loadData = useCallback(async (sessionUser: User | null) => {
     try {
       // MODIFICACIÓN: No poner loading(true) si ya hay productos (evita que se cierre el modal)
       if (products.length === 0) setLoading(true);
@@ -222,65 +222,38 @@ const App: React.FC = () => {
     }
   }, [products.length]);
 
+  // --- 2. SESIÓN INICIAL Y ESCUCHA DE AUTH (Limpio y Cerrado) ---
   useEffect(() => {
-      // 1. Definición de la función
-      const checkRecoveryURL = () => {
-        const { hash, pathname } = window.location;
-        
-        if (hash.includes('type=recovery') || pathname === '/update-password') {
-          localStorage.setItem('active_auth_view', 'update_password');
-          setIsAuthOpen(true);
-        }
-      };
+    const auth = supabase.auth as any;
 
-      // 2. ¡Ejecución de la función!
-      checkRecoveryURL();
+    // Cargamos productos de inmediato para desbloquear la pantalla
+    loadData(null);
 
-    }, []);
+    // Obtener sesión inicial al arrancar
+    auth.getSession().then(({ data: { session } }: any) => {
+      const sessionUser = session?.user ?? null;
+      setUser(sessionUser);
+      if (sessionUser) loadData(sessionUser);
+    });
 
+    // Escuchar cambios (Login, Logout)
+    const { data: { subscription } } = auth.onAuthStateChange((event, session) => {
+      const sessionUser = session?.user ?? null;
+      setUser(sessionUser);
+      
+      if (event === 'SIGNED_IN') loadData(sessionUser);
+      if (event === 'SIGNED_OUT') { 
+        setProfile(null); 
+        setFavorites({}); 
+        setSavedCarts([]); 
+        setPurchasedItems(new Set());
+      }
+    });
 
-// 2. Sesión inicial + auth listener
-  useEffect(() => {
-
-  // Obtener sesión inicial
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    const sessionUser = session?.user ?? null;
-    setUser(sessionUser);
-    loadData(sessionUser);
-  });
-
-  // Suscripción a cambios de auth
-  useEffect(() => {
-  const auth = supabase.auth as any;
-
-  // Cargamos productos siempre
-  loadData(null);
-
-  auth.getSession().then(({ data: { session } }: any) => {
-    const sessionUser = session?.user ?? null;
-    setUser(sessionUser);
-    if (sessionUser) loadData(sessionUser);
-  });
-
-  const { data: { subscription } } = auth.onAuthStateChange((event, session) => {
-    const sessionUser = session?.user ?? null;
-    setUser(sessionUser);
-    
-    if (event === 'SIGNED_IN') loadData(sessionUser);
-    
-    // IMPORTANTE: Borramos el caso PASSWORD_RECOVERY de acá.
-    // Ya lo manejamos en el useEffect de arriba.
-
-    if (event === 'SIGNED_OUT') { 
-      setProfile(null); 
-      setFavorites({}); 
-      setSavedCarts([]);
-      setPurchasedItems(new Set());
-    }
-  });
-
-  return () => subscription.unsubscribe();
-}, [loadData]);
+    return () => {
+      if (subscription) subscription.unsubscribe();
+    };
+  }, [loadData]);
 
 // --- PERSISTENCIA MEJORADA (LOCAL + NUBE + MINIMIZADO) ---
   useEffect(() => {
