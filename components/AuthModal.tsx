@@ -142,27 +142,62 @@ const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newPassword.length < 6) { setError("Mínimo 6 caracteres."); return; }
-    setLoading(true); setError(null); setSuccess(null);
-    try {
-      const auth = supabase.auth as any;
-      let { data: { session } } = await auth.getSession();
-      if (!session) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        const retry = await auth.getSession();
-        session = retry.data.session;
-      }
-      if (!session) throw new Error("Sesión no encontrada. Pide un nuevo link.");
-      const { error: updateError } = await auth.updateUser({ password: newPassword });
-      if (updateError) throw updateError;
-      setSuccess("Contraseña actualizada.");
-      localStorage.removeItem('active_auth_view');
-      window.history.replaceState(null, '', '/');
-      setTimeout(() => setView('profile'), 2000);
-    } catch (err: any) { setError(err.message); } 
-    finally { setLoading(false); }
-  };
+  e.preventDefault();
+  if (newPassword.length < 6) { setError("Mínimo 6 caracteres."); return; }
+  
+  setLoading(true);
+  setError(null);
+  setSuccess(null);
+
+  try {
+    const auth = supabase.auth as any;
+
+    // 1. Intentamos obtener la sesión actual
+    let { data: { session } } = await auth.getSession();
+
+    // 2. Si NO hay sesión, intentamos forzar la detección del hash de la URL
+    if (!session && window.location.hash) {
+      console.log("Sesión no detectada, intentando forzar reconocimiento de token...");
+      // Este pequeño truco obliga a Supabase a procesar el hash si no lo hizo
+      const { data: refreshedData } = await auth.getSession();
+      session = refreshedData.session;
+    }
+
+    // 3. Si después del intento sigue sin haber sesión, esperamos un segundo y reintentamos
+    if (!session) {
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Esperamos 1.5 segundos
+      const finalRetry = await auth.getSession();
+      session = finalRetry.data.session;
+    }
+
+    if (!session) {
+      throw new Error("El link de recuperación es inválido o ya fue usado. Por favor, pedí uno nuevo.");
+    }
+
+    // 4. Si tenemos sesión, procedemos a actualizar
+    const { error: updateError } = await auth.updateUser({ password: newPassword });
+    
+    if (updateError) throw updateError;
+
+    // 5. ÉXITO
+    setSuccess("¡Contraseña actualizada con éxito!");
+    localStorage.removeItem('active_auth_view');
+    
+    // Limpiamos la URL para que no vuelva a saltar el modo recuperación
+    window.history.replaceState(null, '', window.location.pathname);
+
+    setTimeout(() => {
+      setView('profile');
+      if (onProfileUpdate) onProfileUpdate();
+    }, 2000);
+
+  } catch (err: any) {
+    console.error("Error al actualizar pass:", err);
+    setError(err.message || "Error al actualizar la contraseña.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleSignOut = async () => {
     await (supabase.auth as any).signOut();
