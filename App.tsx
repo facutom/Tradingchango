@@ -559,7 +559,23 @@ useEffect(() => {
   <Route path="/acerca-de" element={<AboutView onClose={() => navigate('/')} content={config.acerca_de} />} />
   <Route path="/terminos" element={<TermsView onClose={() => navigate('/')} content={config.terminos} />} />
   <Route path="/contacto" element={<ContactView onClose={() => navigate('/')} content={config.contacto} email={profile?.email} />} />
-  <Route path="/update-password" element={<Navigate to="/" replace />} />
+  <Route path="/update-password" element={
+      <ProductList 
+        products={filteredProducts as any} 
+        onProductClick={(id: number) => {
+          const p = products.find(x => x.id === id);
+          if (p) navigate(`/${p.categoria?.toLowerCase() || 'producto'}/${slugify(p.nombre)}`);
+        }}
+        onFavoriteToggle={toggleFavorite} 
+        isFavorite={id => !!favorites[id]}
+        isCartView={false} 
+        quantities={favorites}
+        onUpdateQuantity={handleFavoriteChangeInCart}
+        searchTerm={searchTerm}
+        purchasedItems={purchasedItems}
+        onTogglePurchased={togglePurchased}
+      />
+    } />
 
 </Routes>
       </main>
