@@ -237,7 +237,7 @@ const App: React.FC = () => {
     });
 
     // Escuchar cambios (Login, Logout)
-    const { data: { subscription } } = auth.onAuthStateChange((event, session) => {
+      const { data: { subscription } } = auth.onAuthStateChange((event: any, session: any) => {
       const sessionUser = session?.user ?? null;
       setUser(sessionUser);
       
