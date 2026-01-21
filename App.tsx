@@ -199,37 +199,42 @@ const [config, setConfig] = useState<Record<string, string>>({});
   }, [products.length]);
 
   // --- 2. SESIÓN INICIAL Y ESCUCHA DE AUTH (Limpio y Cerrado) ---
-  useEffect(() => {
-    const auth = supabase.auth as any;
+  // --- 2. SESIÓN INICIAL Y ESCUCHA DE AUTH ---
+useEffect(() => {
+  const auth = supabase.auth as any;
 
-    // 1. Cargamos productos de inmediato
-    loadData(null);
+  loadData(null);
 
-    // 2. Obtener sesión inicial
-    auth.getSession().then(({ data: { session } }: any) => {
-      const sessionUser = session?.user ?? null;
-      setUser(sessionUser);
-      if (sessionUser) loadData(sessionUser);
-    });
+  auth.getSession().then(({ data: { session } }: any) => {
+    const sessionUser = session?.user ?? null;
+    setUser(sessionUser);
+    if (sessionUser) loadData(sessionUser);
+  });
 
-    // 3. Suscripción a cambios (CON TIPOS ANY PARA EVITAR EL ERROR)
-    const { data: { subscription } } = auth.onAuthStateChange((event: any, session: any) => {
-      const sessionUser = session?.user ?? null;
-      setUser(sessionUser);
-      
-      if (event === 'SIGNED_IN') loadData(sessionUser);
-      if (event === 'SIGNED_OUT') { 
-        setProfile(null); 
-        setFavorites({}); 
-        setSavedCarts([]); 
-        setPurchasedItems(new Set());
-      }
-    });
+  const { data: { subscription } } = auth.onAuthStateChange((event: any, session: any) => {
+    const sessionUser = session?.user ?? null;
+    setUser(sessionUser);
+    
+    // DETECTAR RECUPERACIÓN DE CONTRASEÑA
+    if (event === 'PASSWORD_RECOVERY') {
+      setIsAuthOpen(true);
+      // Opcional: puedes emitir un evento custom si el modal ya está abierto
+      window.dispatchEvent(new CustomEvent('forceUpdatePasswordView'));
+    }
 
-    return () => {
-      if (subscription) subscription.unsubscribe();
-    };
-  }, [loadData]);
+    if (event === 'SIGNED_IN') loadData(sessionUser);
+    if (event === 'SIGNED_OUT') { 
+      setProfile(null); 
+      setFavorites({}); 
+      setSavedCarts([]); 
+      setPurchasedItems(new Set());
+    }
+  });
+
+  return () => {
+    if (subscription) subscription.unsubscribe();
+  };
+}, [loadData]);
 
 // --- PERSISTENCIA MEJORADA (LOCAL + NUBE + MINIMIZADO) ---
   useEffect(() => {

@@ -54,28 +54,32 @@ const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   // --- EFECTOS ---
-  useEffect(() => {
-    // Lógica central para decidir la vista al abrir el modal
-    if (isOpen) {
-      // 1. MÁXIMA PRIORIDAD: Si es recuperación de contraseña, forzamos la vista.
-      if (window.location.hash.includes('type=recovery')) {
-        setView('update_password');
-        return; // Cortamos la ejecución para evitar conflictos
-      }
+  // --- EFECTOS ---
+useEffect(() => {
+  if (isOpen) {
+    // PRIORIDAD 1: Si hay un hash de recuperación en la URL, FORZAMOS la vista
+    const isRecovery = window.location.hash.includes('type=recovery') || 
+                       window.location.href.includes('type=recovery');
 
-      // 2. Si no hay usuario, lo mandamos a la bienvenida (a menos que esté en otra vista manual)
-      if (!user) {
-        if (view !== 'forgot_password' && view !== 'form') {
-          setView('welcome');
-        }
-      } else {
-        // 3. Si hay usuario, lo mandamos al perfil si estaba en una vista de login/registro
-        if (view === 'welcome' || view === 'form') {
-          setView('profile');
-        }
+    if (isRecovery) {
+      setView('update_password');
+      return; 
+    }
+
+    // PRIORIDAD 2: Si no hay usuario, bienvenida
+    if (!user) {
+      if (view !== 'forgot_password' && view !== 'form') {
+        setView('welcome');
+      }
+    } else {
+      // PRIORIDAD 3: Si hay usuario y NO es recovery, ir al perfil
+      // Pero solo si estamos en vistas de login/registro
+      if (view === 'welcome' || view === 'form' || view === 'main') {
+        setView('profile');
       }
     }
-  }, [isOpen, user]); // Se ejecuta cada vez que el modal se abre o el usuario cambia
+  }
+}, [isOpen, user]); // Quitamos 'view' de aquí para que no se resetee sola al navegar
 
   useEffect(() => {
     // Guardamos la vista para persistencia al minimizar
@@ -151,40 +155,36 @@ const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newPassword.length < 6) { setError("Mínimo 6 caracteres."); return; }
+  e.preventDefault();
+  if (newPassword.length < 6) { setError("Mínimo 6 caracteres."); return; }
+  
+  setLoading(true); setError(null); setSuccess(null);
+
+  try {
+    const { error: updateError } = await supabase.auth.updateUser({ 
+      password: newPassword 
+    });
+
+    if (updateError) throw updateError;
+
+    setSuccess("¡Contraseña actualizada correctamente!");
     
-    setLoading(true); setError(null); setSuccess(null);
+    // LIMPIEZA CRUCIAL:
+    localStorage.removeItem('active_auth_view');
+    // Esto quita el #access_token de la URL
+    window.history.replaceState(null, '', window.location.pathname);
 
-    try {
-      const auth = supabase.auth as any;
+    setTimeout(() => {
+      setView('profile');
+      if (onProfileUpdate) onProfileUpdate();
+    }, 2000);
 
-      // 1. Actualizamos la contraseña
-      const { error: updateError } = await auth.updateUser({ 
-        password: newPassword 
-      });
-
-      if (updateError) throw updateError;
-
-      // 2. Éxito: Mostramos mensaje y limpiamos la URL
-      setSuccess("¡Contraseña actualizada correctamente!");
-      localStorage.removeItem('active_auth_view');
-      
-      // Limpiamos el hash de la URL (#type=recovery...) para que no vuelva a saltar
-      window.history.replaceState(null, '', '/');
-
-      // 3. Pasamos al perfil después de 2 segundos
-      setTimeout(() => {
-        setView('profile');
-        if (onProfileUpdate) onProfileUpdate();
-      }, 2000);
-
-    } catch (err: any) {
-      setError(err.message || "Error al actualizar.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  } catch (err: any) {
+    setError(err.message || "Error al actualizar.");
+  } finally {
+    setLoading(false);
+  }
+};
 
 
   const handleSignOut = async () => {
