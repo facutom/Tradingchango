@@ -84,13 +84,11 @@ const [config, setConfig] = useState<Record<string, string>>({});
 
   // --- EFECTO DE RECUPERACIÓN DE CONTRASEÑA ---
   useEffect(() => {
-    if (location.hash.includes('type=recovery')) {
-      // El usuario llega aquí desde el mail de Supabase con una sesión temporal.
-      // Solo necesitamos mostrarle el formulario para que ponga su nueva clave.
-      localStorage.setItem('active_auth_view', 'update_password');
+    // Si entramos con un link de recuperación, abrimos el modal
+    if (window.location.hash.includes('type=recovery')) {
       setIsAuthOpen(true);
     }
-  }, [location.hash]); // Se ejecuta solo cuando cambia el hash de la URL
+  }, []);
 
 
   useEffect(() => {

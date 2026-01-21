@@ -55,19 +55,20 @@ const AuthModal: React.FC<AuthModalProps> = ({
 
   // --- EFECTOS ---
   useEffect(() => {
-    // Si el modal se abre y la URL indica recuperación, forzamos la vista.
-    const checkRecovery = () => {
-      if (window.location.hash.includes('type=recovery') || localStorage.getItem('active_auth_view') === 'update_password') {
-        setView('update_password');
-      }
-    };
-
-    if (isOpen) {
-      checkRecovery();
+    // Si la URL es de recuperación, NO permitimos que cambie la vista a 'welcome'
+    if (window.location.hash.includes('type=recovery')) {
+      setView('update_password');
+      return; // Detenemos el efecto aquí
     }
 
-    if (view === 'membresias') getCatalogoMembresias().then(setCatalogo);
-  }, [isOpen, view]);
+    if (!user) {
+      if (view !== 'forgot_password' && view !== 'update_password' && view !== 'form') {
+        setView('welcome');
+      }
+    } else {
+      if (view === 'welcome' || view === 'form') setView('profile');
+    }
+  }, [user, isOpen]); // Agregamos isOpen para que chequee al abrir
 
   useEffect(() => {
     // Guardamos la vista para persistencia al minimizar
@@ -153,40 +154,40 @@ const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (newPassword.length < 6) { setError("Mínimo 6 caracteres."); return; }
-  
-  setLoading(true);
-  setError(null);
-  setSuccess(null);
+    e.preventDefault();
+    if (newPassword.length < 6) { setError("Mínimo 6 caracteres."); return; }
+    
+    setLoading(true); setError(null); setSuccess(null);
 
-  try {
-    const auth = supabase.auth as any;
+    try {
+      const auth = supabase.auth as any;
 
-    // Intentamos actualizar directamente (la sesión ya fue inyectada por App.tsx)
-    const { error: updateError } = await auth.updateUser({ 
-      password: newPassword 
-    });
+      // 1. Actualizamos la contraseña
+      const { error: updateError } = await auth.updateUser({ 
+        password: newPassword 
+      });
 
-    if (updateError) throw updateError;
+      if (updateError) throw updateError;
 
-    setSuccess("¡Contraseña actualizada! Entrando...");
-    localStorage.removeItem('active_auth_view');
+      // 2. Éxito: Mostramos mensaje y limpiamos la URL
+      setSuccess("¡Contraseña actualizada correctamente!");
+      localStorage.removeItem('active_auth_view');
+      
+      // Limpiamos el hash de la URL (#type=recovery...) para que no vuelva a saltar
+      window.history.replaceState(null, '', '/');
 
-    // Limpiamos la URL para que el usuario no quede en un bucle de recuperación
-    window.history.replaceState(null, '', window.location.pathname);
+      // 3. Pasamos al perfil después de 2 segundos
+      setTimeout(() => {
+        setView('profile');
+        if (onProfileUpdate) onProfileUpdate();
+      }, 2000);
 
-    setTimeout(() => {
-      setView('profile');
-      if (onProfileUpdate) onProfileUpdate();
-    }, 2000);
-
-  } catch (err: any) {
-    setError(err.message || "Error al actualizar la contraseña.");
-  } finally {
-    setLoading(false);
-  }
-};
+    } catch (err: any) {
+      setError(err.message || "Error al actualizar.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   const handleSignOut = async () => {
