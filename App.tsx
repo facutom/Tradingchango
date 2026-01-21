@@ -84,9 +84,9 @@ const [config, setConfig] = useState<Record<string, string>>({});
 
   // --- EFECTO DE RECUPERACIÓN DE CONTRASEÑA ---
   useEffect(() => {
-    // Si entramos con un link de recuperación, abrimos el modal.
-    // Usamos location.hash para que se reactive si la URL cambia.
+    // Si la URL contiene el hash de recuperación, preparamos el modal.
     if (location.hash.includes('type=recovery')) {
+      localStorage.setItem('active_auth_view', 'update_password');
       setIsAuthOpen(true);
     }
   }, [location.hash]);

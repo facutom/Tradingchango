@@ -54,36 +54,34 @@ const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   // --- EFECTOS ---
-  // --- EFECTOS ---
-useEffect(() => {
-  if (isOpen) {
-    // PRIORIDAD 1: Si hay un hash de recuperación en la URL, FORZAMOS la vista
-    const isRecovery = window.location.hash.includes('type=recovery') || 
-                       window.location.href.includes('type=recovery');
+  useEffect(() => {
+    if (isOpen) {
+      // Leemos la vista guardada en localStorage al abrir el modal.
+      const savedView = localStorage.getItem('active_auth_view');
 
-    if (isRecovery) {
-      setView('update_password');
-      return; 
-    }
+      // PRIORIDAD 1: Si es recuperación de contraseña, forzamos esa vista.
+      if (savedView === 'update_password') {
+        setView('update_password');
+        return; // Cortamos para evitar conflictos.
+      }
 
-    // PRIORIDAD 2: Si no hay usuario, bienvenida
-    if (!user) {
-      if (view !== 'forgot_password' && view !== 'form') {
-        setView('welcome');
-      }
-    } else {
-      // PRIORIDAD 3: Si hay usuario y NO es recovery, ir al perfil
-      // Pero solo si estamos en vistas de login/registro
-      if (view === 'welcome' || view === 'form' || view === 'main') {
-        setView('profile');
+      // PRIORIDAD 2: Si no hay usuario, mostramos la bienvenida.
+      if (!user) {
+        if (view !== 'forgot_password' && view !== 'form') {
+          setView('welcome');
+        }
+      } else {
+        // PRIORIDAD 3: Si hay usuario, lo llevamos a su perfil.
+        if (view === 'welcome' || view === 'form' || view === 'main') {
+          setView('profile');
+        }
       }
     }
-  }
-}, [isOpen, user]); // Quitamos 'view' de aquí para que no se resetee sola al navegar
+  }, [isOpen, user]);
 
   useEffect(() => {
-    // Guardamos la vista para persistencia al minimizar
-    if (isOpen) { // Solo guardamos si el modal está abierto
+    // Guardamos la vista actual en localStorage para mantener el estado.
+    if (isOpen) {
       localStorage.setItem('active_auth_view', view);
     }
   }, [view, isOpen]);
