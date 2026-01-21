@@ -557,6 +557,8 @@ useEffect(() => {
   <Route path="/acerca-de" element={<AboutView onClose={() => navigate('/')} content={config.acerca_de} />} />
   <Route path="/terminos" element={<TermsView onClose={() => navigate('/')} content={config.terminos} />} />
   <Route path="/contacto" element={<ContactView onClose={() => navigate('/')} content={config.contacto} email={profile?.email} />} />
+  <Route path="/update-password" element={<Navigate to="/" replace />} />
+
 </Routes>
       </main>
       <BottomNav cartCount={Object.keys(favorites).length} />

@@ -279,6 +279,29 @@ const AuthModal: React.FC<AuthModalProps> = ({
           </form>
         )}
 
+        {view === 'update_password' && (
+          <form onSubmit={handleUpdatePassword} className="space-y-4 animate-in fade-in slide-in-from-right-4">
+            <h3 className="text-xl font-black dark:text-white mb-2 uppercase tracking-tighter">Nueva Contraseña</h3>
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400 font-medium mb-4">
+              Ingresá tu nueva clave de acceso.
+            </p>
+            
+            <input 
+              type="password" 
+              value={newPassword} 
+              onChange={e => setNewPassword(e.target.value)} 
+              placeholder="MÍNIMO 6 CARACTERES" 
+              required 
+              className="w-full bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-3 rounded-lg dark:text-white text-[11px] font-bold" 
+            />
+            
+            <button disabled={loading} className="w-full bg-green-500 text-white py-3.5 rounded-xl font-black uppercase tracking-widest text-[11px] shadow-lg">
+              {loading ? 'Guardando...' : 'Actualizar Contraseña'}
+            </button>
+          </form>
+        )}
+
+
         {view === 'profile' && user && (
           <div className="text-center animate-in fade-in duration-300">
             <div className="w-14 h-14 bg-neutral-100 dark:bg-neutral-900 rounded-xl flex items-center justify-center text-xl mx-auto mb-4 text-neutral-500 border border-neutral-200 dark:border-neutral-800">
