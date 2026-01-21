@@ -195,13 +195,11 @@ const App: React.FC = () => {
     if (hash.includes('type=recovery') || pathname === '/update-password') {
       localStorage.setItem('active_auth_view', 'update_password');
       setIsAuthOpen(true);
-    }
-  };
-  
-  checkRecoveryURL();
+     }
+}, []);
 
 // 1. Procesar recovery desde la URL
-useEffect(() => {
+  useEffect(() => {
   const handleRecoverySession = async () => {
     const hash = window.location.hash;
 
@@ -220,7 +218,7 @@ useEffect(() => {
 
 
 // 2. Sesión inicial + auth listener
-useEffect(() => {
+  useEffect(() => {
 
   // Obtener sesión inicial
   supabase.auth.getSession().then(({ data: { session } }) => {
@@ -271,9 +269,8 @@ useEffect(() => {
 
 }, [loadData]);
 
-
 // --- PERSISTENCIA MEJORADA (LOCAL + NUBE + MINIMIZADO) ---
-useEffect(() => {
+  useEffect(() => {
   // 1. Guardado INSTANTÁNEO en LocalStorage (esto es infalible)
   localStorage.setItem('tc_favs', JSON.stringify(favorites));
   localStorage.setItem('tc_saved_lists', JSON.stringify(savedCarts));
