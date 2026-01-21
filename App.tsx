@@ -86,7 +86,7 @@ const [config, setConfig] = useState<Record<string, string>>({});
   useEffect(() => {
     // Si la URL contiene el hash de recuperación, preparamos el modal.
     if (location.hash.includes('type=recovery')) {
-      localStorage.setItem('active_auth_view', 'update_password');
+      // Solo necesitamos abrir el modal. El modal se encargará de la vista.
       setIsAuthOpen(true);
     }
   }, [location.hash]);

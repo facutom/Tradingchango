@@ -46,7 +46,10 @@ const AuthModal: React.FC<AuthModalProps> = ({
   // Esta función asegura que el modal no se quede "trabado" en una vista vieja al cerrar
   const resetAndClose = () => {
     const defaultView = user ? 'profile' : 'welcome';
-    localStorage.removeItem('active_auth_view'); // Limpiamos para que no sea "sticky"
+    // No borramos 'active_auth_view' si es para recuperar contraseña.
+    if (localStorage.getItem('active_auth_view') !== 'update_password') {
+      localStorage.removeItem('active_auth_view');
+    }
     setView(defaultView);
     setError(null);
     setSuccess(null);
@@ -54,33 +57,39 @@ const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   // --- EFECTOS ---
+  // EFECTO UNIFICADO PARA CONTROLAR LA VISTA
   useEffect(() => {
     if (isOpen) {
-      // Leemos la vista guardada en localStorage al abrir el modal.
       const savedView = localStorage.getItem('active_auth_view');
 
-      // PRIORIDAD 1: Si es recuperación de contraseña, forzamos esa vista.
+      // PRIORIDAD 1: Recuperación de contraseña.
       if (savedView === 'update_password') {
         setView('update_password');
-        return; // Cortamos para evitar conflictos.
+        return; // Fin del flujo, evita conflictos.
       }
 
-      // PRIORIDAD 2: Si no hay usuario, mostramos la bienvenida.
+      // PRIORIDAD 2: Usuario no logueado.
       if (!user) {
+        // Si no estamos en un sub-flujo como 'olvidé contraseña' o 'registro',
+        // mandamos a la bienvenida.
         if (view !== 'forgot_password' && view !== 'form') {
           setView('welcome');
         }
-      } else {
-        // PRIORIDAD 3: Si hay usuario, lo llevamos a su perfil.
-        if (view === 'welcome' || view === 'form' || view === 'main') {
+      } 
+      // PRIORIDAD 3: Usuario logueado.
+      else {
+        // Si el usuario está logueado y la vista actual es una de las iniciales,
+        // lo llevamos a su perfil.
+        if (['welcome', 'form', 'main'].includes(view)) {
           setView('profile');
         }
       }
     }
-  }, [isOpen, user]);
+  }, [isOpen, user, view]); // Se agrega 'view' para re-evaluar si cambia externamente.
 
   useEffect(() => {
-    // Guardamos la vista actual en localStorage para mantener el estado.
+    // Guardamos la vista actual en localStorage para mantener el estado,
+    // solo si el modal está abierto.
     if (isOpen) {
       localStorage.setItem('active_auth_view', view);
     }
@@ -90,24 +99,12 @@ const AuthModal: React.FC<AuthModalProps> = ({
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-        resetAndClose(); // Usamos la función de reset
+        resetAndClose();
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen, user]); // Dependencias corregidas
-
-  useEffect(() => {
-    const checkPasswordView = () => {
-      const savedView = localStorage.getItem('active_auth_view');
-      if (savedView === 'update_password') {
-        setView('update_password');
-      }
-    };
-    window.addEventListener('forceUpdatePasswordView', checkPasswordView);
-    if (isOpen) checkPasswordView();
-    return () => window.removeEventListener('forceUpdatePasswordView', checkPasswordView);
-  }, [isOpen]);
+  }, [isOpen, user]); // Dependencias correctas.
 
 
   // --- MANEJADORES ---
