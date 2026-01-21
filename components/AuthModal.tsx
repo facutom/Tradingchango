@@ -143,42 +143,56 @@ const AuthModal: React.FC<AuthModalProps> = ({
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
   e.preventDefault();
-  if (newPassword.length < 6) { setError("Mínimo 6 caracteres."); return; }
-  
+
+  if (newPassword.length < 6) {
+    setError("Mínimo 6 caracteres.");
+    return;
+  }
+
   setLoading(true);
   setError(null);
   setSuccess(null);
 
   try {
-    const auth = supabase.auth as any;
+    // 1. Esperamos sesión REAL
+    let session = null;
 
-    // 1. Forzamos un refresco de la sesión que viene en la URL
-    // Esto es clave si el navegador tardó en procesar el hash (#)
-   const { error: updateError } = await auth.updateUser({
-  password: newPassword
-});
+    for (let i = 0; i < 5; i++) {
+      const { data } = await supabase.auth.getSession();
+      session = data.session;
+      if (session) break;
+      await new Promise(res => setTimeout(res, 500));
+    }
 
-if (updateError) throw updateError;
+    if (!session) {
+      throw new Error("No se pudo establecer la sesión de recuperación.");
+    }
 
-    // 3. ÉXITO
+    // 2. Ahora sí, actualizar contraseña
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (error) throw error;
+
+    // 3. Éxito
     setSuccess("¡Contraseña actualizada con éxito!");
-    
-    // Limpieza total para evitar que el modal vuelva a saltar
+
     localStorage.removeItem('active_auth_view');
-    window.history.replaceState(null, '', '/');
+    window.history.replaceState({}, '', '/');
 
     setTimeout(() => {
       setView('profile');
-      if (onProfileUpdate) onProfileUpdate();
-    }, 2000);
+    }, 1500);
 
   } catch (err: any) {
-    console.error("Error en recuperación:", err);
-    setError(err.message || "Error al actualizar la contraseña.");
+    console.error(err);
+    setError(err.message || "Error al actualizar contraseña");
   } finally {
     setLoading(false);
   }
-};
+    };
+
 
   const handleSignOut = async () => {
     await (supabase.auth as any).signOut();
