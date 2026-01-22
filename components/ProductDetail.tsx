@@ -203,7 +203,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
                 {/* Precio Principal */}
                 <div className="flex items-baseline gap-0.5">
                   <span className="text-xl font-bold text-black dark:text-[#e9edef]">$</span>
-                  <span className="text-4xl md:text-5xl font-black text-black dark:text-[#e9edef] tracking-tighter font-mono leading-none">
+                  <span className="text-5xl md:text-6xl font-black text-black dark:text-[#e9edef] tracking-tighter font-mono leading-[0.8]">
                     {formatCurrency(minPrice)}
                   </span>
                 </div>
@@ -253,7 +253,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
 
           {/* Variación y Gráfico */}
           <div className="mb-1 w-full">
-            <div className="flex flex-col items-center text-center mb-2">
+            <div className="flex flex-col items-center text-center mb-[-2px]">
               <div className="flex items-center gap-1.5">
                  <span className={`text-xs font-black px-1.5 py-0.5 rounded-md ${isTrendUp ? 'bg-red-500/10 text-red-500' : 'bg-green-500/10 text-green-500'}`}>
                     {isTrendUp ? '▲' : '▼'} {Math.abs(percentageChange).toFixed(1)}%
