@@ -29,7 +29,6 @@ interface ProductDetailProps {
   theme: 'light' | 'dark';
 }
 
-// Alias para evitar errores de compilación de Recharts en React 18
 const AreaChartComponent = AreaChart as any;
 const AreaComponent = Area as any;
 const XAxisComponent = XAxis as any;
@@ -80,7 +79,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
 
   const { minPrice, minStore, avgPrice, minStoreUrl, unitPrice, unitMeasure } = useMemo(() => {
     if (!product) return { minPrice: 0, minStore: '', avgPrice: 0, minStoreUrl: '#', unitPrice: 0, unitMeasure: '' };
-    
     const prices = STORES
       .map(s => ({ 
         name: s.name, 
@@ -90,22 +88,17 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
       .filter(p => p.val > 0);
 
     if (prices.length === 0) return { minPrice: 0, minStore: '', avgPrice: 0, minStoreUrl: '#', unitPrice: 0, unitMeasure: '' };
-    
     const min = Math.min(...prices.map(p => p.val));
     const winner = prices.find(p => p.val === min);
-    
-    // Cálculo de precio por unidad
     const contNum = (product as any)?.contenido_numerico || 0;
-    const uMeasure = (product as any)?.unidad_medida || '';
-    const uPrice = (min > 0 && contNum > 0) ? Math.round(min / contNum) : 0;
-
+    
     return { 
       minPrice: min, 
       minStore: winner?.name || '', 
       avgPrice: prices.reduce((acc, curr) => acc + curr.val, 0) / prices.length,
       minStoreUrl: winner?.url || '#',
-      unitPrice: uPrice,
-      unitMeasure: uMeasure
+      unitPrice: (min > 0 && contNum > 0) ? Math.round(min / contNum) : 0,
+      unitMeasure: (product as any)?.unidad_medida || ''
     };
   }, [product]);
 
@@ -147,7 +140,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
 
   if (!product) return null;
   const trendColor = isTrendUp ? '#f23645' : '#00c853';
-  const ticker = product.ticker || product.nombre.substring(0, 5).toUpperCase();
+  const ticker = (product as any).ticker || product.nombre.substring(0, 5).toUpperCase();
 
   const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
     if (active && payload && payload.length) {
@@ -167,10 +160,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm md:p-4">
-      <div 
-      ref={modalRef}
-      className="w-full max-w-lg h-auto max-h-full md:max-h-[95vh] bg-white dark:bg-primary md:rounded-[1.2rem] overflow-y-auto shadow-2xl relative"
-         >
+      <div ref={modalRef} className="w-full max-w-lg h-auto max-h-full md:max-h-[95vh] bg-white dark:bg-primary md:rounded-[1.2rem] overflow-y-auto shadow-2xl relative">
+        
         {/* Header Modal */}
         <div className="sticky top-0 z-20 bg-white/95 dark:bg-primary/95 backdrop-blur-md px-4 py-2 flex items-center justify-between border-b border-neutral-100 dark:border-[#233138]">
           <button onClick={onClose} className="text-black dark:text-[#e9edef] p-2">
@@ -189,53 +180,59 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
 
         <div className="p-4 pb-0 md:p-5 md:pb-0 flex flex-col">
           {/* Seccion Producto e Info */}
-          <div className="flex gap-4 items-start mb-3">
-            <div className="w-20 h-20 md:w-28 md:h-28 bg-white rounded-lg border border-neutral-100 shadow-sm flex items-center justify-center p-1.5 shrink-0">
+          <div className="flex gap-4 items-start mb-4">
+            <div className="w-24 h-24 md:w-32 md:h-32 bg-white rounded-xl border border-neutral-100 shadow-sm flex items-center justify-center p-2 shrink-0">
               <img src={product.imagen_url || ''} alt={product.nombre} className="w-full h-full object-contain" />
             </div>
-            <div className="flex flex-col flex-1">
-              <h1 className="text-xl md:text-2xl font-black text-black dark:text-[#e9edef] leading-tight mb-1 tracking-tighter">
+            <div className="flex flex-col flex-1 pt-1">
+              <h1 className="text-xl md:text-2xl font-black text-black dark:text-[#e9edef] leading-tight mb-1 tracking-tighter uppercase">
                 {product.nombre}
               </h1>
-              <div className="flex flex-col">
-                <div className="flex items-baseline gap-2 mb-0.5">
-                  <span className="text-xs font-black text-black dark:text-[#e9edef] uppercase tracking-widest">
-                    Mejor precio hoy en {minStore}
+              
+              <div className="flex items-center gap-1.5 mb-3">
+                <span className="text-[10px] font-black text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                  Mejor precio en {minStore}
+                </span>
+                <a href={minStoreUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:scale-110 transition-transform">
+                  <i className="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                </a>
+              </div>
+
+              {/* CONTENEDOR DE PRECIOS OPTIMIZADO */}
+              <div className="flex items-center gap-4">
+                {/* Precio Grande */}
+                <div className="flex items-baseline gap-0.5">
+                  <span className="text-xl font-bold text-black dark:text-[#e9edef]">$</span>
+                  <span className="text-4xl md:text-5xl font-black text-black dark:text-[#e9edef] tracking-tighter font-mono leading-none">
+                    {formatCurrency(minPrice)}
                   </span>
-                  <a href={minStoreUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500">
-                    <i className="fa-solid fa-arrow-up-right-from-square text-sm"></i>
-                  </a>
                 </div>
-                <div className="flex items-end gap-2">
-                  <div className="flex items-baseline gap-0.5">
-                    <span className="text-base font-bold text-black dark:text-[#e9edef]">$</span>
-                    <span className="text-3xl md:text-5xl font-black text-black dark:text-[#e9edef] tracking-tighter font-mono leading-none">
-                      {formatCurrency(minPrice)}
+
+                {/* Columna de Badges (Promedio y Unidad) */}
+                <div className="flex flex-col gap-1.5 min-w-[100px]">
+                  <div className="flex flex-col bg-neutral-100 dark:bg-[#1f2c34] border border-neutral-200 dark:border-[#233138] px-2 py-1 rounded-md">
+                    <span className="text-[8px] font-black text-neutral-500 dark:text-neutral-400 uppercase leading-tight">Promedio</span>
+                    <span className="text-[12px] font-black text-black dark:text-[#e9edef] font-mono leading-tight">
+                      ${formatCurrency(Math.round(avgPrice))}
                     </span>
                   </div>
-                  <div className="flex flex-wrap gap-1.5 items-center mt-2">
-                    <div className="flex items-baseline gap-1 bg-neutral-100 dark:bg-[#1f2c34] border border-neutral-200 dark:border-[#233138] px-2 py-1 rounded-md mb-0.5">
-                      <span className="text-[9px] font-bold text-neutral-600 dark:text-neutral-400 uppercase">Promedio:</span>
-                      <span className="text-[13px] font-black text-black dark:text-[#e9edef] font-mono">$ {formatCurrency(Math.round(avgPrice))}</span>
-                    </div>
 
-                    {unitPrice > 0 && (
-                      <div className="flex items-baseline gap-1 bg-neutral-100 dark:bg-[#1f2c34] border border-neutral-200 dark:border-[#233138] px-2 py-1 rounded-md mb-0.5">
-                        <span className="text-[9px] font-bold text-neutral-600 dark:text-neutral-400 uppercase">
-                          x {unitMeasure}:
-                        </span>
-                        <span className="text-[13px] font-black text-black dark:text-[#e9edef] font-mono">
-                          $ {formatCurrency(unitPrice)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                  {unitPrice > 0 && (
+                    <div className="flex flex-col bg-neutral-100 dark:bg-[#1f2c34] border border-neutral-200 dark:border-[#233138] px-2 py-1 rounded-md">
+                      <span className="text-[8px] font-black text-neutral-500 dark:text-neutral-400 uppercase leading-tight">
+                        x {unitMeasure || 'Unidad'}
+                      </span>
+                      <span className="text-[12px] font-black text-black dark:text-[#e9edef] font-mono leading-tight">
+                        ${formatCurrency(unitPrice)}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           </div>
 
-          <hr className="w-full border-neutral-100 dark:border-[#233138] mb-3" />
+          <hr className="w-full border-neutral-100 dark:border-[#233138] mb-4" />
 
           {/* Selectores de dias */}
           <div className="w-full flex justify-center gap-1 mb-3 overflow-x-auto no-scrollbar pb-1">
@@ -244,10 +241,10 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
                 key={d} 
                 onClick={() => setDays(d)}
                 className={`min-w-[48px] py-2 px-2 text-[10px] font-black rounded-md transition-all ${
-    days === d
-      ? 'bg-primary text-white dark:bg-white dark:text-black border border-black dark:border-white'
-      : 'bg-neutral-50 dark:bg-[#1f2c34] text-neutral-500 dark:text-[#8696a0]'
-}`}
+                  days === d
+                    ? 'bg-primary text-white dark:bg-white dark:text-black border border-black dark:border-white'
+                    : 'bg-neutral-50 dark:bg-[#1f2c34] text-neutral-500 dark:text-[#8696a0]'
+                }`}
               >
                 {d < 30 ? `${d}D` : d < 365 ? `${Math.floor(d / 30)}M` : '1Y'}
               </button>
@@ -327,7 +324,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
           </div>
 
           {/* Boton Fijo */}
-            <div className="w-full sticky bottom-0 bg-white/95 dark:bg-primary/95 backdrop-blur-md pt-2 pb-6 md:pb-4 px-4">
+          <div className="w-full sticky bottom-0 bg-white/95 dark:bg-primary/95 backdrop-blur-md pt-2 pb-6 md:pb-4 px-4">
             <button 
               onClick={() => onFavoriteToggle(product.id)} 
               className={`w-full py-3.5 rounded-lg font-black uppercase tracking-[0.1em] text-xs flex items-center justify-center gap-2 active:scale-95 transition-all ${isFavorite ? 'bg-star-gold text-white' : 'bg-primary dark:bg-[#e9edef] text-white dark:text-black border dark:border-[#e9edef]'}`}
