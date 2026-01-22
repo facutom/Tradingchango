@@ -78,14 +78,14 @@ export const ContactView: React.FC<InfoViewProps & { email?: string }> = ({ onCl
     
     <div className="space-y-4">
       {/* Botón de Email Principal */}
-      <a href={`mailto:${email || 'soporte@tradingchango.com'}`} className="flex items-center justify-between p-6 bg-neutral-50 dark:bg-neutral-900 rounded-3xl border border-neutral-100 dark:border-neutral-800 hover:scale-[1.02] transition-transform shadow-sm">
+      <a href="mailto:soporte@tradingchango.com" className="flex items-center justify-between p-6 bg-neutral-50 dark:bg-neutral-900 rounded-3xl border border-neutral-100 dark:border-neutral-800 hover:scale-[1.02] transition-transform shadow-sm">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white rounded-2xl flex items-center justify-center text-xl">
             <i className="fa-solid fa-envelope"></i>
           </div>
           <div>
             <h4 className="font-bold text-black dark:text-white">Email Soporte</h4>
-            <p className="text-[10px] font-mono text-neutral-400 uppercase">{email || 'soporte@tradingchango.com'}</p>
+            <p className="text-[10px] font-mono text-neutral-400 uppercase">"soporte@tradingchango.com"</p>
           </div>
         </div>
         <i className="fa-solid fa-chevron-right text-neutral-300"></i>
