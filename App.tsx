@@ -301,7 +301,7 @@ useEffect(() => {
       const prices = [p.p_coto, p.p_carrefour, p.p_dia, p.p_jumbo, p.p_masonline];
       const h7 = history.find(h => h.nombre_producto === p.nombre);
       return { ...p, stats: getStats(prices, h7?.precio_minimo || 0), prices };
-    });
+    })
      
     .filter(p => {
       const proveedoresConPrecio = p.prices.filter(price => price > 0).length;
