@@ -191,7 +191,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
               
               <div className="flex items-center gap-1.5 mb-2">
                 <span className="text-[10px] font-black text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                  Mejor precio en {minStore}
+                  Mejor precio hoy en {minStore}
                 </span>
                 <a href={minStoreUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:scale-110 transition-transform">
                   <i className="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
@@ -209,7 +209,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
                 </div>
 
                 {/* Columna de Badges a la derecha */}
-                <div className="flex flex-col gap-1.5 flex-1 max-w-[135px] pb-0.5">
+                <div className="flex flex-col gap-1.5 flex-1 max-w-[125px] pb-0.5">
                   <div className="flex items-center justify-between bg-neutral-100 dark:bg-[#1f2c34] border border-neutral-200 dark:border-[#233138] px-2 py-1 rounded-md">
                     <span className="text-[11px] font-black text-neutral-500 dark:text-neutral-400 uppercase mr-2">Promedio</span>
                     <span className="text-[11px] font-black text-black dark:text-[#e9edef] font-mono">
