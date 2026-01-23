@@ -198,28 +198,32 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
                 </a>
               </div>
 
-              {/* CONTENEDOR DE PRECIOS: LADO A LADO */}
-              <div className="flex items-end gap-3 mt-1">
+              {/* CONTENEDOR DE PRECIOS: PRINCIPAL ARRIBA, DETALLES ABAJO LADO A LADO */}
+              <div className="flex flex-col mt-1">
                 {/* Precio Principal */}
-                <div className="flex items-baseline gap-0.5 relative -top-[12px]">
+                <div className="flex items-baseline gap-0.5">
                   <span className="text-xl font-bold text-black dark:text-[#e9edef]">$</span>
-                  <span className="text-4xl md:text-5xl font-black text-black dark:text-[#e9edef] tracking-tighter font-mono leading-none">
+                  <span className="text-4xl md:text-5xl font-black text-black dark:text-[#e9edef] tracking-tighter font-mono leading-tight">
                     {formatCurrency(minPrice)}
                   </span>
                 </div>
 
-                {/* Columna de Badges a la derecha */}
-                <div className="flex flex-col gap-1.5 flex-1 max-w-[130px] pb-0.5">
-                  <div className="flex items-center justify-between bg-neutral-100 dark:bg-[#1f2c34] border border-neutral-200 dark:border-[#233138] px-2 py-1 rounded-md">
-                    <span className="text-[11px] font-black text-neutral-500 dark:text-neutral-400 uppercase mr-2">Promedio</span>
+                {/* Fila de Detalles: Promedio y Precio Unitario uno al lado del otro */}
+                <div className="flex flex-row flex-wrap gap-2 mt-2">
+                  {/* Badge Promedio */}
+                  <div className="flex items-center gap-2 bg-neutral-100 dark:bg-[#1f2c34] border border-neutral-200 dark:border-[#233138] px-2.5 py-1 rounded-md">
+                    <span className="text-[10px] font-black text-neutral-500 dark:text-neutral-400 uppercase">
+                      Promedio
+                    </span>
                     <span className="text-[11px] font-black text-black dark:text-[#e9edef] font-mono">
                       ${formatCurrency(Math.round(avgPrice))}
                     </span>
                   </div>
 
+                  {/* Badge Precio por Unidad */}
                   {unitPrice > 0 && (
-                    <div className="flex items-center justify-between bg-neutral-100 dark:bg-[#1f2c34] border border-neutral-200 dark:border-[#233138] px-2 py-1 rounded-md">
-                      <span className="text-[11px] font-black text-neutral-500 dark:text-neutral-400 uppercase mr-2">
+                    <div className="flex items-center gap-2 bg-neutral-100 dark:bg-[#1f2c34] border border-neutral-200 dark:border-[#233138] px-2.5 py-1 rounded-md">
+                      <span className="text-[10px] font-black text-neutral-500 dark:text-neutral-400 uppercase">
                         POR {unitMeasure || 'Unid'}
                       </span>
                       <span className="text-[11px] font-black text-black dark:text-[#e9edef] font-mono">
