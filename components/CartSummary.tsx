@@ -35,7 +35,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, favorites, benefits, u
 
       items.forEach(item => {
         const qty = favorites[item.id] || 1;
-        const effectivePrice = item.prices[store.index]; 
+        const effectivePrice = item.prices[store.index]; // Precio unitario con promo aplicada
         const storeKeySuffix = store.name.toLowerCase().replace(' ', '');
         const regularPrice = (item as any)[`pr_${storeKeySuffix}`] || effectivePrice;
 
@@ -44,61 +44,48 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, favorites, benefits, u
           return;
         }
 
-        // 1. SUBTOTAL: Precio de lista
+        // 1. SUBTOTAL: Siempre es Precio de Lista * Cantidad (Sin excepciones)
         subtotalRegulares += regularPrice * qty;
 
-        // 2. AHORRO BASE: Diferencia unitaria
-        let ahorroItem = (regularPrice - effectivePrice) * qty;
-
-        // 3. LÓGICA DE PROMOCIONES UNIVERSAL
+        // 2. DETECTAR EL UMBRAL DE LA PROMO (Ej: 3 en un 3x2, 2 en un 2da 70%)
+        let minQtyRequired = 1; 
         const ofRaw = item.oferta_gondola;
-        if (ofRaw && qty > 1) {
+        
+        if (ofRaw) {
           try {
             const ofObj = typeof ofRaw === 'string' ? JSON.parse(ofRaw) : ofRaw;
             const promo = ofObj[storeKeySuffix];
             
             if (promo && promo.etiqueta) {
               const label = promo.etiqueta.toUpperCase();
-
-              const nxmMatch = label.match(/(\d+)\s*X\s*(\d+)/);
-              if (nxmMatch) {
-                const n = parseInt(nxmMatch[1]);
-                const m = parseInt(nxmMatch[2]);
-                if (qty >= n) {
-                  const juegosGratis = Math.floor(qty / n);
-                  const unidadesRegaladas = juegosGratis * (n - m);
-                  ahorroItem += unidadesRegaladas * regularPrice;
-                }
-              } 
-              else if (label.includes('2DA')) {
-                const pctMatch = label.match(/(\d+)\s*%/);
-                if (pctMatch && qty >= 2) {
-                  const porcentajeDescuento = parseInt(pctMatch[1]) / 100;
-                  const paresDeProductos = Math.floor(qty / 2);
-                  ahorroItem += paresDeProductos * (regularPrice * porcentajeDescuento);
-                }
-              }
-              else if (label.includes('LLEVANDO')) {
-                const pctMatch = label.match(/(\d+)\s*%/);
-                const qtyMatch = label.match(/LLEVANDO\s*(\d+)/);
-                if (pctMatch && qtyMatch) {
-                  const pct = parseInt(pctMatch[1]) / 100;
-                  const minRequired = parseInt(qtyMatch[1]);
-                  if (qty >= minRequired) {
-                    ahorroItem += (regularPrice * qty) * pct;
-                  }
-                }
+              
+              if (label.includes('X')) {
+                // Caso NxM: Extrae el primer número (Ej: "3X2" -> 3)
+                minQtyRequired = parseInt(label.match(/(\d+)\s*X/)?.[1] || "1");
+              } else if (label.includes('2DA')) {
+                minQtyRequired = 2;
+              } else if (label.includes('LLEVANDO')) {
+                // Caso "10% LLEVANDO 4": Extrae el 4
+                minQtyRequired = parseInt(label.match(/LLEVANDO\s*(\d+)/)?.[1] || "1");
               }
             }
-          } catch (e) { console.error("Error promo:", e); }
+          } catch (e) {}
         }
+
+        // 3. CÁLCULO DE AHORRO EXACTO
+        // Calculamos cuántas unidades realmente entran en la promoción
+        // Si qty=4 y minQty=3, solo 3 unidades tienen descuento.
+        const unidadesConDescuento = Math.floor(qty / minQtyRequired) * minQtyRequired;
         
-        // Sumamos el ahorro del item al total del supermercado
+        // El ahorro es: (Precio Lista - Precio Promo) * unidades que califican
+        const ahorroItem = (regularPrice - effectivePrice) * unidadesConDescuento;
+        
         ahorroTotal += ahorroItem;
       });
 
       const storeBenefits = benefits.filter(b => b.supermercado.toUpperCase() === store.name.toUpperCase());
       
+      // Mantenemos los nombres de variables que espera tu componente (subtotal, gondolaDiscount, totalChango)
       return { 
         name: store.name, 
         subtotal: subtotalRegulares, 
