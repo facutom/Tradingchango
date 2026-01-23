@@ -1,4 +1,3 @@
-
 import React, { useMemo, useState } from 'react';
 import { Product, Benefit, UserMembership } from '../types';
 
@@ -30,51 +29,81 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, favorites, benefits, u
 
   const results = useMemo(() => {
     return STORES.map((store) => {
-      let subtotal = 0;
-      let totalGondolaDiscount = 0;
+      let subtotalRegulares = 0;
+      let ahorroTotal = 0;
       let hasAllItems = true;
 
       items.forEach(item => {
-        const price = item.prices[store.index];
         const qty = favorites[item.id] || 1;
-        
-        if (price <= 0) {
+        const effectivePrice = item.prices[store.index]; 
+        const storeKeySuffix = store.name.toLowerCase().replace(' ', '');
+        const regularPrice = (item as any)[`pr_${storeKeySuffix}`] || effectivePrice;
+
+        if (effectivePrice <= 0) {
           hasAllItems = false;
           return;
         }
 
-        const itemSubtotal = price * qty;
-        subtotal += itemSubtotal;
+        // 1. SUBTOTAL: Precio de lista
+        subtotalRegulares += regularPrice * qty;
 
+        // 2. AHORRO BASE: Diferencia unitaria
+        let ahorroItem = (regularPrice - effectivePrice) * qty;
+
+        // 3. LÓGICA DE PROMOCIONES UNIVERSAL
         const ofRaw = item.oferta_gondola;
-        if (ofRaw) {
+        if (ofRaw && qty > 1) {
           try {
             const ofObj = typeof ofRaw === 'string' ? JSON.parse(ofRaw) : ofRaw;
-            const storeKey = store.name.toLowerCase().replace(' ', '');
-            const promo = ofObj[storeKey] || ofObj[store.name.toLowerCase()];
+            const promo = ofObj[storeKeySuffix];
             
             if (promo && promo.etiqueta) {
               const label = promo.etiqueta.toUpperCase();
-              if (label.includes('2X1')) {
-                totalGondolaDiscount += Math.floor(qty / 2) * price;
-              } else if (label.includes('70%') && label.includes('2DA')) {
-                totalGondolaDiscount += Math.floor(qty / 2) * (price * 0.7);
-              } else if (label.includes('80%') && label.includes('2DA')) {
-                totalGondolaDiscount += Math.floor(qty / 2) * (price * 0.8);
-              } else if (label.includes('50%') && label.includes('2DA')) {
-                totalGondolaDiscount += Math.floor(qty / 2) * (price * 0.5);
+
+              const nxmMatch = label.match(/(\d+)\s*X\s*(\d+)/);
+              if (nxmMatch) {
+                const n = parseInt(nxmMatch[1]);
+                const m = parseInt(nxmMatch[2]);
+                if (qty >= n) {
+                  const juegosGratis = Math.floor(qty / n);
+                  const unidadesRegaladas = juegosGratis * (n - m);
+                  ahorroItem += unidadesRegaladas * regularPrice;
+                }
+              } 
+              else if (label.includes('2DA')) {
+                const pctMatch = label.match(/(\d+)\s*%/);
+                if (pctMatch && qty >= 2) {
+                  const porcentajeDescuento = parseInt(pctMatch[1]) / 100;
+                  const paresDeProductos = Math.floor(qty / 2);
+                  ahorroItem += paresDeProductos * (regularPrice * porcentajeDescuento);
+                }
+              }
+              else if (label.includes('LLEVANDO')) {
+                const pctMatch = label.match(/(\d+)\s*%/);
+                const qtyMatch = label.match(/LLEVANDO\s*(\d+)/);
+                if (pctMatch && qtyMatch) {
+                  const pct = parseInt(pctMatch[1]) / 100;
+                  const minRequired = parseInt(qtyMatch[1]);
+                  if (qty >= minRequired) {
+                    ahorroItem += (regularPrice * qty) * pct;
+                  }
+                }
               }
             }
-          } catch (e) {}
+          } catch (e) { console.error("Error promo:", e); }
         }
+        
+        // Sumamos el ahorro del item al total del supermercado
+        ahorroTotal += ahorroItem;
       });
 
       const storeBenefits = benefits.filter(b => b.supermercado.toUpperCase() === store.name.toUpperCase());
+      
       return { 
         name: store.name, 
-        subtotal, 
-        gondolaDiscount: totalGondolaDiscount,
-        totalChango: subtotal - totalGondolaDiscount,
+        subtotal: subtotalRegulares, 
+        gondolaDiscount: ahorroTotal,
+        totalChango: subtotalRegulares - ahorroTotal,
         storeBenefits,
         hasAllItems
       };
@@ -219,79 +248,76 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, favorites, benefits, u
         </div>
       )}
 
-     {/* Mis Listas / Guardado */}
-<div className="px-1 mt-4">
-  {/* Título y Botón de Agregar en la misma línea */}
-  <div className="flex items-center gap-3 mb-3">
-    <h4 className="text-xs text-black dark:text-[#e9edef] uppercase tracking-tight font-black">
-      Mis Listas
-    </h4>
-    {canSave && !showSaveInput && (
-      <button
-        onClick={() => setShowSaveInput(true)}
-        className="w-5 h-5 bg-green-600 dark:bg-[#4ade80] text-white rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all"
-      >
-        <i className="fa-solid fa-plus text-[10px]"></i>
-      </button>
-    )}
-  </div>
+      {/* Mis Listas / Guardado */}
+      <div className="px-1 mt-4">
+        <div className="flex items-center gap-3 mb-3">
+          <h4 className="text-xs text-black dark:text-[#e9edef] uppercase tracking-tight font-black">
+            Mis Listas
+          </h4>
+          {canSave && !showSaveInput && (
+            <button
+              onClick={() => setShowSaveInput(true)}
+              className="w-5 h-5 bg-green-600 dark:bg-[#4ade80] text-white rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all"
+            >
+              <i className="fa-solid fa-plus text-[10px]"></i>
+            </button>
+          )}
+        </div>
 
-  {/* Input de Guardado con su Botón */}
-  {showSaveInput && onSaveCart && (
-    <div className="mt-2 flex flex-col gap-2 animate-in slide-in-from-top-2 duration-300">
-      <div className="flex gap-2">
-        <input
-          type="text"
-          autoFocus
-          placeholder="NOMBRE DE TU LISTA..."
-          value={newCartName}
-          onChange={(e) => setNewCartName(e.target.value.toUpperCase())}
-          className="flex-1 bg-neutral-50 dark:bg-[#1f2c34] border border-neutral-200 dark:border-[#233138] p-2.5 rounded-lg text-[10px] font-bold outline-none text-black dark:text-[#e9edef] focus:ring-1 ring-green-500"
-        />
-        <button
-          disabled={!newCartName.trim()}
-          onClick={() => {
-            onSaveCart(newCartName.trim());
-            setNewCartName('');
-            setShowSaveInput(false);
-          }}
-          className="px-4 bg-green-600 dark:bg-[#00a884] text-white rounded-lg text-[10px] font-black uppercase disabled:opacity-30 transition-opacity"
-        >
-          Guardar
-        </button>
-      </div>
-      <button 
-        onClick={() => setShowSaveInput(false)}
-        className="text-[9px] text-neutral-500 dark:text-[#8696a0] uppercase font-bold text-left pl-1"
-      >
-        Cancelar
-      </button>
-    </div>
-  )}
+        {showSaveInput && onSaveCart && (
+          <div className="mt-2 flex flex-col gap-2 animate-in slide-in-from-top-2 duration-300">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                autoFocus
+                placeholder="NOMBRE DE TU LISTA..."
+                value={newCartName}
+                onChange={(e) => setNewCartName(e.target.value.toUpperCase())}
+                className="flex-1 bg-neutral-50 dark:bg-[#1f2c34] border border-neutral-200 dark:border-[#233138] p-2.5 rounded-lg text-[10px] font-bold outline-none text-black dark:text-[#e9edef] focus:ring-1 ring-green-500"
+              />
+              <button
+                disabled={!newCartName.trim()}
+                onClick={() => {
+                  onSaveCart(newCartName.trim());
+                  setNewCartName('');
+                  setShowSaveInput(false);
+                }}
+                className="px-4 bg-green-600 dark:bg-[#00a884] text-white rounded-lg text-[10px] font-black uppercase disabled:opacity-30 transition-opacity"
+              >
+                Guardar
+              </button>
+            </div>
+            <button 
+              onClick={() => setShowSaveInput(false)}
+              className="text-[9px] text-neutral-500 dark:text-[#8696a0] uppercase font-bold text-left pl-1"
+            >
+              Cancelar
+            </button>
+          </div>
+        )}
 
-  {/* Chips de Listas Guardadas */}
-  <div className="mt-2 flex flex-wrap gap-2">
-    {savedCarts.map((cart, index) => (
-      <div 
-        key={index} 
-        className="flex items-center gap-2 p-1 pl-3 bg-neutral-100 dark:bg-[#1f2c34] border border-neutral-200 dark:border-[#233138] rounded-full"
-      >
-        <button 
-          onClick={() => onLoadCart(index)} 
-          className="text-[11px] font-bold text-black dark:text-[#e9edef] uppercase"
-        >
-          {cart.name}
-        </button>
-        <button
-          onClick={() => onDeleteCart(cart.id || index)}
-          className="w-6 h-6 flex items-center justify-center text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
-        >
-          <i className="fa-solid fa-xmark text-[10px]"></i>
-        </button>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {savedCarts.map((cart, index) => (
+            <div 
+              key={index} 
+              className="flex items-center gap-2 p-1 pl-3 bg-neutral-100 dark:bg-[#1f2c34] border border-neutral-200 dark:border-[#233138] rounded-full"
+            >
+              <button 
+                onClick={() => onLoadCart(index)} 
+                className="text-[11px] font-bold text-black dark:text-[#e9edef] uppercase"
+              >
+                {cart.name}
+              </button>
+              <button
+                onClick={() => onDeleteCart(cart.id || index)}
+                className="w-6 h-6 flex items-center justify-center text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
+              >
+                <i className="fa-solid fa-xmark text-[10px]"></i>
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
-    ))}
-  </div>
-</div>
     </div>
   );
 };
