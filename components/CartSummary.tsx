@@ -33,21 +33,27 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, favorites, benefits, u
       let ahorroTotal = 0;
       let hasAllItems = true;
 
+      // Mapeo de nombres para las keys de Supabase
+      const storeKeySuffix = store.name.toLowerCase().replace(' ', '');
+      const pKey = `p_${storeKeySuffix}`;   // Precio unitario oferta (ej: p_coto)
+      const prKey = `pr_${storeKeySuffix}`; // Precio lista (ej: pr_coto)
+
       items.forEach(item => {
         const qty = favorites[item.id] || 1;
-        const effectivePrice = item.prices[store.index]; // Precio unitario con promo aplicada
-        const storeKeySuffix = store.name.toLowerCase().replace(' ', '');
-        const regularPrice = (item as any)[`pr_${storeKeySuffix}`] || effectivePrice;
+        
+        // Tomamos los precios directamente de las columnas pr_ y p_
+        const effectivePrice = (item as any)[pKey] || 0;
+        const regularPrice = (item as any)[prKey] || effectivePrice;
 
         if (effectivePrice <= 0) {
           hasAllItems = false;
           return;
         }
 
-        // 1. SUBTOTAL: Siempre es Precio de Lista * Cantidad (Sin excepciones)
+        // 1. SUBTOTAL: Siempre Precio Regular * Cantidad
         subtotalRegulares += regularPrice * qty;
 
-        // 2. DETECTAR EL UMBRAL DE LA PROMO (Ej: 3 en un 3x2, 2 en un 2da 70%)
+        // 2. DETECTAR EL UMBRAL DE LA PROMO
         let minQtyRequired = 1; 
         const ofRaw = item.oferta_gondola;
         
@@ -60,24 +66,23 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, favorites, benefits, u
               const label = promo.etiqueta.toUpperCase();
               
               if (label.includes('X')) {
-                // Caso NxM: Extrae el primer número (Ej: "3X2" -> 3)
                 minQtyRequired = parseInt(label.match(/(\d+)\s*X/)?.[1] || "1");
               } else if (label.includes('2DA')) {
                 minQtyRequired = 2;
               } else if (label.includes('LLEVANDO')) {
-                // Caso "10% LLEVANDO 4": Extrae el 4
                 minQtyRequired = parseInt(label.match(/LLEVANDO\s*(\d+)/)?.[1] || "1");
               }
             }
           } catch (e) {}
         }
 
-        // 3. CÁLCULO DE AHORRO EXACTO
-        // Calculamos cuántas unidades realmente entran en la promoción
-        // Si qty=4 y minQty=3, solo 3 unidades tienen descuento.
+        // 3. CÁLCULO DE AHORRO:
+        // Calculamos cuántos combos completos de la oferta hay
+        // Si hay 3x2 y llevas 4, solo 3 unidades tienen el descuento.
         const unidadesConDescuento = Math.floor(qty / minQtyRequired) * minQtyRequired;
         
-        // El ahorro es: (Precio Lista - Precio Promo) * unidades que califican
+        // El ahorro es la diferencia entre el precio de lista y el de oferta 
+        // multiplicada por la cantidad de unidades que entraron en la promo.
         const ahorroItem = (regularPrice - effectivePrice) * unidadesConDescuento;
         
         ahorroTotal += ahorroItem;
@@ -85,7 +90,6 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, favorites, benefits, u
 
       const storeBenefits = benefits.filter(b => b.supermercado.toUpperCase() === store.name.toUpperCase());
       
-      // Mantenemos los nombres de variables que espera tu componente (subtotal, gondolaDiscount, totalChango)
       return { 
         name: store.name, 
         subtotal: subtotalRegulares, 
