@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Product } from '../types';
 
@@ -87,9 +86,7 @@ const ProductList: React.FC<ProductListProps> = ({
         const qty = quantities ? (quantities[p.id] || 1) : 1;
         const badges = getPromoBadges(p.oferta_gondola);
         const contNum = (p as any).contenido_numerico || 0;
-        const unitMeasure = (p as any).unidad_medida || '';
-        // Calculamos: precio más bajo dividido el contenido
-        const unitPrice = (p.stats.min && contNum > 0) ? Math.round(p.stats.min / contNum) : 0;
+        
         return (
           <div 
             key={p.id} 
@@ -140,9 +137,7 @@ const ProductList: React.FC<ProductListProps> = ({
               </div>
             </div>
 
-            // Localiza la sección final del mapeo de productos donde están los botones
             <div className="flex items-center gap-2">
-              {/* Modificamos la condición: Si es favorito y tenemos la función de actualizar, mostramos el selector */}
               {fav && onUpdateQuantity && !purchased && (
                 <div 
                   className="flex items-center bg-neutral-100 dark:bg-neutral-900 px-1 rounded-md border border-neutral-200 dark:border-neutral-800"
@@ -166,8 +161,6 @@ const ProductList: React.FC<ProductListProps> = ({
                 </div>
               )}
               
-              {/* El botón de favorito (carrito) ahora solo se muestra si NO es favorito 
-                  o si queremos permitir quitarlo con un click (opcional) */}
               {!fav && (
                 <button 
                   onClick={(e) => {
@@ -181,18 +174,16 @@ const ProductList: React.FC<ProductListProps> = ({
                 </button>
               )}
 
-              {/* Si es favorito y NO es la vista de carrito, mostramos el icono en dorado 
-                  al lado del selector para indicar que ya está agregado */}
               {fav && !isCartView && (
                 <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onFavoriteToggle(p.id);
-                }}
-                className="text-star-gold p-1.5"
-              >
-                <i className="fa-solid fa-cart-shopping text-[20px]"></i>
-              </button>
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onFavoriteToggle(p.id);
+                  }}
+                  className="text-star-gold p-1.5"
+                >
+                  <i className="fa-solid fa-cart-shopping text-[20px]"></i>
+                </button>
               )}
             </div>
           </div>
