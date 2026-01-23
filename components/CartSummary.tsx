@@ -53,38 +53,58 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, favorites, benefits, u
         // 1. SUBTOTAL: Siempre Precio Regular * Cantidad
         subtotalRegulares += regularPrice * qty;
 
-        // 2. DETECTAR EL UMBRAL DE LA PROMO
-        let minQtyRequired = 1; 
+        // 2 y 3. CALCULAR AHORRO BASADO EN LA ETIQUETA
+        let ahorroItem = 0;
         const ofRaw = item.oferta_gondola;
-        
+
         if (ofRaw) {
           try {
             const ofObj = typeof ofRaw === 'string' ? JSON.parse(ofRaw) : ofRaw;
             const promo = ofObj[storeKeySuffix];
-            
-            if (promo && promo.etiqueta) {
-              const label = promo.etiqueta.toUpperCase();
+            const label = promo?.etiqueta?.toUpperCase() || "";
+
+            // CASO A: 2da UNIDAD AL % (ej: "50% en la 2da", "2da al 70%")
+            if (label.includes('2D') || label.includes('2DA')) {
+              // Buscamos el porcentaje en el texto (ej: extrae el 50 o el 70)
+              const porcentajeMatch = label.match(/(\d+)%/);
+              const porcentaje = porcentajeMatch ? parseInt(porcentajeMatch[1]) : 0;
               
-              if (label.includes('X')) {
-                minQtyRequired = parseInt(label.match(/(\d+)\s*X/)?.[1] || "1");
-              } else if (label.includes('2DA')) {
-                minQtyRequired = 2;
-              } else if (label.includes('LLEVANDO')) {
-                minQtyRequired = parseInt(label.match(/LLEVANDO\s*(\d+)/)?.[1] || "1");
+              // Calculamos cuántos pares hay
+              const cantidadPares = Math.floor(qty / 2);
+              
+              // Ahorro = Cantidad de pares * Precio Regular * (Porcentaje / 100)
+              ahorroItem = cantidadPares * regularPrice * (porcentaje / 100);
+            } 
+            // CASO B: COMBOS CLÁSICOS (3X2, 4X3, 2X1)
+            else if (label.includes('X')) {
+              const comboMatch = label.match(/(\d+)\s*X\s*(\d+)/);
+              if (comboMatch) {
+                const pagas = parseInt(comboMatch[2]); // Ej en 3x2: pagas 2
+                const llevas = parseInt(comboMatch[1]); // Ej en 3x2: llevas 3
+                const unidadesRegaladasPorCombo = llevas - pagas; // Ej: 1 unidad gratis
+
+                const cantidadCombos = Math.floor(qty / llevas);
+                
+                // Ahorro = Combos completos * Unidades gratis * Precio Regular
+                ahorroItem = cantidadCombos * unidadesRegaladasPorCombo * regularPrice;
               }
             }
-          } catch (e) {}
+            // CASO C: DESCUENTOS POR UMBRAL (LLEVANDO X UNIDADES) O PORCENTAJE DIRECTO
+            else if (regularPrice > effectivePrice) {
+              // Si no es un combo, pero hay diferencia de precio, aplicamos la diferencia
+              // Si dice "LLEVANDO", validamos el mínimo. Si no, aplica a todas (qty).
+              const minQtyMatch = label.match(/LLEVANDO\s*(\d+)/);
+              const minQty = minQtyMatch ? parseInt(minQtyMatch[1]) : 1;
+              
+              if (qty >= minQty) {
+                ahorroItem = (regularPrice - effectivePrice) * qty;
+              }
+            }
+          } catch (e) {
+            console.error("Error procesando promo", e);
+          }
         }
 
-        // 3. CÁLCULO DE AHORRO:
-        // Calculamos cuántos combos completos de la oferta hay
-        // Si hay 3x2 y llevas 4, solo 3 unidades tienen el descuento.
-        const unidadesConDescuento = Math.floor(qty / minQtyRequired) * minQtyRequired;
-        
-        // El ahorro es la diferencia entre el precio de lista y el de oferta 
-        // multiplicada por la cantidad de unidades que entraron en la promo.
-        const ahorroItem = (regularPrice - effectivePrice) * unidadesConDescuento;
-        
         ahorroTotal += ahorroItem;
       });
 
