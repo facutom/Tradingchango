@@ -140,29 +140,59 @@ const ProductList: React.FC<ProductListProps> = ({
               </div>
             </div>
 
+            // Localiza la sección final del mapeo de productos donde están los botones
             <div className="flex items-center gap-2">
-              {isCartView && onUpdateQuantity && !purchased && (
+              {/* Modificamos la condición: Si es favorito y tenemos la función de actualizar, mostramos el selector */}
+              {fav && onUpdateQuantity && !purchased && (
                 <div 
                   className="flex items-center bg-neutral-100 dark:bg-neutral-900 px-1 rounded-md border border-neutral-200 dark:border-neutral-800"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <button onClick={() => onUpdateQuantity(p.id, -1)} className="text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white px-1.5 font-black text-[12px]">-</button>
-                  <span className="font-mono text-[11px] font-black min-w-[14px] text-center text-black dark:text-white">{qty}</span>
-                  <button onClick={() => onUpdateQuantity(p.id, 1)} className="text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white px-1.5 font-black text-[12px]">+</button>
+                  <button 
+                    onClick={() => onUpdateQuantity(p.id, -1)} 
+                    className="text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white px-1.5 font-black text-[12px]"
+                  >
+                    -
+                  </button>
+                  <span className="font-mono text-[11px] font-black min-w-[14px] text-center text-black dark:text-white">
+                    {qty}
+                  </span>
+                  <button 
+                    onClick={() => onUpdateQuantity(p.id, 1)} 
+                    className="text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white px-1.5 font-black text-[12px]"
+                  >
+                    +
+                  </button>
                 </div>
               )}
               
-              {!isCartView && (
+              {/* El botón de favorito (carrito) ahora solo se muestra si NO es favorito 
+                  o si queremos permitir quitarlo con un click (opcional) */}
+              {!fav && (
                 <button 
                   onClick={(e) => {
                     e.stopPropagation();
                     onFavoriteToggle(p.id);
                   }}
-                  className={`transition-all flex items-center justify-center active:scale-90 p-1.5 ${fav ? 'text-star-gold' : 'text-neutral-300 dark:text-neutral-800'}`}
+                  className="text-neutral-300 dark:text-neutral-800 transition-all flex items-center justify-center active:scale-90 p-1.5"
                   style={{ transform: 'scale(0.95)' }}
                 >
                   <i className="fa-solid fa-cart-shopping text-[20px]"></i>
                 </button>
+              )}
+
+              {/* Si es favorito y NO es la vista de carrito, mostramos el icono en dorado 
+                  al lado del selector para indicar que ya está agregado */}
+              {fav && !isCartView && (
+                <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onFavoriteToggle(p.id);
+                }}
+                className="text-star-gold p-1.5"
+              >
+                <i className="fa-solid fa-cart-shopping text-[20px]"></i>
+              </button>
               )}
             </div>
           </div>

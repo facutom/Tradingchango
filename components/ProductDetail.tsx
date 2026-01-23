@@ -27,6 +27,9 @@ interface ProductDetailProps {
   isFavorite: boolean;
   products: Product[];
   theme: 'light' | 'dark';
+  // AGREGAR ESTAS DOS:
+  quantities?: Record<number, number>;
+  onUpdateQuantity?: (id: number, delta: number) => void;
 }
 
 const AreaChartComponent = AreaChart as any;
@@ -354,11 +357,37 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
             </div>
           </div>
 
-          {/* Boton Fijo */}
-          <div className="w-full sticky bottom-0 bg-white/95 dark:bg-primary/95 backdrop-blur-md pt-2 pb-6 md:pb-4 px-4">
+          {/* Reemplaza el bloque del Botón Fijo por este: */}
+        <div className="w-full sticky bottom-0 bg-white/95 dark:bg-primary/95 backdrop-blur-md pt-2 pb-6 md:pb-4 px-4">
+          <div className="flex gap-2">
+            {/* Si es favorito, mostramos un selector de cantidad grande al lado del botón */}
+            {isFavorite && onUpdateQuantity && (
+              <div className="flex items-center bg-neutral-100 dark:bg-[#1f2c34] rounded-lg border border-neutral-200 dark:border-[#233138] px-2">
+                <button 
+                  onClick={() => onUpdateQuantity(product.id, -1)}
+                  className="w-10 h-full text-black dark:text-white text-xl font-black"
+                >
+                  -
+                </button>
+                <span className="w-8 text-center font-mono font-black text-black dark:text-white">
+                  {quantities?.[product.id] || 1}
+                </span>
+                <button 
+                  onClick={() => onUpdateQuantity(product.id, 1)}
+                  className="w-10 h-full text-black dark:text-white text-xl font-black"
+                >
+                  +
+                </button>
+              </div>
+            )}
+
             <button 
               onClick={() => onFavoriteToggle(product.id)} 
-              className={`w-full py-3.5 rounded-lg font-black uppercase tracking-[0.1em] text-xs flex items-center justify-center gap-2 active:scale-95 transition-all ${isFavorite ? 'bg-star-gold text-white' : 'bg-primary dark:bg-[#e9edef] text-white dark:text-black border dark:border-[#e9edef]'}`}
+              className={`flex-1 py-3.5 rounded-lg font-black uppercase tracking-[0.15em] text-xs flex items-center justify-center gap-2 active:scale-95 transition-all ${
+                isFavorite 
+                  ? 'bg-star-gold text-white' 
+                  : 'bg-primary dark:bg-[#e9edef] text-white dark:text-black'
+              }`}
             >
               <i className="fa-solid fa-cart-shopping"></i>
               {isFavorite ? 'En el Chango' : 'Añadir al Chango'}
