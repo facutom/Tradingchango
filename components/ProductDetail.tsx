@@ -295,21 +295,48 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onClose, onFav
               {STORES.map((s) => {
                 const price = (product as any)[s.key];
                 const url = (product as any)[s.url];
-                const storeKey = s.key.substring(2);
-                const promo = (product as any).oferta_gondola?.[storeKey]?.etiqueta;
+                
+                // 1. Normalizamos la key del store para que coincida con el JSON (ej: 'p_coto' -> 'coto')
+                const storeKey = s.key.replace('p_', '').toLowerCase();
+
+                // 2. Manejamos el JSONB de Supabase: si es string, lo parseamos; si no, lo usamos directo
+                let ofertaData: any = {};
+                try {
+                  const rawOferta = (product as any).oferta_gondola;
+                  ofertaData = typeof rawOferta === 'string' ? JSON.parse(rawOferta) : rawOferta;
+                } catch (e) {
+                  ofertaData = {};
+                }
+
+                // 3. Extraemos la etiqueta específica de este supermercado
+                const promo = ofertaData?.[storeKey]?.etiqueta;
+
                 if (!price || price <= 0) return null;
-                const storeColors: any = { COTO: 'bg-red-500', CARREFOUR: 'bg-blue-500', DIA: 'bg-red-500', JUMBO: 'bg-green-500', 'MAS ONLINE': 'bg-green-500' };
-           
+                
+                const storeColors: any = { 
+                  COTO: 'bg-red-500', 
+                  CARREFOUR: 'bg-blue-500', 
+                  DIA: 'bg-red-500', 
+                  JUMBO: 'bg-green-500', 
+                  'MAS ONLINE': 'bg-green-500' 
+                };
+
                 return (
                   <div key={s.name} className="flex items-center justify-between py-1.5 border-b border-neutral-50 dark:border-[#233138] last:border-0">
                     <div className="flex items-center gap-2">
                       <span className={`w-2 h-2 rounded-full ${storeColors[s.name]}`}></span>
-                      <div className="flex items-baseline gap-1.5">
+                      <div className="flex items-center gap-2">
                         <span className="text-[13px] font-black text-black dark:text-[#e9edef] uppercase">{s.name}</span>
-                         {promo && <span className="bg-green-600 text-white text-[9px] font-black px-1 py-0.5 rounded-[1px] uppercase leading-none">{promo}</span>}
+                        
+                        {/* Renderizado de la oferta al lado del nombre */}
+                        {promo && (
+                          <span className="bg-[#00a650] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-tighter leading-none">
+                            {promo}
+                          </span>
+                        )}
                       </div>
                     </div>
-                      <a 
+                    <a 
                       href={url || '#'} 
                       target="_blank" 
                       rel="noopener noreferrer" 
