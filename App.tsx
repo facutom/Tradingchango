@@ -386,12 +386,14 @@ useEffect(() => {
         const storeKey = s.name.toLowerCase().replace(' ', ''); // coto, carrefour, etc.
         const price = (p as any)[s.key] || 0;
         const url = (p as any)[s.url];
+        const stockKey = `stock_${storeKey}`;
+        const hasStock = (p as any)[stockKey] !== false;
 
         // VALIDACIÓN: ¿Es outlier? ¿Tiene URL válida?
         const isOutlier = outlierData[storeKey] === true;
         const hasUrl = url && url !== '#' && url.length > 5;
 
-        if (price > 0 && hasUrl && !isOutlier) {
+        if (price > 0 && hasUrl && !isOutlier && hasStock) {
           return price;
         }
         return 0; // Se ignora

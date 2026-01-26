@@ -9,6 +9,11 @@ export interface Product {
   p_dia: number;
   p_jumbo: number;
   p_masonline: number;
+  stock_coto?: boolean;
+  stock_carrefour?: boolean;
+  stock_dia?: boolean;
+  stock_jumbo?: boolean;
+  stock_masonline?: boolean;
   url_coto?: string;
   url_carrefour?: string;
   url_dia?: string;

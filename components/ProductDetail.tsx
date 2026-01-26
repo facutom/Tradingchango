@@ -93,12 +93,18 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   const { minPrice, minStore, avgPrice, minStoreUrl, unitPrice, unitMeasure } = useMemo(() => {
     if (!product) return { minPrice: 0, minStore: '', avgPrice: 0, minStoreUrl: '#', unitPrice: 0, unitMeasure: '' };
     const prices = STORES
-      .map(s => ({ 
-        name: s.name, 
-        val: (product as any)[s.key] as number,
-        url: (product as any)[s.url] as string 
-      }))
-      .filter(p => p.val > 0);
+      .map(s => {
+        const storeKey = s.name.toLowerCase().replace(' ', '');
+        const stockKey = `stock_${storeKey}`;
+        const hasStock = (product as any)[stockKey] !== false;
+        return {
+          name: s.name,
+          val: (product as any)[s.key] as number,
+          url: (product as any)[s.url] as string,
+          stock: hasStock
+        };
+      })
+      .filter(p => p.val > 0 && p.stock);
 
     if (prices.length === 0) return { minPrice: 0, minStore: '', avgPrice: 0, minStoreUrl: '#', unitPrice: 0, unitMeasure: '' };
     const min = Math.min(...prices.map(p => p.val));
@@ -313,9 +319,11 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                 const storeKey = s.name.toLowerCase().replace(' ', '');
                 const isOutlier = outlierData[storeKey] === true;
                 const hasUrl = url && url !== '#' && url.length > 5;
+                const stockKey = `stock_${storeKey}`;
+                const hasStock = (product as any)[stockKey] !== false;
 
                 // 3. Renderizado condicional
-                if (!price || price <= 0 || isOutlier || !hasUrl) {
+                if (!price || price <= 0 || isOutlier || !hasUrl || !hasStock) {
                   return null;
                 }
 

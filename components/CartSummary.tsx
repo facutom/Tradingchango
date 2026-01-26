@@ -51,12 +51,14 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, favorites, benefits, u
         const effectivePrice = (item as any)[pKey] || 0;
         const regularPrice = (item as any)[prKey] || effectivePrice;
         const url = (item as any)[`url_${storeKeySuffix}`];
+        const stockKey = `stock_${storeKeySuffix}`;
+        const hasStock = (item as any)[stockKey] !== false;
 
         // Validaciones
         const isOutlier = outlierData[storeKeySuffix] === true;
         const hasUrl = url && url !== '#' && url.length > 5;
 
-        if (effectivePrice <= 0 || isOutlier || !hasUrl) {
+        if (effectivePrice <= 0 || isOutlier || !hasUrl || !hasStock) {
           hasAllItems = false;
           return; // STOCK INCOMPLETO
         }
