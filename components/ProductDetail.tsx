@@ -335,7 +335,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                   const rawOferta = (product as any).oferta_gondola;
                   ofertaData = typeof rawOferta === 'string' ? JSON.parse(rawOferta) : rawOferta;
                 } catch (e) { ofertaData = {}; }
-                const promo = ofertaData?.[storeKey]?.etiqueta;
+                const storePromo = ofertaData?.[storeKey];
+                const promo = typeof storePromo === 'object' ? storePromo?.etiqueta : storePromo;
 
                 return (
                   <div key={s.name} className="flex items-center justify-between py-1.5 border-b border-neutral-50 dark:border-[#233138] last:border-0">
