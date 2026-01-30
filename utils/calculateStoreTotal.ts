@@ -16,30 +16,26 @@ const getThreshold = (oferta: string): number => {
 
 export const calculateStoreTotal = (cartItems: CartItem[], storeKey: string): number => {
   return cartItems.reduce((total, item) => {
-    const price = item[`p_${storeKey}` as keyof CartItem] as number; // Precio promo unitario
-    const regularPrice = item[`pr_${storeKey}` as keyof CartItem] as number; // Precio regular
+    const pPromo = item[`p_${storeKey}` as keyof CartItem] as number;
+    const pRegular = item[`pr_${storeKey}` as keyof CartItem] as number;
     const oferta = item.oferta_gondola[storeKey as keyof typeof item.oferta_gondola] || "";
     
-    if (price === null || price === undefined) return total;
+    // Si no hay precio, sumamos 0 (el filtro hasAllItems se encargará de descartar la tienda)
+    if (!pPromo && !pRegular) return total;
 
+    // Si el pr_ no existe (a veces la API no lo manda), usamos p_ como base
+    const basePrice = pRegular || pPromo;
     const threshold = getThreshold(oferta);
     const quantity = item.quantity;
 
-    // Si hay promo (threshold > 1) y el usuario lleva suficientes para activarla
     if (threshold > 1 && quantity >= threshold) {
-      // Calculamos cuántas unidades completan "combos" de la promo
       const unitsInPromo = Math.floor(quantity / threshold) * threshold;
-      // Las unidades que sobran y no llegan a completar otro combo
       const remainingUnits = quantity % threshold;
-
-      // Unidades en promo van a p_ (precio ya descontado)
-      // Unidades sueltas van a pr_ (precio regular)
-      const subtotal = (unitsInPromo * price) + (remainingUnits * regularPrice);
-      return total + subtotal;
+      // Múltiplos van con p_, el resto con el precio base
+      return total + (unitsInPromo * pPromo) + (remainingUnits * basePrice);
     } else {
-      // Si no llega al mínimo (ej: lleva 1 y la promo es 2x1) 
-      // o no hay promo, todo se cobra al precio regular.
-      return total + (quantity * regularPrice);
+      // Si no hay promo o no llega a la cantidad mínima
+      return total + (quantity * basePrice);
     }
   }, 0);
 };
