@@ -87,7 +87,9 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, benefits, userMembersh
   const best = results[0];
   const others = results.slice(1);
   const worstOption = results.length > 1 ? results[results.length - 1] : best;
-  const potentialSavings = worstOption.total - best.total;
+  const potentialSavings = results.length > 1 
+    ? (results[results.length - 1].total - best.total) 
+    : best.savings;
 
   const paymentAdvice = useMemo(() => {
     if (!best.storeBenefits.length) return null;
