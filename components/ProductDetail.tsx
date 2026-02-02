@@ -11,7 +11,7 @@ import {
 } from 'recharts';
 import { getProductHistory } from '../services/supabase';
 import { Product, PriceHistory } from '../types';
-import { supabase } from '../lib/Supabase'; // Probá con 'S' mayúscula
+import { supabase } from '../services/supabase';
 // Tipos para el gráfico
 interface ChartDataItem {
   date: string;
