@@ -71,13 +71,19 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
     if (product) {
       document.title = `${product.nombre} - TradingChango`;
 
-      // Registrar visita usando el nuevo nombre de función RPC
+      // Registro de visita para el sistema de prioridades
       if (product.ean) {
+        const eanStr = product.ean.toString().trim();
+        console.log("Registrando visita para EAN:", eanStr);
+        
         supabase.rpc('visitas', { 
-          producto_ean: product.ean.toString() 
-        }).catch(err => console.error("Error al registrar visita:", err));
+          producto_ean: eanStr 
+        })
+        .then(() => console.log("✅ Visita impactada en BD"))
+        .catch(err => console.error("❌ Error RPC visitas:", err));
       }
 
+      // Historial de precios
       getProductHistory(product.nombre, 365)
         .then(data => setHistory(data || []))
         .catch(() => setHistory([]));
