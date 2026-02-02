@@ -68,27 +68,33 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   const product = useMemo(() => products.find(p => p.id === productId), [products, productId]);
 
   useEffect(() => {
-    if (product) {
-      document.title = `${product.nombre} - TradingChango`;
+  if (product) {
+    document.title = `${product.nombre} - TradingChango`;
 
-      // Registro de visita para el sistema de prioridades
-      if (product.ean) {
-        const eanStr = product.ean.toString().trim();
-        console.log("Registrando visita para EAN:", eanStr);
-        
-        supabase.rpc('visitas', { 
-          producto_ean: eanStr 
-        })
-        .then(() => console.log("✅ Visita impactada en BD"))
-        .catch(err => console.error("❌ Error RPC visitas:", err));
-      }
+    // LOG DE DIAGNÓSTICO
+    console.log("DATOS DEL PRODUCTO RECIBIDOS:", product);
 
-      // Historial de precios
-      getProductHistory(product.nombre, 365)
-        .then(data => setHistory(data || []))
-        .catch(() => setHistory([]));
+    if (product.ean) {
+      const eanStr = product.ean.toString().trim();
+      console.log("🚀 DISPARANDO RPC PARA EAN:", eanStr);
+      
+      supabase.rpc('visitas', { 
+        producto_ean: eanStr 
+      })
+      .then(() => console.log("✅ ÉXITO: Visita sumada en Supabase"))
+      .catch(err => {
+        console.error("❌ ERROR EN RPC:", err);
+        alert("Error en base de datos: " + err.message);
+      });
+    } else {
+      console.error("⚠️ EL PRODUCTO NO TIENE EAN. Propiedades disponibles:", Object.keys(product));
     }
-  }, [product]);
+
+    getProductHistory(product.nombre, 365)
+      .then(data => setHistory(data || []))
+      .catch(() => setHistory([]));
+  }
+}, [product]);
 
   useEffect(() => {
     const handleEvents = (e: MouseEvent | KeyboardEvent) => {
