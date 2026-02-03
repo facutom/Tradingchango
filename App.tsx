@@ -580,9 +580,13 @@ useEffect(() => {
   
   navigate('/', { replace: true });
 };
+  // Calculamos la cantidad de productos en el carrito que realmente son visibles
+  const visibleCartCount = useMemo(() => {
+    return products.filter(p => favorites[p.id] && p.visible_web !== false).length;
+  }, [favorites, products]);
 
   if (loading && products.length === 0) return <div className="min-h-screen flex items-center justify-center dark:bg-primary dark:text-white font-mono text-[11px] uppercase tracking-[0.2em]">Conectando a Mercado...</div>;
-  
+ 
   return (
   <div className="max-w-screen-md mx-auto min-h-screen bg-white dark:bg-primary shadow-2xl transition-colors font-sans pb-16">
     
@@ -752,7 +756,7 @@ useEffect(() => {
 
 </Routes>
       </main>
-      <BottomNav cartCount={Object.keys(favorites).length} />
+      <BottomNav cartCount={visibleCartCount} />
       {isAuthOpen && <AuthModal 
         isOpen={isAuthOpen} 
         onClose={() => setIsAuthOpen(false)} 
@@ -764,7 +768,7 @@ useEffect(() => {
         onSaveCart={handleSaveCurrentCart}
         onDeleteCart={handleDeleteSavedCart}
         onLoadCart={handleLoadSavedCart}
-        currentActiveCartSize={Object.keys(favorites).length}
+        currentActiveCartSize={visibleCartCount}
       />}
       <Footer />
     </div>
