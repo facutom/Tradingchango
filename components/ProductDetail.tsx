@@ -44,11 +44,11 @@ const CartesianGridComponent = CartesianGrid as any;
 const formatCurrency = (n: number) => new Intl.NumberFormat('es-AR').format(n);
 
 const STORES = [
-  { name: "COTO", key: 'p_coto', url: 'url_coto' },
-  { name: "CARREFOUR", key: 'p_carrefour', url: 'url_carrefour' },
-  { name: "DIA", key: 'p_dia', url: 'url_dia' },
-  { name: "JUMBO", key: 'p_jumbo', url: 'url_jumbo' },
-  { name: "MAS ONLINE", key: 'p_masonline', url: 'url_masonline' }
+  { name: "COTO", displayName: "COTO", key: 'p_coto', url: 'url_coto' },
+  { name: "CARREFOUR", displayName: "CARREFOUR", key: 'p_carrefour', url: 'url_carrefour' },
+  { name: "DIA", displayName: "DIA ONLINE", key: 'p_dia', url: 'url_dia' },
+  { name: "JUMBO", displayName: "JUMBO", key: 'p_jumbo', url: 'url_jumbo' },
+  { name: "MAS ONLINE", displayName: "MAS ONLINE", key: 'p_masonline', url: 'url_masonline' }
 ] as const;
 
 const ProductDetail: React.FC<ProductDetailProps> = ({ 
@@ -135,6 +135,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         
         return {
           name: s.name,
+          displayName: s.displayName,
           val: (product as any)[s.key] as number,
           url: (product as any)[s.url] as string,
           stock: hasStock,
@@ -152,7 +153,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
     
     return { 
       minPrice: min, 
-      minStore: winner?.name || '', 
+      minStore: winner?.displayName || '', 
       avgPrice: prices.reduce((acc, curr) => acc + curr.val, 0) / prices.length,
       minStoreUrl: winner?.url || '#',
       unitPrice: (min > 0 && contNum > 0) ? Math.round(min / contNum) : 0,
@@ -186,7 +187,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
           date: localDate.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' }),
           fullDate: localDate.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' }),
           price: h.precio_minimo,
-          store: h.supermercado
+          store: STORES.find(s => s.name.toLowerCase() === h.supermercado?.toLowerCase())?.displayName || h.supermercado
         };
       });
 
@@ -282,7 +283,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                         <span className="text-[11px] font-black text-black dark:text-[#e9edef] font-mono">${formatCurrency(Math.round(avgPrice))}</span>
                       </div>
 
-                      {unitPrice > 0 && (
+                      {unitPrice > 0 && product?.categoria !== 'Carnes' && product?.categoria !== 'Verdu' && (
                         <div className="flex items-center gap-2 bg-neutral-100 dark:bg-[#1f2c34] border border-neutral-200 dark:border-[#233138] px-2.5 py-1 rounded-md">
                           <span className="text-[10px] font-black text-neutral-500 dark:text-neutral-400 uppercase">POR {unitMeasure || 'Unid'}</span>
                           <span className="text-[11px] font-black text-black dark:text-[#e9edef] font-mono">${formatCurrency(unitPrice)}</span>
@@ -390,7 +391,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                     <div className="flex items-center gap-2">
                       <span className={`w-2 h-2 rounded-full ${storeColors[s.name]}`}></span>
                       <div className="flex items-center gap-2">
-                        <span className="text-[13px] font-black text-black dark:text-[#e9edef] uppercase">{s.name}</span>
+                        <span className="text-[13px] font-black text-black dark:text-[#e9edef] uppercase">{s.displayName}</span>
                         {promo && <span className="bg-[#00a650] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-tighter leading-none">{promo}</span>}
                       </div>
                     </div>

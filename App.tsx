@@ -16,7 +16,15 @@ import { Routes, Route, useNavigate, useLocation, useParams, Navigate } from 're
 const MemoizedHeader = memo(Header); 
 const MemoizedBottomNav = memo(BottomNav); 
 const MemoizedFooter = memo(Footer);
+const MemoizedProductList = memo(ProductList);
 
+const STORES = [
+  { name: "COTO", key: 'p_coto', url: 'url_coto' },
+  { name: "CARREFOUR", key: 'p_carrefour', url: 'url_carrefour' },
+  { name: "DIA", key: 'p_dia', url: 'url_dia' },
+  { name: "JUMBO", key: 'p_jumbo', url: 'url_jumbo' },
+  { name: "MAS ONLINE", key: 'p_masonline', url: 'url_masonline' }
+] as const;
 
 const slugify = (text: string) => {
   return text.toString().toLowerCase()
@@ -31,7 +39,7 @@ const calculateOutliers = (products: Product[]): Product[] => {
     const p_prices: number[] = [];
     const pr_prices: number[] = [];
 
-    STORES.forEach(store => {
+    STORES.forEach((store: (typeof STORES)[number]) => {
       const p_key = store.key as keyof Product;
       const pr_key = `pr_${store.key.split('_')[1]}` as keyof Product;
 
@@ -61,7 +69,7 @@ const calculateOutliers = (products: Product[]): Product[] => {
 
     const outliers: { [key: string]: boolean } = {};
 
-    STORES.forEach(store => {
+    STORES.forEach((store: (typeof STORES)[number]) => {
       const storeKey = store.name.toLowerCase().replace(' ', '');
       const p_key = store.key as keyof Product;
       const pr_key = `pr_${store.key.split('_')[1]}` as keyof Product;
@@ -119,18 +127,10 @@ const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUp
   );
 };
 
-const STORES = [
-  { name: "COTO", key: 'p_coto', url: 'url_coto' },
-  { name: "CARREFOUR", key: 'p_carrefour', url: 'url_carrefour' },
-  { name: "DIA", key: 'p_dia', url: 'url_dia' },
-  { name: "JUMBO", key: 'p_jumbo', url: 'url_jumbo' },
-  { name: "MAS ONLINE", key: 'p_masonline', url: 'url_masonline' }
-] as const;
-
 const App: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [history, setHistory] = useState<PriceHistory[]>([]);
-const [config, setConfig] = useState<Record<string, string>>({});
+  const [config, setConfig] = useState<Record<string, string>>({});
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [benefits, setBenefits] = useState<Benefit[]>([]);
@@ -140,8 +140,7 @@ const [config, setConfig] = useState<Record<string, string>>({});
   const [trendFilter, setTrendFilter] = useState<'up' | 'down' | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
-  
-  // MODIFICACIÓN: Carga inicial desde LocalStorage para evitar pérdida al minimizar/recargar
+  const [displayLimit, setDisplayLimit] = useState(20);
   const [favorites, setFavorites] = useState<Record<number, number>>(() => {
     const saved = localStorage.getItem('tc_favs');
     return saved ? JSON.parse(saved) : {};
@@ -163,21 +162,11 @@ const [config, setConfig] = useState<Record<string, string>>({});
   const navigate = useNavigate();
   const location = useLocation();
 
-  // --- EFECTO DE RECUPERACIÓN DE CONTRASEÑA ---
-  useEffect(() => {
-    // Si la URL contiene el hash de recuperación, preparamos el modal.
-    if (location.hash.includes('type=recovery')) {
-      // Guardamos en localStorage para que el modal sepa qué vista mostrar.
-      localStorage.setItem('active_auth_view', 'update_password');
-      setIsAuthOpen(true);
-    }
-  }, [location.hash]);
-
-
   useEffect(() => {
     // Solo borramos si NO estamos en la misma página (evita bucles)
     setSearchTerm('');
     setTrendFilter(null);
+    setDisplayLimit(20);
   }, [location.pathname]);
   
   const navigateTo = (path: string) => navigate(path === 'home' ? '/' : '/' + path.replace('/', ''));
@@ -234,114 +223,132 @@ const [config, setConfig] = useState<Record<string, string>>({});
     }
   };
 
-    const loadData = useCallback(async (sessionUser: User | null) => { 
-     try { 
-       // 1. INTENTO DE CARGA INSTANTÁNEA DESDE CACHÉ 
-       if (products.length === 0) { 
-         const cachedProds = localStorage.getItem('tc_cache_products'); 
-         const cachedConf = localStorage.getItem('tc_cache_config'); 
-         if (cachedProds) { 
-           setProducts(JSON.parse(cachedProds)); 
-           if (cachedConf) setConfig(JSON.parse(cachedConf)); 
-           setLoading(false); // Quitamos el "Conectando..." de inmediato 
-         } else { 
-           setLoading(true); 
-         } 
-       } 
- 
-       // 2. CARGA DE DATOS ESENCIALES (Config y Productos) 
-       const [prodData, configData] = await Promise.all([ 
-         getProducts(), 
-         getConfig() 
-       ]); 
- 
-       const productsWithOutliers = calculateOutliers(prodData || []); 
-       setProducts(productsWithOutliers || []); 
-       setConfig(configData || {}); 
-       
-       // Guardamos en caché esencial 
-       localStorage.setItem('tc_cache_products', JSON.stringify(productsWithOutliers)); 
-       localStorage.setItem('tc_cache_config', JSON.stringify(configData || {})); 
- 
-       // 3. CARGA NO BLOQUEANTE (Historial y Beneficios) 
-       // Se ejecutan después para no frenar el renderizado de la lista 
-       getPriceHistory(7).then(hist => { 
-         setHistory(hist || []); 
-         localStorage.setItem('tc_cache_history', JSON.stringify(hist || [])); 
-       }); 
-       
-       getBenefits(new Date().getDay()).then(setBenefits); 
- 
-       // 4. LÓGICA DE USUARIO (Mantenida intacta) 
-       if (sessionUser) { 
-         let prof = await getProfile(sessionUser.id); 
-         if (prof && prof.subscription === 'pro' && prof.subscription_end) { 
-           const expiryDate = new Date(prof.subscription_end); 
-           if (expiryDate < new Date()) { 
-             await supabase.from('perfiles').update({ subscription: 'free' }).eq('id', sessionUser.id); 
-             prof = { ...prof, subscription: 'free' }; 
-           } 
-         } 
-         setProfile(prof); 
-         
-         const cartData = await getSavedCartData(sessionUser.id); 
-         if (cartData) { 
-           setFavorites(cartData.active || {}); 
-           setSavedCarts(cartData.saved || []); 
-           localStorage.setItem('tc_favs', JSON.stringify(cartData.active || {})); 
-           localStorage.setItem('tc_saved_lists', JSON.stringify(cartData.saved || [])); 
-         } 
-       } 
-     } catch (err: any) { 
-       console.error("Error loading app data:", err); 
-     } finally { 
-       setLoading(false); 
-       isInitialMount.current = false; 
-     } 
-   }, [products.length]);
+    const loadData = useCallback(async (sessionUser: User | null) => {
+    try {
+      if (products.length === 0) {
+        const cachedProds = localStorage.getItem('tc_cache_products');
+        const cachedConf = localStorage.getItem('tc_cache_config');
+        if (cachedProds) {
+          setProducts(JSON.parse(cachedProds));
+          if (cachedConf) setConfig(JSON.parse(cachedConf));
+          setLoading(false);
+        } else {
+          setLoading(true);
+        }
+      }
 
-  // --- 2. UNIFICADO: SESIÓN INICIAL Y ESCUCHA DE AUTH --- 
-   useEffect(() => { 
-     const auth = supabase.auth as any; 
- 
-     const initialize = async () => { 
-       // Obtenemos sesión actual 
-       const { data: { session } } = await auth.getSession(); 
-       const sessionUser = session?.user ?? null; 
-       setUser(sessionUser); 
-       // Cargamos datos (loadData ya maneja el caché internamente ahora) 
-       loadData(sessionUser); 
-     }; 
- 
-     initialize(); 
- 
-     const { data: { subscription } } = auth.onAuthStateChange(async (event: any, session: any) => { 
-       const sessionUser = session?.user ?? null; 
-       setUser(sessionUser); 
-       
-       if (event === 'SIGNED_IN' || event === 'USER_UPDATED') { 
-         loadData(sessionUser); 
-       } 
-       
-       if (event === 'PASSWORD_RECOVERY') { 
-         setIsAuthOpen(true); 
-         localStorage.setItem('active_auth_view', 'update_password'); 
-       } 
- 
-       if (event === 'SIGNED_OUT') { 
-         setProfile(null); 
-         setFavorites({}); 
-         setSavedCarts([]); 
-         setPurchasedItems(new Set()); 
-         localStorage.removeItem('tc_favs'); 
-         localStorage.removeItem('tc_saved_lists'); 
-       } 
-     }); 
- 
-     return () => { 
-       if (subscription) subscription.unsubscribe(); 
-     }; 
-   }, [loadData]);
+      const [prodData, configData] = await Promise.all([
+        getProducts(),
+        getConfig()
+      ]);
+
+      const productsWithOutliers = calculateOutliers(prodData || []);
+      setProducts(productsWithOutliers || []);
+      setConfig(configData || {});
+      
+      localStorage.setItem('tc_cache_products', JSON.stringify(productsWithOutliers));
+      localStorage.setItem('tc_cache_config', JSON.stringify(configData || {}));
+
+      getPriceHistory(7).then(hist => {
+        setHistory(hist || []);
+        localStorage.setItem('tc_cache_history', JSON.stringify(hist || []));
+      });
+      
+      getBenefits(new Date().getDay()).then(setBenefits);
+
+      if (sessionUser) {
+        let prof = await getProfile(sessionUser.id);
+        if (prof && prof.subscription === 'pro' && prof.subscription_end) {
+          const expiryDate = new Date(prof.subscription_end);
+          if (expiryDate < new Date()) {
+            await supabase.from('perfiles').update({ subscription: 'free' }).eq('id', sessionUser.id);
+            prof = { ...prof, subscription: 'free' };
+          }
+        }
+        setProfile(prof);
+        
+        const cartData = await getSavedCartData(sessionUser.id);
+        if (cartData) {
+          setFavorites(cartData.active || {});
+          setSavedCarts(cartData.saved || []);
+          localStorage.setItem('tc_favs', JSON.stringify(cartData.active || {}));
+          localStorage.setItem('tc_saved_lists', JSON.stringify(cartData.saved || []));
+        }
+      }
+    } catch (err: any) {
+      console.error("Error loading app data:", err);
+    } finally {
+      setLoading(false);
+      isInitialMount.current = false;
+    }
+  }, [products.length]);
+
+  useEffect(() => {
+    const auth = supabase.auth as any;
+
+    const fetchProfileAndData = async (sessionUser: User | null) => {
+      if (sessionUser) {
+        let prof = await getProfile(sessionUser.id);
+        if (prof && prof.subscription === 'pro' && prof.subscription_end) {
+          const expiryDate = new Date(prof.subscription_end);
+          if (expiryDate < new Date()) {
+            await supabase.from('perfiles').update({ subscription: 'free' }).eq('id', sessionUser.id);
+            prof = { ...prof, subscription: 'free' };
+          }
+        }
+        setProfile(prof);
+        
+        const cartData = await getSavedCartData(sessionUser.id);
+        if (cartData) {
+          setFavorites(cartData.active || {});
+          setSavedCarts(cartData.saved || []);
+        }
+      } else {
+        setProfile(null);
+        const savedFavs = localStorage.getItem('tc_favs');
+        const savedLists = localStorage.getItem('tc_saved_lists');
+        setFavorites(savedFavs ? JSON.parse(savedFavs) : {});
+        setSavedCarts(savedLists ? JSON.parse(savedLists) : []);
+      }
+      loadData(sessionUser);
+    };
+
+    const initializeSession = async () => {
+      const { data: { session } } = await auth.getSession();
+      const sessionUser = session?.user ?? null;
+      setUser(sessionUser);
+      fetchProfileAndData(sessionUser);
+    };
+
+    initializeSession();
+
+    const { data: { subscription } } = auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
+      const sessionUser = session?.user ?? null;
+      setUser(sessionUser);
+
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+        fetchProfileAndData(sessionUser);
+      }
+      
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsAuthOpen(true);
+        localStorage.setItem('active_auth_view', 'update_password');
+      }
+
+      if (event === 'SIGNED_OUT') {
+        setProfile(null);
+        setFavorites({});
+        setSavedCarts([]);
+        setPurchasedItems(new Set());
+        localStorage.removeItem('tc_favs');
+        localStorage.removeItem('tc_saved_lists');
+      }
+    });
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, [loadData]);
 
 // --- PERSISTENCIA MEJORADA (LOCAL + NUBE + MINIMIZADO) ---
   useEffect(() => {
@@ -425,7 +432,7 @@ const [config, setConfig] = useState<Record<string, string>>({});
       const h7 = history.find(h => h.nombre_producto === p.nombre);
       return { ...p, stats: getStats(prices, h7?.precio_minimo || 0), prices };
     })
-    .filter(p => p.prices.filter(price => price > 0).length >= 2);
+    .filter(p => p.prices.filter((price: number) => price > 0).length >= 2);
 
     if (currentPath === '/carnes') result = result.filter(p => p.categoria?.toLowerCase().includes('carne'));
     else if (currentPath === '/verdu') result = result.filter(p => p.categoria?.toLowerCase().includes('verdu') || p.categoria?.toLowerCase().includes('fruta'));
@@ -463,21 +470,21 @@ const [config, setConfig] = useState<Record<string, string>>({});
     if (location.pathname !== '/chango') {
       return baseFilteredProducts;
     }
-    
     const cartItems: CartItem[] = baseFilteredProducts
       .filter(p => favorites[p.id])
       .map(p => ({ ...p, quantity: favorites[p.id] || 1 }));
     
-    const storeTotals = STORES.map(store => {
-      const storeKey = store.name.toLowerCase().replace(' ', '');
-      return {
-        name: store.name,
-        total: calculateStoreTotal(cartItems, storeKey)
-      };
-    });
-
-    return baseFilteredProducts.filter(p => favorites[p.id]);
+    return cartItems;
   }, [baseFilteredProducts, location.pathname, favorites]);
+
+  const visibleProducts = useMemo(() => {
+    return filteredProducts.slice(0, displayLimit);
+  }, [filteredProducts, displayLimit]);
+
+  useEffect(() => {
+    setDisplayLimit(20);
+  }, [location.pathname]);
+
 
 const toggleFavorite = useCallback((id: number) => {
     if (!user) {
@@ -501,7 +508,7 @@ const toggleFavorite = useCallback((id: number) => {
       }
       return next;
     });
-  }, [user]);
+  }, [user, isPro, favorites, purchasedItems]);
 
 
   const handleFavoriteChangeInCart = (id: number, delta: number) => {
@@ -549,11 +556,11 @@ const toggleFavorite = useCallback((id: number) => {
   const scrollPositionRef = useRef(0);
 
   const handleProductClick = useCallback((product: Product) => {
-  scrollPositionRef.current = window.scrollY;
-  const categorySlug = slugify(product.categoria || 'general');
-  const productSlug = slugify(product.nombre);
-  navigate(`/${categorySlug}/${productSlug}`);
-}, [navigate]);
+    scrollPositionRef.current = window.scrollY;
+    const categorySlug = slugify(product.categoria || 'general');
+    const productSlug = slugify(product.nombre);
+    navigate(`/${categorySlug}/${productSlug}`);
+  }, [navigate]);
 
   useEffect(() => {
     const listPaths = ['/', '/chango', '/carnes', '/verdu', '/varios'];
@@ -649,8 +656,8 @@ const toggleFavorite = useCallback((id: number) => {
       <main>
         <Routes>
   <Route path="/" element={
-    <ProductList 
-      products={filteredProducts} 
+    <MemoizedProductList 
+      products={visibleProducts as any} 
       onProductClick={handleProductClick}
       onFavoriteToggle={toggleFavorite} 
       isFavorite={id => !!favorites[id]}
@@ -663,8 +670,8 @@ const toggleFavorite = useCallback((id: number) => {
     />
   } />
   <Route path="/carnes" element={
-    <ProductList 
-      products={filteredProducts} 
+    <MemoizedProductList 
+      products={visibleProducts as any} 
       onProductClick={handleProductClick}
       onFavoriteToggle={toggleFavorite} 
       isFavorite={id => !!favorites[id]}
@@ -677,8 +684,8 @@ const toggleFavorite = useCallback((id: number) => {
     />
   } />
   <Route path="/verdu" element={
-    <ProductList 
-      products={filteredProducts} 
+    <MemoizedProductList 
+      products={visibleProducts as any} 
       onProductClick={handleProductClick}
       onFavoriteToggle={toggleFavorite} 
       isFavorite={id => !!favorites[id]}
@@ -691,8 +698,8 @@ const toggleFavorite = useCallback((id: number) => {
     />
   } />
   <Route path="/varios" element={
-    <ProductList 
-      products={filteredProducts} 
+    <MemoizedProductList 
+      products={visibleProducts as any} 
       onProductClick={handleProductClick}
       onFavoriteToggle={toggleFavorite} 
       isFavorite={id => !!favorites[id]}
@@ -718,8 +725,8 @@ const toggleFavorite = useCallback((id: number) => {
           onDeleteCart={handleDeleteSavedCart}
         />
       )}
-      <ProductList 
-        products={filteredProducts} 
+      <MemoizedProductList 
+        products={filteredProducts as any} 
         onProductClick={handleProductClick}                
         onFavoriteToggle={toggleFavorite} 
         isFavorite={id => !!favorites[id]}
@@ -746,8 +753,8 @@ const toggleFavorite = useCallback((id: number) => {
   <Route path="/terminos" element={<TermsView onClose={() => navigate('/')} content={config.terminos} />} />
   <Route path="/contacto" element={<ContactView onClose={() => navigate('/')} content={config.contacto} email={profile?.email} />} />
   <Route path="/update-password" element={
-      <ProductList 
-        products={filteredProducts} 
+      <MemoizedProductList 
+        products={filteredProducts as any} 
         onProductClick={handleProductClick}
         onFavoriteToggle={toggleFavorite} 
         isFavorite={id => !!favorites[id]}
@@ -761,21 +768,38 @@ const toggleFavorite = useCallback((id: number) => {
     } />
 
 </Routes>
+        {/* --- BOTÓN DE CARGA POR LOTES --- */}
+        {/* Solo aparece si NO estamos en el Chango y si hay más productos para mostrar */}
+        {['/', '/carnes', '/verdu', '/bebidas', '/varios'].includes(location.pathname) && filteredProducts.length > displayLimit && (
+          <div className="flex justify-center py-6">
+            <button 
+              onClick={() => setDisplayLimit(prev => prev + 20)}
+              className="bg-neutral-50 dark:bg-[#1f2c34] text-black dark:text-white px-8 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest hover:scale-105 active:scale-95 transition-all border border-neutral-200 dark:border-[#233138] shadow-md mb-4"
+            >
+              Cargar más productos ({filteredProducts.length - displayLimit} restantes)
+            </button>
+          </div>
+        )}
       </main>
-      <MemoizedBottomNav cartCount={Object.keys(favorites).length} />
-      {isAuthOpen && <AuthModal 
-        isOpen={isAuthOpen} 
-        onClose={() => setIsAuthOpen(false)} 
-        user={user} 
-        profile={profile} 
-        onSignOut={handleSignOut} 
-        onProfileUpdate={() => loadData(user)}
-        savedCarts={savedCarts}
-        onSaveCart={handleSaveCurrentCart}
-        onDeleteCart={handleDeleteSavedCart}
-        onLoadCart={handleLoadSavedCart}
-        currentActiveCartSize={visibleCartCount}
-      />}
+
+      <MemoizedBottomNav cartCount={visibleCartCount} />
+
+      {isAuthOpen && (
+        <AuthModal 
+          isOpen={isAuthOpen} 
+          onClose={() => setIsAuthOpen(false)} 
+          user={user} 
+          profile={profile} 
+          onSignOut={handleSignOut} 
+          onProfileUpdate={() => loadData(user)}
+          savedCarts={savedCarts}
+          onSaveCart={handleSaveCurrentCart}
+          onDeleteCart={handleDeleteSavedCart}
+          onLoadCart={handleLoadSavedCart}
+          currentActiveCartSize={visibleCartCount}
+        />
+      )}
+      
       <MemoizedFooter />
     </div>
   );
