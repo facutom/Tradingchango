@@ -118,7 +118,7 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
              {isPurchased && <i className="fa-solid fa-check text-[10px]"></i>}
            </button>
          )}
-         <div className="w-16 h-16 rounded-lg bg-white border border-neutral-100 flex items-center justify-center overflow-hidden shrink-0">
+         <div className="w-16 h-16 rounded-lg bg-white border border-neutral-100 flex items-center justify-center overflow-hidden shrink-0 aspect-square">
             <img 
               src={p.imagen_url || 'https://via.placeholder.com/50?text=N/A'} 
               alt={p.nombre} 
@@ -187,4 +187,25 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
   );
 };
 
-export default memo(ProductListItem);
+const MemoizedProductListItem = memo(ProductListItem, (prevProps, nextProps) => {
+  // Si el ID no es el mismo, hay que re-renderizar.
+  if (prevProps.product.id !== nextProps.product.id) {
+    return false;
+  }
+  // Si el estado de favorito cambia, hay que re-renderizar.
+  if (prevProps.isFavorite !== nextProps.isFavorite) {
+    return false;
+  }
+  // Si el estado de "comprado" cambia, hay que re-renderizar.
+  if (prevProps.isPurchased !== nextProps.isPurchased) {
+    return false;
+  }
+  // Si la cantidad en el carrito cambia, hay que re-renderizar.
+  if (prevProps.quantity !== nextProps.quantity) {
+    return false;
+  }
+  // Si ninguna de las condiciones de arriba se cumple, no re-renderizar.
+  return true;
+});
+
+export default MemoizedProductListItem;

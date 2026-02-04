@@ -162,12 +162,7 @@ const App: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
-    // Solo borramos si NO estamos en la misma página (evita bucles)
-    setSearchTerm('');
-    setTrendFilter(null);
-    setDisplayLimit(20);
-  }, [location.pathname]);
+
   
   const navigateTo = (path: string) => navigate(path === 'home' ? '/' : '/' + path.replace('/', ''));
 
@@ -225,16 +220,15 @@ const App: React.FC = () => {
 
     const loadData = useCallback(async (sessionUser: User | null) => {
     try {
-      if (products.length === 0) {
-        const cachedProds = localStorage.getItem('tc_cache_products');
-        const cachedConf = localStorage.getItem('tc_cache_config');
-        if (cachedProds) {
-          setProducts(JSON.parse(cachedProds));
-          if (cachedConf) setConfig(JSON.parse(cachedConf));
-          setLoading(false);
-        } else {
-          setLoading(true);
-        }
+      const cachedProds = localStorage.getItem('tc_cache_products');
+      const cachedConf = localStorage.getItem('tc_cache_config');
+      
+      if (cachedProds) {
+        setProducts(JSON.parse(cachedProds));
+        if (cachedConf) setConfig(JSON.parse(cachedConf));
+        setLoading(false); // Desactivar loading si hay caché
+      } else {
+        setLoading(true); // Solo activar loading si NO hay caché
       }
 
       const [prodData, configData] = await Promise.all([
@@ -481,9 +475,7 @@ const App: React.FC = () => {
     return filteredProducts.slice(0, displayLimit);
   }, [filteredProducts, displayLimit]);
 
-  useEffect(() => {
-    setDisplayLimit(20);
-  }, [location.pathname]);
+
 
 
 const toggleFavorite = useCallback((id: number) => {
@@ -511,7 +503,7 @@ const toggleFavorite = useCallback((id: number) => {
   }, [user, isPro, favorites, purchasedItems]);
 
 
-  const handleFavoriteChangeInCart = (id: number, delta: number) => {
+  const handleFavoriteChangeInCart = useCallback((id: number, delta: number) => {
     setFavorites(prev => {
       const newQty = (prev[id] || 1) + delta;
       if (newQty <= 0) {
@@ -521,7 +513,7 @@ const toggleFavorite = useCallback((id: number) => {
       }
       return { ...prev, [id]: newQty };
     });
-  };
+  }, []);
 
   const togglePurchased = (id: number) => {
     const newPurchased = new Set(purchasedItems);
@@ -564,9 +556,28 @@ const toggleFavorite = useCallback((id: number) => {
 
   useEffect(() => {
     const listPaths = ['/', '/chango', '/carnes', '/verdu', '/varios'];
-    if (listPaths.includes(location.pathname)) {
-      window.scrollTo(0, scrollPositionRef.current);
+    const isNavigatingToList = listPaths.includes(location.pathname);
+
+    // CASO A: Volvemos a una lista DESDE un producto.
+    if (isNavigatingToList && scrollPositionRef.current > 0) {
+      // Usamos un timeout para asegurar que el DOM se haya actualizado con todos los productos
+      // antes de intentar hacer scroll.
+      setTimeout(() => {
+        window.scrollTo(0, scrollPositionRef.current);
+        // Reseteamos la posición para que no se reutilice en la siguiente navegación.
+        scrollPositionRef.current = 0;
+      }, 0);
+    } 
+    // CASO B: Navegamos a una nueva categoría (o a una lista por primera vez).
+    else if (isNavigatingToList && scrollPositionRef.current === 0) {
+      window.scrollTo(0, 0);
+      setDisplayLimit(20);
+      setSearchTerm('');
+      setTrendFilter(null);
     }
+    // CASO C: Navegamos FUERA de una lista (a un detalle de producto, etc).
+    // No hacemos nada, para que displayLimit persista.
+
   }, [location.pathname]);
 
   const handleSignOut = async () => {
@@ -598,6 +609,23 @@ const toggleFavorite = useCallback((id: number) => {
     return products.filter(p => favorites[p.id] && (p as any).visible_web !== false).length;
   }, [favorites, products]);
 
+  const isFavorite = useCallback((id: number) => !!favorites[id], [favorites]);
+
+  const listPageElement = (
+    <MemoizedProductList
+      products={visibleProducts as any}
+      onProductClick={handleProductClick}
+      onFavoriteToggle={toggleFavorite}
+      isFavorite={isFavorite}
+      isCartView={false}
+      quantities={favorites}
+      onUpdateQuantity={handleFavoriteChangeInCart}
+      searchTerm={searchTerm}
+      purchasedItems={purchasedItems}
+      onTogglePurchased={togglePurchased}
+    />
+  );
+ 
   if (loading && products.length === 0) return <div className="min-h-screen flex items-center justify-center dark:bg-primary dark:text-white font-mono text-[11px] uppercase tracking-[0.2em]">Conectando a Mercado...</div>;
  
   return (
@@ -655,62 +683,10 @@ const toggleFavorite = useCallback((id: number) => {
       />
       <main>
         <Routes>
-  <Route path="/" element={
-    <MemoizedProductList 
-      products={visibleProducts as any} 
-      onProductClick={handleProductClick}
-      onFavoriteToggle={toggleFavorite} 
-      isFavorite={id => !!favorites[id]}
-      isCartView={false} 
-      quantities={favorites}
-      onUpdateQuantity={handleFavoriteChangeInCart}
-      searchTerm={searchTerm}
-      purchasedItems={purchasedItems}
-      onTogglePurchased={togglePurchased}
-    />
-  } />
-  <Route path="/carnes" element={
-    <MemoizedProductList 
-      products={visibleProducts as any} 
-      onProductClick={handleProductClick}
-      onFavoriteToggle={toggleFavorite} 
-      isFavorite={id => !!favorites[id]}
-      isCartView={false} 
-      quantities={favorites}
-      onUpdateQuantity={handleFavoriteChangeInCart}
-      searchTerm={searchTerm}
-      purchasedItems={purchasedItems}
-      onTogglePurchased={togglePurchased}
-    />
-  } />
-  <Route path="/verdu" element={
-    <MemoizedProductList 
-      products={visibleProducts as any} 
-      onProductClick={handleProductClick}
-      onFavoriteToggle={toggleFavorite} 
-      isFavorite={id => !!favorites[id]}
-      isCartView={false} 
-      quantities={favorites}
-      onUpdateQuantity={handleFavoriteChangeInCart}
-      searchTerm={searchTerm}
-      purchasedItems={purchasedItems}
-      onTogglePurchased={togglePurchased}
-    />
-  } />
-  <Route path="/varios" element={
-    <MemoizedProductList 
-      products={visibleProducts as any} 
-      onProductClick={handleProductClick}
-      onFavoriteToggle={toggleFavorite} 
-      isFavorite={id => !!favorites[id]}
-      isCartView={false} 
-      quantities={favorites}
-      onUpdateQuantity={handleFavoriteChangeInCart}
-      searchTerm={searchTerm}
-      purchasedItems={purchasedItems}
-      onTogglePurchased={togglePurchased}
-    />
-  } />
+          <Route path="/" element={listPageElement} />
+          <Route path="/carnes" element={listPageElement} />
+          <Route path="/verdu" element={listPageElement} />
+          <Route path="/varios" element={listPageElement} />
   <Route path="/chango" element={
     <>
       {filteredProducts.length > 0 && (
