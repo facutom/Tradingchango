@@ -397,18 +397,19 @@ const App: React.FC = () => {
     const min = Math.min(...v);
     let diff = 0, tc = 'text-neutral-500', icon = '-', isUp = false, isDown = false;
     
-    if (h > 0) {
+    // Solo calculamos si hay historial y es distinto al precio actual
+    // Agregamos un margen de 1 peso para evitar fluctuaciones por decimales
+    if (h > 0 && Math.abs(min - h) > 1) {
       diff = ((min - h) / h) * 100;
       
       if (diff > 0.1) { 
-        tc = 'text-red-600'; 
-        icon = '▲'; 
-        isUp = true; 
+        tc = 'text-red-600'; icon = '▲'; isUp = true; 
       } else if (diff < -0.1) { 
-        tc = 'text-green-600'; 
-        icon = '▼'; 
-        isDown = true; 
+        tc = 'text-green-600'; icon = '▼'; isDown = true; 
       }
+    } else {
+      // Si no hay historial o son iguales, la diferencia es 0
+      diff = 0;
     }
     
     return { 
@@ -418,7 +419,7 @@ const App: React.FC = () => {
       icon, 
       isUp, 
       isDown,
-      variation: diff // <-- Devolvemos la variación real
+      variation: diff 
     };
   };
 
@@ -451,23 +452,30 @@ const App: React.FC = () => {
       });
 
       // --- LÓGICA DE TENDENCIA CORREGIDA (7 DÍAS REALES) ---
+      // --- LÓGICA DE TENDENCIA 7 DÍAS (29% FIX & 0% NEW PRODUCTS) ---
       const productHistory = history.filter(h => h.nombre_producto === p.nombre);
-      let h7_price = 0;
+      
+      // Calculamos el precio mínimo de los precios actuales ya filtrados
+      const validCurrentPrices = prices.filter(x => x > 0);
+      const currentMin = validCurrentPrices.length > 0 ? Math.min(...validCurrentPrices) : 0;
+      
+      // Seteamos el histórico igual al actual por defecto para que la variación sea 0% si es nuevo
+      let h7_price = currentMin; 
 
       if (productHistory.length > 0) {
-        // Ordenamos estrictamente por fecha de la más vieja a la más nueva
-        const sortedHistory = [...productHistory].sort((a, b) => 
-          new Date(a.fecha).getTime() - new Date(b.fecha).getTime()
-        );
+        // Ordenamos por fecha (el más viejo primero)
+        const sortedHistory = [...productHistory].sort((a, b) => a.fecha.localeCompare(b.fecha));
         
-        // El precio base para el cálculo será SIEMPRE el más antiguo de la lista
-        h7_price = sortedHistory[0].precio_minimo || 0;
+        // Tomamos el primer registro de la semana (el del 31/1)
+        if (sortedHistory[0].precio_minimo > 0) {
+          h7_price = sortedHistory[0].precio_minimo;
+        }
       }
       
       return { ...p, stats: getStats(prices, h7_price), prices };
     })
     .filter(p => p.prices.filter((price: number) => price > 0).length >= 2);
-
+   
     // --- FILTROS DE CATEGORÍA ---
     if (currentPath === '/carnes') result = result.filter(p => p.categoria?.toLowerCase().includes('carne'));
     else if (currentPath === '/verdu') result = result.filter(p => p.categoria?.toLowerCase().includes('verdu') || p.categoria?.toLowerCase().includes('fruta'));
