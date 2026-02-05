@@ -108,6 +108,7 @@ const calculateOutliers = (products: Product[]): Product[] => {
 const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUpdateQuantity }: any) => {
   const { category, slug } = useParams(); 
   const navigate = useNavigate();
+  const location = useLocation();
   
   // Buscamos el producto por categoría y por el nombre transformado a slug
   const product = products.find((p: any) => 
@@ -120,16 +121,27 @@ const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUp
   // Si terminó de cargar y no encontró el producto, volvemos al inicio
   if (!product) return <Navigate to="/" replace />;
 
+  const handleClose = () => {
+    // Si el usuario puede volver atrás en el historial, lo hacemos.
+    // La key 'default' nos dice si es la primera página en el stack.
+    if (location.key !== 'default') {
+      navigate(-1);
+    } else {
+      // Si no hay historial (abrió con link directo), lo mandamos al inicio.
+      navigate('/', { replace: true });
+    }
+  };
+
   return (
     <ProductDetail 
-        productId={product.id} // Antes decía selectedProduct (error)
-        onClose={() => navigate(-1)} // Antes decía closeModal (error)
+        productId={product.id}
+        onClose={handleClose} // Usamos la nueva función
         isFavorite={!!favorites[product.id]}
         onFavoriteToggle={toggleFavorite}
         products={products}
         theme={theme}
-        quantities={favorites} // Usamos el objeto de favoritos
-        onUpdateQuantity={onUpdateQuantity} // Pasamos la función de actualización
+        quantities={favorites}
+        onUpdateQuantity={onUpdateQuantity}
       />
   );
 };

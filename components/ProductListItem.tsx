@@ -188,24 +188,14 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
 };
 
 const MemoizedProductListItem = memo(ProductListItem, (prevProps, nextProps) => {
-  // Si el ID no es el mismo, hay que re-renderizar.
-  if (prevProps.product.id !== nextProps.product.id) {
-    return false;
-  }
-  // Si el estado de favorito cambia, hay que re-renderizar.
-  if (prevProps.isFavorite !== nextProps.isFavorite) {
-    return false;
-  }
-  // Si el estado de "comprado" cambia, hay que re-renderizar.
-  if (prevProps.isPurchased !== nextProps.isPurchased) {
-    return false;
-  }
-  // Si la cantidad en el carrito cambia, hay que re-renderizar.
-  if (prevProps.quantity !== nextProps.quantity) {
-    return false;
-  }
-  // Si ninguna de las condiciones de arriba se cumple, no re-renderizar.
-  return true;
+  // Comprobación rápida y eficiente para ver si algo cambió.
+  return prevProps.product.id === nextProps.product.id &&
+         prevProps.isFavorite === nextProps.isFavorite &&
+         prevProps.isPurchased === nextProps.isPurchased &&
+         prevProps.quantity === nextProps.quantity &&
+         // Comparamos la data clave de stats que se muestra en la UI.
+         prevProps.product.stats.spread === nextProps.product.stats.spread &&
+         prevProps.product.stats.trendClass === nextProps.product.stats.trendClass;
 });
 
 export default MemoizedProductListItem;
