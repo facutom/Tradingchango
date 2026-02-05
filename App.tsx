@@ -27,12 +27,19 @@ const STORES = [
 ] as const;
 
 const slugify = (text: string) => {
+  const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;'
+  const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiilmnnnnoooooooooprrssssssttuuuuuuuuuwxyyzzz------'
+  const p = new RegExp(a.split('').join('|'), 'g')
+
   return text.toString().toLowerCase()
-    .trim()
-    .replace(/\s+/g, '-')     // Espacios por guiones
-    .replace(/[^\w-]+/g, '')  // Quitar caracteres raros
-    .replace(/--+/g, '-');    // Quitar guiones dobles
-};
+    .replace(/\s+/g, '-') // Replace spaces with -
+    .replace(p, c => b.charAt(a.indexOf(c))) // Replace special characters
+    .replace(/&/g, '-and-') // Replace & with 'and'
+    .replace(/[^\w\-]+/g, '') // Remove all non-word chars
+    .replace(/\-\-+/g, '-') // Replace multiple - with single -
+    .replace(/^-+/, '') // Trim - from start of text
+    .replace(/-+$/, '') // Trim - from end of text
+}
 
 const calculateOutliers = (products: Product[]): Product[] => {
   return products.map(product => {
@@ -161,6 +168,7 @@ const App: React.FC = () => {
   const isInitialMount = useRef(true);
   const navigate = useNavigate();
   const location = useLocation();
+  const prevLocationRef = useRef(location.pathname);
 
 
   
@@ -385,14 +393,34 @@ const App: React.FC = () => {
   const getStats = (p: number[], h: number): ProductStats => {
     const v = p.filter(x => x > 0);
     if (v.length === 0) return { min: 0, spread: '0.0', trendClass: '', icon: '-', isUp: false, isDown: false };
+    
     const min = Math.min(...v);
     let diff = 0, tc = 'text-neutral-500', icon = '-', isUp = false, isDown = false;
+    
+    // h es el precio_minimo de hace 7 días que viene del array history
     if (h > 0) {
       diff = ((min - h) / h) * 100;
-      if (diff > 0.1) { tc = 'text-red-600'; icon = '▲'; isUp = true; }
-      else if (diff < -0.1) { tc = 'text-green-600'; icon = '▼'; isDown = true; }
+      
+      // Usamos un margen de 0.1% para evitar variaciones por centavos
+      if (diff > 0.1) { 
+        tc = 'text-red-600'; 
+        icon = '▲'; 
+        isUp = true; 
+      } else if (diff < -0.1) { 
+        tc = 'text-green-600'; 
+        icon = '▼'; 
+        isDown = true; 
+      }
     }
-    return { min, spread: Math.abs(diff).toFixed(1), trendClass: tc, icon, isUp, isDown };
+    
+    return { 
+      min, 
+      spread: Math.abs(diff).toFixed(1), // Este es el numerito que se verá en la tarjeta
+      trendClass: tc, 
+      icon, 
+      isUp, 
+      isDown 
+    };
   };
 
   const isPro = useMemo(() => {
@@ -423,7 +451,8 @@ const App: React.FC = () => {
         return 0;
       });
 
-      const h7 = history.find(h => h.nombre_producto === p.nombre);
+      const productHistory = history.filter(h => h.nombre_producto === p.nombre);
+      const h7 = productHistory[productHistory.length - 1]; // El último es el más antiguo
       return { ...p, stats: getStats(prices, h7?.precio_minimo || 0), prices };
     })
     .filter(p => p.prices.filter((price: number) => price > 0).length >= 2);
@@ -555,28 +584,30 @@ const toggleFavorite = useCallback((id: number) => {
   }, [navigate]);
 
   useEffect(() => {
-    const listPaths = ['/', '/chango', '/carnes', '/verdu', '/varios'];
+    const listPaths = ['/', '/chango', '/carnes', '/verdu', '/varios', '/bebidas', '/almacen'];
     const isNavigatingToList = listPaths.includes(location.pathname);
+    const wasProductDetail = prevLocationRef.current.includes('/p/');
 
     // CASO A: Volvemos a una lista DESDE un producto.
-    if (isNavigatingToList && scrollPositionRef.current > 0) {
-      // Usamos un timeout para asegurar que el DOM se haya actualizado con todos los productos
-      // antes de intentar hacer scroll.
+    if (isNavigatingToList && wasProductDetail) {
       setTimeout(() => {
-        window.scrollTo(0, scrollPositionRef.current);
-        // Reseteamos la posición para que no se reutilice en la siguiente navegación.
-        scrollPositionRef.current = 0;
+        if (scrollPositionRef.current > 0) {
+          window.scrollTo(0, scrollPositionRef.current);
+          scrollPositionRef.current = 0;
+        }
       }, 0);
+      // NO reseteamos nada más para mantener la búsqueda y el scroll.
     } 
     // CASO B: Navegamos a una nueva categoría (o a una lista por primera vez).
-    else if (isNavigatingToList && scrollPositionRef.current === 0) {
+    else if (isNavigatingToList && !wasProductDetail) {
       window.scrollTo(0, 0);
       setDisplayLimit(20);
       setSearchTerm('');
       setTrendFilter(null);
     }
-    // CASO C: Navegamos FUERA de una lista (a un detalle de producto, etc).
-    // No hacemos nada, para que displayLimit persista.
+    
+    // Actualizamos la ref para la próxima navegación.
+    prevLocationRef.current = location.pathname;
 
   }, [location.pathname]);
 
