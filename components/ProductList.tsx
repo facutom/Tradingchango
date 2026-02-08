@@ -2,6 +2,7 @@ import React from 'react';
 import { Product } from '../types';
 import ProductListItem from './ProductListItem';
 
+// La interfaz ProductWithStats ya hereda de Product, así que no hay que cambiarla.
 interface ProductWithStats extends Product {
   stats: {
     min: number;
@@ -39,7 +40,10 @@ const ProductList: React.FC<ProductListProps> = ({
   onTogglePurchased
 }) => {
 
-  if (products.length === 0 && searchTerm) {
+  // Corregido: La línea está DENTRO del componente y 'p' tiene su tipo.
+  const visibleProducts = products.filter(p => p.visible_web !== false);
+
+  if (visibleProducts.length === 0 && searchTerm) {
     return (
       <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
         <div className="w-12 h-12 bg-neutral-100 dark:bg-neutral-900 rounded-xl flex items-center justify-center text-neutral-500 mb-4 text-lg">
@@ -51,7 +55,7 @@ const ProductList: React.FC<ProductListProps> = ({
     );
   }
 
-  if (products.length === 0 && isCartView) {
+  if (visibleProducts.length === 0 && isCartView) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
         <div className="w-14 h-14 bg-neutral-100 dark:bg-neutral-900 rounded-2xl flex items-center justify-center text-neutral-500 mb-4 text-2xl">
@@ -65,7 +69,7 @@ const ProductList: React.FC<ProductListProps> = ({
 
   return (
     <div className="divide-neutral-100 dark:divide-neutral-900">
-      {products.map((p) => (
+      {visibleProducts.map((p) => (
         <ProductListItem
           key={p.id}
           product={p}

@@ -41,6 +41,7 @@ export interface Product {
   imagen_url?: string;
   outliers?: string | object;
   ticker?: string;
+  visible_web?: boolean;
 }
 
 export interface CartItem extends Product {
