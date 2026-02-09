@@ -8,14 +8,18 @@
   <url><loc>https://tradingchango.com/carnes</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>https://tradingchango.com/verdu</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>https://tradingchango.com/mascotas</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
-  <url><loc>https://tradingchango.com/bebidas/agua-mineralizada-artificialmente-glaciar-bidon-63-l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/varios</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-perros-cachorros-nutridefense-pedigree-33kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alim-perros-adultocarnep-pedigree-bsa-8-kgm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/carnes/sabalo-entero-eviscerado-congelado-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/lacteos/levadura-fresca-calsa-50g-2u</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/carnes/huevo-blanco-maple-x-30u</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/sal-fina-dos-anclas-500gr</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/verdu/tomate-cherry-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/verdu/aji-jalapeno-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://tradingchango.com/lacteos/levadura-fresca-calsa-50g-2u</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/limpieza/limpiador-inodoro-discos-activos-pato-marina-36ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alim-perros-adultorazas-p-pedigree-bsa-8-kgm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-de-perros-high-protein-sabor-carne-y-pollo-pedigree-13-kgm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/verdu/berenjena-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/limpieza/papel-higienico-campanita-soft-simple-hoja-paquete-4-unidades</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/verdu/naranja-jugo-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -34,9 +38,11 @@
   <url><loc>https://tradingchango.com/verdu/cebolla-blanca-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/lacteos/levadura-seca-calsa-mi-pan-10-gr</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/chimichurri-ahumado-la-parmesana-300ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://tradingchango.com/bebidas/agua-saborizada-aquarius-pera-600-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/carnes/mejillon-media-valva-chileno-congelado-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alim-perros-carne-y-probio-raza-bsa-15-kgm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/bebidas/agua-saborizada-aquarius-pera-600-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/carnes/pulpito-espanol-congelado-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-perros-adultos-razas-pequenas-pedigree-33kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/perfumeria/crema-dental-colgate-triple-accion-extra-blancura-125ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/agua-sin-gas-naranja-vds-levite-pet-500-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/carnes/camaron-pelado-cocido-ecuatoriano-congelado-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -77,6 +83,7 @@
   <url><loc>https://tradingchango.com/bebidas/vino-cabsauv-reserva-alma-mora-bot-750-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/agua-sin-gas-manzana-vds-levite-cero-pet-500-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/limpieza/servilletas-campanita-soft-33x33-paq-70-uni</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-para-perros-adultos-en-casa-raza-3-kgm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/verdu/perejil-x-uni</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/carnes/calamaretti-espanol-puntilla-congelado-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/verdu/arandano-bandeja-125-gr</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -115,13 +122,16 @@
   <url><loc>https://tradingchango.com/verdu/puerro-x-uni</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/limpieza/procenex-limpiador-liquido-para-pisos-flores-de-jardin-900ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/verdu/melon-blanco-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/bebidas/agua-mineralizada-artificialmente-glaciar-bidon-63-l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/bebida-isotonica-gatorade-frutas-tropicales-botella-125-l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/vino-cabernet-sauvignon-alma-mora-bot-750-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/lacteos/yogur-milkaut-entero-frutilla-con-trozos-pote-x-150g</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/gaseosa-sprite-lima-limon-354-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/verdu/palta-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/carnes/pulpo-espanol-grande-congelado-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-cachorros-pedigree-3-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/te-clasico-100-saquitos-green-hills-caja-200-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-para-gatos-adultos-sabor-salmon-y-pollo-gati-bsa-500-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/vino-tinto-lopez-seleccion-750-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/bebida-isotonica-gatorade-uva-500-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/jugos-naranja-citric-ttb-250-cmq</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -159,6 +169,7 @@
   <url><loc>https://tradingchango.com/bebidas/agua-mineral-natural-villa-del-sur-165-l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/agua-saborizada-aquarius-pera-225-lt</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/verdu/banana-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-para-gatos-adultos-sabor-carne-y-pollo-gati-15kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/agua-de-mesa-nestle-225-l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/verdu/cebolla-de-verdeo-x-uni</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/jugos-manzana-roja-purafrutta-1-ltr</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -195,17 +206,19 @@
   <url><loc>https://tradingchango.com/bebidas/gaseosa-coca-cola-zero-354-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/amargo-terma-pomelo-botella-135-l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/amargo-terma-light-limon-cero-botella-135-l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-para-gatos-sabor-carne-whiskas-8-kgm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/gaseosa-doble-cola-botella-3-l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/perfumeria/enjuague-bucal-colgate-plax-fresh-mint-500ml-promo-lleve-500ml-pague-350ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/gaseosa-pepsi-botella-500-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/carnes/cuadril-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-adultos-pedigree-3-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/arvejas-secas-remojadas-egran-400-gr</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/gaseosa-crush-naranja-225-lt</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://tradingchango.com/carnes/bola-de-lomo-feteada-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/gaseosa-seven-up-lata-354-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/edulcorante-equalsweet-sucralosa-0-calorias-caja-sobres-x-50</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/limpieza/procenex-limpiador-liquido-para-pisos-marina-18l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/verdu/acelga-x-uni</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/carnes/bola-de-lomo-feteada-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/agua-saborizada-villa-del-sur-levite-pomelo-botella-15-l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/agua-saborizada-villa-del-sur-levite-pera-botella-15-l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/agua-saborizada-villa-del-sur-levite-pera-botella-225-l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -217,9 +230,9 @@
   <url><loc>https://tradingchango.com/bebidas/agua-saborizada-villa-del-sur-levite-manzana-botella-225-l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/agua-saborizada-villa-del-sur-levite-cero-pomelo-botella-15-l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/agua-saborizada-villa-del-sur-levite-cero-manzana-botella-15-l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://tradingchango.com/carnes/asado-novillo-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/amargo-terma-serrano-botella-135-l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/agua-mineral-natural-de-manantial-con-gas-eco-de-los-andes-500-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/carnes/asado-novillo-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/verdu/tomate-perita-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/agua-saborizada-villa-del-sur-levite-manzana-botella-500-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/jugo-tutti-multifruta-tetrabrik-200-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -229,6 +242,8 @@
   <url><loc>https://tradingchango.com/bebidas/gaseosa-sprite-lima-limon-125-lt</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/gaseosa-pepsi-zero-lata-354-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/verdu/pina-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-adultos-pedigree-15-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-adultos-pedigree-15-kg-carne-y-vegetales</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/agua-saborizada-villa-del-sur-levite-cero-naranja-botella-15-l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/limpieza/procenex-limpiador-de-cocina-naranja-gatillo-500ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/limpieza/procenex-limpiador-liquido-para-pisos-lavanda-18l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -237,8 +252,10 @@
   <url><loc>https://tradingchango.com/perfumeria/pasta-dental-colgate-sensibilidad-blanqueadora-100-g</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/vino-blanco-vasco-viejo-bot-700-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/limpieza/procenex-limpiador-de-cocina-repuesto-420ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-adultos-pedigree-3-kg-carne-y-vegetales</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/verdu/papines-redondos-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/gaseosa-pritty-limon-botella-15-l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-cachorros-pedigree-15-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/carnes/peceto-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/mermelada-sabor-ciruela-cormillot-390g</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/sidra-etiqueta-negra-real-720c</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -280,6 +297,7 @@
   <url><loc>https://tradingchango.com/bebidas/champana-brut-malbec-rose-navarro-cor-bot-750-cmq</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/navarro-correas-nature-750-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/vino-cabernet-sauvignon-navarro-correas-bot-750-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alim-perros-senior-pedigree-bsa-8-kgm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/limpieza/procenex-limpiador-desinfectante-original-5l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/champana-dulce-navarro-correas-bot-750-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/vino-cabernet-sauvignon-navarro-correa-reserv-bot-750c</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -298,6 +316,7 @@
   <url><loc>https://tradingchango.com/bebidas/vino-malbec-reserve-cafayate-bot-750-cmq</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/vino-cabernet-sauvignon-phebus-bot-750-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/espumante-callia-tardio-750-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-adultos-pedigree-15-kg-carne-y-vegetales</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/vino-syrah-finca-las-moras-bot-750-cmq</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/vino-cabsauv-synthesis-bot-750-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/sidra-etblanca-reina-de-alcantara-bot-720-cmq</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -326,6 +345,7 @@
   <url><loc>https://tradingchango.com/bebidas/vino-cabernet-sauvignon-trivento-roble-bot-750-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/limpieza/limpiador-procenex-limon-bot-900-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/fernet-brancamenta-botella-450-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-adultos-pedigree-15-kg-carne-pollo-y-cereales</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/vino-tinto---traful-bot-750-cmq</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/gaseosa-seven-up-botella-225-l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/vino-bco-tardio-santa-julia-bot-500-cmq</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -341,6 +361,7 @@
   <url><loc>https://tradingchango.com/perfumeria/enjuague-bucal-colgate-total-clean-mint-250-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/carnes/nalga-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/verdu/ciruela-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-para-perro-pedigree-adulto-sabor-carne-pollo-y-cereales-17-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/vino-semillon-intimo-bot-750-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/carnes/medallon-de-merluza-rebozado-natural-prefrito-congelado-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/perfumeria/antitranspirante-en-barra-dove-original-50-g</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -355,6 +376,7 @@
   <url><loc>https://tradingchango.com/bebidas/vermouth-carpano-rosso-botella-950-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/agua-saborizada-villa-del-sur-levite-pera-botella-500-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/carnes/cornalito-congelado-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-whiskas-1-kg-pollo-y-leche</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/anana-fizz-victoria-bot-720-cmq</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/anana-fizz-del-valle-bot-720-cmq</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/vodka-sabor-sandia-smirnoff-750ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -372,9 +394,11 @@
   <url><loc>https://tradingchango.com/bebidas/vino-frosad-de-malbec-altosur-bot-750-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/vino-cabernet-sauvignon-altosur-cosecha-02-bot-750-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/vino-sauvign-marcus-bot-750-cmq</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-cachorros-whiskas-1-kg-carne-y-leche</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/verdu/batata-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/vino-sauvignon-blanc-goyenechea-100-anos-750-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/lacteos/yogur-entero-milkaut-duraznos-colchon-frutas-150-gr</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-para-gatos-sabor-pescado-whiskas-500-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/vino-sau-blanc-altosur-bot-750-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/vino-syrah-elementos-bot-750-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/vino-malbec-marcus-bot-750-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -386,6 +410,7 @@
   <url><loc>https://tradingchango.com/bebidas/vino-cabernet-sauvignon-lagarde-bot-750-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/vino-cabernet-sauvignon-finca-las-moras-bot-750-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/vino-malbec-goyenechea-100-anos-750-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-adultos-whiskas-1-kg-pescado</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/verdu/zapallo-japones-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/aceitunas-verdes-nucete-rellena-morrones-premium-frasco-360-gr</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/vodka-smirnoff-700-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -394,10 +419,13 @@
   <url><loc>https://tradingchango.com/bebidas/vino-cabernet-sauvignon-aristides-750-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/vino-cab-franc-guarda-lagarde-bot-750-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/vino-malbec-heritage-la-celia-bot-750-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-adultos-whiskas-1-kg-carne</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/carnes/raba-rebozada-prefrita-congelado-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/jugo-citric-naranja-con-pulpa-ttb-500-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/limpieza/pano-muso-38-x-36-cm-mortimer-bsa-3-uni</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/lacteos/manteca-tonadita-100gr</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-whiskas-500-gr-pollo-y-leche</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-adultos-whiskas-3-kg-pescado</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/agua-saborizada-villa-del-sur-levite-naranja-botella-15-l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/carnes/bondiola-de-cerdo-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/verdu/manzana-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -411,6 +439,8 @@
   <url><loc>https://tradingchango.com/almacen/te-green-hills-en-hebras-caja-100-gr</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/gaseosa-coca-cola-sabor-original-354-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/flan-royal-vainilla-60g</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-adultos-whiskas-3-kg-pollo-y-leche</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-cachorros-whiskas-500-gr-carne-y-leche</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/arroz-yamani-gallo-integral-caja-500-gr</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/perfumeria/pasta-dental-colgate-sensitive-pro-alivio-110g</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/gaseosa-paso-de-los-toros-botella-225-l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -431,6 +461,7 @@
   <url><loc>https://tradingchango.com/almacen/crema-chantilly-royal-50g</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/edulcorante-equalsweet-stevia-botella-180-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/flan-royal-vainilla-16g</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-en-sobres-adultos-purina-cat-chow-85-gr-pollo</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/edulcorante-equalsweet-botella-360-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/edulcorante-equalsweet-caja-sobres-x-50</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/aceitunas-verdes-nucete-descarozada-frasco-330-gr</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -445,6 +476,8 @@
   <url><loc>https://tradingchango.com/bebidas/cerveza-stout-quilmes-botella-1-l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/pickles-nucete-pouch-300-gr</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/aceitunas-verdes-nucete-descarozada-pouch-300-gr</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-en-sobre-adultos-purina-dog-chow-100-gr-salmon</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-de-gatos-carne-pescado-mizzi-500-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/aceitunas-verdes-descarozadas-nucete-360g</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/salsa-de-soja-la-parmesana-300cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/esencia-de-vainilla-la-parmesana-110-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -460,6 +493,8 @@
   <url><loc>https://tradingchango.com/almacen/esencia-almendra-la-parmesana-110-cmq</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/esencia-vainilla-la-parmesan-bot-180-cmq</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/salsa-de-ajo-la-parmesana-180ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alim-gatos-coctel-carne-mizzi-bol-1-kgm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-para-gatos-adultos-sabor-carne-y-pollo-gati-3kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/espumante-rose-dulce-norton-cosecha-tardia-750ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/salsas-mostaza-con-miel-la-parmesana-300g</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/salsa-de-mostaza-la-parmesana-300-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -469,18 +504,24 @@
   <url><loc>https://tradingchango.com/almacen/salsa-caramelo-la-parmesana-bot-200-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/verdu/hinojo-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/yerba-mate-despalada-rosamonte-paq-500-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-para-gato-mizzi-frutos-del-mar-bol-500-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/salsa-chocolate-la-parmesana-bot-200-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/yerba-mate-despalada-rosamonte-paq-1-kgm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/yerba-mate-premium-rosamonte-500g</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/yerba-mate-seleccespecia-rosamonte-paq-500-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/mermelada-sabor-durazno-cormillot-390g</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/yerba-mate-suave-plus-rosamonte-paq-500-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-adultos-raza-8-kg-carne</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-adultos-raza-15-kg-carne</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-adultos-raza-8-kg-pollo-carne-cereales-y-arroz</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/champ-frutado-fresa-fresita-bot-750-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/yerba-mate-especial-rosamonte-1kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/mermelada-sabor-frutilla-cormillot-390g</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/mermelada-sabor-damasco-cormillot-390g</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/mermelada-dietetica-membrillo-cormillot-330g</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/mermelada-dietetica-de-higo-cormillot-390g</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-adultos-raza-3-kg-pollo-carne-cereales-y-arroz</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-adultos-raza-15-kg-pollo-carne-cereales-y-arroz</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/yerba-mate-cachamate-hierbas-naturales-con-te-verde-paquete-500-gr</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/yerba-mate-hierbas-del-litoral-con-palo-cachamate-500g</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/cafe-en-granos-los-5-hispanos-tostado-paquete-500-gr</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -488,6 +529,7 @@
   <url><loc>https://tradingchango.com/almacen/mermelada-diet-sabor-durazno-dulcor-pot-420-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/mermelada-emeth-maracuya-454g</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/yerba-mate-cachamate-hierbas-pampeanas-paquete-500-gr</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-en-sobres-cachorros-purina-cat-chow-85-gr-pollo</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/mermelada-ciruela-emeth-frasco-454-gr</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/vino-cabsauv-rocky-bot-750-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/verdu/papa-blanca-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -518,6 +560,7 @@
   <url><loc>https://tradingchango.com/almacen/cereal-granix-fibra-total-con-pasas-400-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/copos-maiz-c-miel-y-azuc-granix-bsa-240-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/granola-almendras-y-pa-granix-paq-350-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-en-sobres-purina-cat-chow-85-gr-pescado-esterilizados</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/avena-instantanea-granix-400-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/copos-maiz-granix-160g</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/harina-trigo-0000-morixe-1kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -527,6 +570,9 @@
   <url><loc>https://tradingchango.com/perfumeria/crema-dental-colgate-luminous-white-brilliant-90g</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/gaseosa-seven-up-sin-azucar-15-l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/bebida-isotonica-powerade-frutas-tropicales-15-lt</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-en-sobres-purina-felix-85-gr-salmon</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-en-sobres-adultos-purina-cat-chow-85-gr-pescado</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-en-sobre-cachorros-purina-dog-chow-100-gr-pollo</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/pasta-de-mani-nucrem-georgalos-tab-84-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/bocadito-de-cereal-chocol-rellen-granix-bsa-180-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/avena-tradicional-granix-400-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -534,12 +580,15 @@
   <url><loc>https://tradingchango.com/almacen/turron-mani-arcor-fwp-120-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/garrapinadas-de-mani-georgalos-bsa-80-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/turron-de-mani-bariloche-80-gr</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-adultos-raza-15-kg-pollo-carne-cereales-y-arroz</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-para-gatos-adultos-sabor-pescado-y-salmon-gati-3kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/tableta-light-dulce-de-vauquita-tab-140-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/aceite-maiz-arcor-botella-900-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/limpieza/panuelos-campanita-caja-75-unidades</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/torta-imperial-de-mani-bariloche-est-200-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/turron-almendra-duro-bariloche-est-100-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/crocante-de-mani-bariloche-100-gr</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alim-perros-adultos-dogui-bol-3-kgm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/alfajor-fantoche-mini-chocolate-paquete-25-gr-6-unidades</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/confites-de-chocolate-rocklets-40g</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/confites-mini-rocklets-150g</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -549,20 +598,57 @@
   <url><loc>https://tradingchango.com/almacen/turron-almendra-crocante-bariloche-est-100-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/limpieza/procenex-limpiador-liquido-para-pisos-marina-900ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/confites-rocklets-arcor-paq-120-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alim-perros-carne-y-probio-raza-bsa-3-kgm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-perros-adultos-carne-pedigree-33kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alim-perros-adulto-carne-raza-bol-16-kgm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/alfajor-fantoche-mini-blanco-paquete-25-gr-6-unidades</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/perfumeria/crema-facial-hidratante-de-dia-nivea-essentials-para-piel-normal-fps-15-x-50-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/limpieza/fibra-esponja-vileda-salvaunas-paq-1-uni</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/mermelada-frambuesas-emeth-frasco-454-gr</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/verdu/ajo-malla-x-3-uni</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/lacteos/leche-parcialmente-descremada-liviana-la-serenisima-sachet-1l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-en-sobres-purina-felix-85-gr-pescado-blanco</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-para-perros-cachorros-sabor-carne-y-pollo-pedigree-3kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/bebida-isotonica-powerade-frutas-tropicales-500-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alim-perros-cachorros-dogui-bol-15-kgm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/bolsa-pheces-mascota-asurin-3-unid-33x22-20-bolsas</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/granulado-higienico-para-gatos-absorsol-36-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-en-sobre-adultos-pedigree-100-gr-carne</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-para-gatos-adultos-sabor-salmon-whiskas-1kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/almacen/galletitas-oreo-rellenas-con-crema-sabor-original-118g</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alim-perros-adultos-dogui-bol-15-kgm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/bolsa-pheces-masc-porta-bolsa-asurin-paq-3-uni</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alim-perros-cachorros-pedigree-bsa-8-kgm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-en-sobre-adultos-7-pedigree-100-gr-carne</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-en-sobre-adultos-pedigree-100-gr-pollo</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alim-perros-pollo-sel-veg-pedigree-lat-340-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/limpieza/phigienico-dh-soft-x-30-campanita-bol-12-m2</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alim-gatos-casserole-atun-fancy-feast-pou-85-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alim-perros-cachorros-dogui-bol-8-kgm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-para-perros-adultos-en-casa-raza-8-kgm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/verdu/cereza-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alimento-en-sobres-whiskas-85-gr-pollo</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/limpieza/limpiador-cremoso-multiuso-original-cif-500-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alim-gatos-pollo-whiskas-lat-340-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/granulado-sanitario-pell-cat-17-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/correa-alpinista-ahorque-del-campo</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/huesos-de-cuero-del-campo-1-unidad</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/palitos-saborizados-del-campo-10-unidades</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/cepillo-plastico-del-campo-1u</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/cuidado-oral-diario-pedigree-dentastix-1-unidad</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/lacteos/leche-larga-vida-entera-tregar-ttb-1-l</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alim-gatos-atun-y-merluza-whiskas-lat-340-grm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/correa-gruesa-del-campo-100-cm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/alim-perros-cachorro-tiernitos-bol-15-kgm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/cinturon-de-seguridad-del-campo-1-unidad</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/collar-del-campo-1-unidad</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/palitos-saborizados-del-campo-20-unidades</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/bandeja-sanitaria-del-campo-25-x-36-cm</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/collar-del-campo-40-cm-1-unidad</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/comedero-del-campo-mediano-16-cm-1-unidad</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/bebida-isotonica-powerade-mountain-blast-500-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/perfumeria/leche-limpiadora-facial-refrescante-nivea-piel-normal-y-seca-x-200-ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://tradingchango.com/mascotas/juguete-de-latex-del-campo</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/carnes/filet-de-merluza-x-kg</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/bebidas/bebida-isotonica-gatorade-cool-blue-500-cc</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://tradingchango.com/limpieza/procenex-limpiador-desinfectante-original-900ml</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
