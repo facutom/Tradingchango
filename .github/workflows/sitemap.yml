@@ -5,6 +5,9 @@ on:
     - cron: '0 0 * * *' # Corre todos los días a la medianoche
   workflow_dispatch: # Permite correrlo a mano
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
