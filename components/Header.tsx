@@ -66,7 +66,7 @@ const Header: React.FC<HeaderProps> = ({
           </div>
 
           <div className="relative md:hidden" ref={menuRef}>
-            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="w-8 h-8 flex items-center justify-center text-black dark:text-[#e9edef]">
+            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="w-8 h-8 flex items-center justify-center text-black dark:text-[#e9edef]" aria-label="Menú de información">
               <i className="fa-solid fa-circle-info text-xl"></i>
             </button>
             {isMenuOpen && (
@@ -79,15 +79,15 @@ const Header: React.FC<HeaderProps> = ({
             )}
           </div>
 
-          <a href="https://twitter.com/tradingchango" target="_blank" rel="noopener noreferrer" className="hidden md:flex w-8 h-8 items-center justify-center text-black dark:text-[#e9edef] hover:opacity-70 transition-opacity">
+          <a href="https://twitter.com/tradingchango" target="_blank" rel="noopener noreferrer" className="hidden md:flex w-8 h-8 items-center justify-center text-black dark:text-[#e9edef] hover:opacity-70 transition-opacity" aria-label="Seguinos en Twitter">
             <svg viewBox="0 0 24 24" aria-hidden="true" className="w-5 h-5 fill-current">
               <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
             </svg>
           </a>
-          <button onClick={onUserClick} className="w-8 h-8 flex items-center justify-center text-black dark:text-[#e9edef]">
+          <button onClick={onUserClick} className="w-8 h-8 flex items-center justify-center text-black dark:text-[#e9edef]" aria-label="Perfil de usuario">
             <i className={`fa-solid fa-circle-user text-xl ${isPro ? 'text-green-600' : ''}`}></i>
           </button>
-          <button onClick={toggleTheme} className="text-black dark:text-[#e9edef] hover:opacity-70 transition-opacity">
+          <button onClick={toggleTheme} className="text-black dark:text-[#e9edef] hover:opacity-70 transition-opacity" aria-label={theme === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}>
             <i className={`fa-solid ${theme === 'dark' ? 'fa-sun' : 'fa-moon'} text-xl`}></i>
           </button>
         </div>
@@ -120,12 +120,14 @@ const Header: React.FC<HeaderProps> = ({
           <button 
             onClick={() => setTrendFilter(trendFilter === 'down' ? null : 'down')} 
             className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-[11px] font-[800] uppercase border transition-all ${trendFilter === 'down' ? 'bg-green-600 text-white border-green-600 shadow-lg shadow-green-600/20' : 'bg-white dark:bg-primary text-green-600 dark:border-[#233138] dark:border-[#233138]'}`}
+            aria-label="Filtrar por precios que están bajando"
           >
             <i className="fa-solid fa-arrow-trend-down"></i> Precios bajando
           </button>
           <button 
             onClick={() => setTrendFilter(trendFilter === 'up' ? null : 'up')} 
             className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-[11px] font-[800] uppercase border transition-all ${trendFilter === 'up' ? 'bg-red-600 text-white border-red-600 shadow-lg shadow-red-600/20' : 'bg-white dark:bg-primary text-red-600 dark:border-[#233138] dark:border-[#233138]'}`}
+            aria-label="Filtrar por precios que están subiendo"
           >
             <i className="fa-solid fa-arrow-trend-up"></i> Precios subiendo
           </button>

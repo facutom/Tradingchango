@@ -53,6 +53,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ cartCount }) => {
             to={tab.path}
             onClick={tab.id === 'varios' ? handleVariosClick : undefined}
             className={`relative flex flex-col items-center gap-1.5 transition-all ${currentPath === tab.path || (tab.id === 'varios' && isVariosOpen) ? 'text-black dark:text-white scale-110' : 'text-neutral-400'}`}
+            aria-label={`Ir a ${tab.label}`}
           >
             <i className={`fa-solid ${tab.icon} text-[20px]`}></i>
             <span className={`text-[10px] font-[800] tracking-tight ${currentPath === tab.path || (tab.id === 'varios' && isVariosOpen) ? 'opacity-100' : 'opacity-60'}`}>{tab.label}</span>

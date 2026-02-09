@@ -38,11 +38,11 @@
             },
             colors: {
               primary: '#0b141a',
-              muted: '#787b86',
-              'muted-dark': '#888888',
+              muted: '#5a5e6b',
+              'muted-dark': '#a0a0a0',
               'border-light': '#e0e3eb',
               'border-dark': '#233138',
-              'trading-green': '#00a650',
+              'trading-green': '#008a45',
               'trading-red': '#f23645',
               'star-gold': '#f2a900',
               'chart-green': '#00c853',
@@ -167,7 +167,7 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.service-worker.register('/sw.js');
+          navigator.serviceWorker.register('/sw.js');
         });
       }
 </script>

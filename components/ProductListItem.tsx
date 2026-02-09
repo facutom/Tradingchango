@@ -23,6 +23,7 @@ const STORES = [
 
 interface ProductListItemProps {
   product: ProductWithStats;
+  isFirst: boolean;
   isFavorite: boolean;
   isPurchased: boolean;
   quantity: number;
@@ -52,6 +53,7 @@ const format = (n: number) => new Intl.NumberFormat('es-AR').format(n);
 
 const ProductListItem: React.FC<ProductListItemProps> = ({
   product: p,
+  isFirst,
   isFavorite,
   isPurchased,
   quantity,
@@ -125,9 +127,9 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
           className="w-full h-full object-contain p-1"
           width="64"
           height="64"
-          loading="lazy"
+          loading={isFirst ? 'eager' : 'lazy'}
           decoding="async"
-          fetchPriority="low"
+          fetchPriority={isFirst ? 'high' : 'low'}
         />
       </div>
       </div>

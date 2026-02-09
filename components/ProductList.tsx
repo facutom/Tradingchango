@@ -69,10 +69,11 @@ const ProductList: React.FC<ProductListProps> = ({
 
   return (
     <div className="divide-neutral-100 dark:divide-neutral-900">
-      {visibleProducts.map((p) => (
+      {visibleProducts.map((p, index) => (
         <ProductListItem
           key={p.id}
           product={p}
+          isFirst={index === 0}
           isFavorite={isFavorite(p.id)}
           isPurchased={purchasedItems?.has(p.id) || false}
           quantity={quantities ? (quantities[p.id] || 1) : 1}
