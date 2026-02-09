@@ -119,17 +119,17 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
            </button>
          )}
          <div className="w-16 h-16 rounded-lg bg-white border border-neutral-100 flex items-center justify-center overflow-hidden shrink-0 aspect-square">
-            <img 
-              src={p.imagen_url || 'https://via.placeholder.com/50?text=N/A'} 
-              alt={p.nombre} 
-              className="w-full h-full object-contain p-1"
-              width="64"
-              height="64"
-              loading="lazy"
-              decoding="async"
-              fetchPriority="low"
-            />
-         </div>
+        <img 
+          src={`${p.imagen_url}?format=webp&resize=128x128` || 'https://via.placeholder.com/64?text=N/A'} 
+          alt={p.nombre} 
+          className="w-full h-full object-contain p-1"
+          width="64"
+          height="64"
+          loading="lazy"
+          decoding="async"
+          fetchPriority="low"
+        />
+      </div>
       </div>
 
       <div className="flex-1 flex items-center justify-between pr-2 min-w-0 ml-3">

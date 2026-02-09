@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef, memo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense, memo, useRef } from 'react';
 import type { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { supabase, getProducts, getPriceHistory, getProfile, getConfig, getBenefits, getSavedCartData, saveCartData } from './services/supabase';
 import { Product, PriceHistory, Profile, TabType, ProductStats, Benefit, CartItem } from './types';
@@ -6,7 +6,6 @@ import { calculateStoreTotal } from './utils/calculateStoreTotal';
 import Header from './components/Header';
 import ProductList from './components/ProductList';
 import BottomNav from './components/BottomNav';
-import ProductDetail from './components/ProductDetail';
 import AuthModal from './components/AuthModal';
 import CartSummary from './components/CartSummary';
 import Footer from './components/Footer';
@@ -14,6 +13,13 @@ import { AboutView, TermsView, ContactView } from './components/InfoViews';
 import { Routes, Route, useNavigate, useLocation, useParams, Navigate } from 'react-router-dom';
 import MetaTags from './components/MetaTags';
 
+const LoadingSpinner = () => (
+  <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div className="w-12 h-12 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
+  </div>
+);
+
+const ProductDetail = lazy(() => import('./components/ProductDetail'));
 const MemoizedHeader = memo(Header); 
 const MemoizedBottomNav = memo(BottomNav); 
 const MemoizedFooter = memo(Footer);
@@ -802,7 +808,7 @@ const toggleFavorite = useCallback((id: number) => {
                 products={filteredProducts as any} 
                 onProductClick={handleProductClick}                
                 onFavoriteToggle={toggleFavorite} 
-                isFavorite={id => !!favorites[id]}
+                isFavorite={(id: number) => !!favorites[id]}
                 searchTerm={searchTerm}
               />
             </>
@@ -825,7 +831,7 @@ const toggleFavorite = useCallback((id: number) => {
                 products={filteredProducts as any} 
                 onProductClick={handleProductClick}                
                 onFavoriteToggle={toggleFavorite} 
-                isFavorite={id => !!favorites[id]}
+                isFavorite={(id: number) => !!favorites[id]}
                 isCartView={true} 
                 quantities={favorites}
                 onUpdateQuantity={handleFavoriteChangeInCart}
@@ -837,13 +843,15 @@ const toggleFavorite = useCallback((id: number) => {
           } />
           {/* Todas las rutas deben estar DENTRO de un solo <Routes> */}
           <Route path="/:category/:slug" element={
-            <ProductDetailWrapper 
-              products={products} 
-              favorites={favorites} 
-              toggleFavorite={toggleFavorite} 
-              theme={theme} 
-              onUpdateQuantity={handleFavoriteChangeInCart} 
-            />
+            <Suspense fallback={<LoadingSpinner />}>
+              <ProductDetailWrapper 
+                products={products} 
+                favorites={favorites} 
+                toggleFavorite={toggleFavorite} 
+                theme={theme} 
+                onUpdateQuantity={handleFavoriteChangeInCart} 
+              />
+            </Suspense>
           } />
           <Route path="/acerca-de" element={<AboutView onClose={() => navigate('/')} content={config.acerca_de} />} />
           <Route path="/terminos" element={<TermsView onClose={() => navigate('/')} content={config.terminos} />} />
@@ -853,7 +861,7 @@ const toggleFavorite = useCallback((id: number) => {
                 products={filteredProducts as any} 
                 onProductClick={handleProductClick}
                 onFavoriteToggle={toggleFavorite} 
-                isFavorite={id => !!favorites[id]}
+                isFavorite={(id: number) => !!favorites[id]}
                 isCartView={false} 
                 quantities={favorites}
                 onUpdateQuantity={handleFavoriteChangeInCart}
