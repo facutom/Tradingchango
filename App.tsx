@@ -12,6 +12,7 @@ import CartSummary from './components/CartSummary';
 import Footer from './components/Footer';
 import { AboutView, TermsView, ContactView } from './components/InfoViews';
 import { Routes, Route, useNavigate, useLocation, useParams, Navigate } from 'react-router-dom';
+import MetaTags from './components/MetaTags';
 
 const MemoizedHeader = memo(Header); 
 const MemoizedBottomNav = memo(BottomNav); 
@@ -40,6 +41,19 @@ const slugify = (text: string) => {
     .replace(/^-+/, '') // Trim - from start of text
     .replace(/-+$/, '') // Trim - from end of text
 }
+
+const descriptions: { [key: string]: string } = {
+  '/': 'Compará precios de supermercados en Argentina en tiempo real. Ahorrá en Carnes, Verduras, Bebidas y más con TradingChango.',
+  '/carnes': 'Encontrá las mejores ofertas en Carnes. Compará precios entre distintos supermercados y ahorrá en tu compra semanal.',
+  '/verdu': 'Precios actualizados de Frutas y Verduras. Ahorrá en productos frescos con TradingChango.',
+  '/bebidas': 'Compará precios de Gaseosas, Aguas, Jugos y más Bebidas. Encontrá el mejor precio para tu compra.',
+  '/lacteos': 'Ahorrá en Leches, Yogures, Quesos y otros Lácteos. Compará precios y elegí la mejor opción.',
+  '/almacen': 'Los mejores precios en productos de Almacén. Compará y ahorrá en fideos, arroz, aceite y más.',
+  '/limpieza': 'Encontrá ofertas en productos de Limpieza para el hogar. Compará precios y mantené tu casa impecable por menos.',
+  '/perfumeria': 'Compará precios de productos de Perfumería y cuidado personal. Ahorrá en shampoo, jabón, desodorantes y más.',
+  '/mascotas': 'Ahorrá en alimento y productos para tu Mascota. Compará precios y encontrá las mejores ofertas.',
+  '/varios': 'Descubrí ofertas en una variedad de productos misceláneos de supermercado.'
+};
 
 const calculateOutliers = (products: Product[]): Product[] => {
   return products.map(product => {
@@ -697,7 +711,9 @@ const toggleFavorite = useCallback((id: number) => {
 
   const isFavorite = useCallback((id: number) => !!favorites[id], [favorites]);
 
-  const listPageElement = (
+  const listPageElement = (description: string) => (
+   <>
+    <MetaTags description={description} />
     <MemoizedProductList
       products={visibleProducts as any}
       onProductClick={handleProductClick}
@@ -710,7 +726,8 @@ const toggleFavorite = useCallback((id: number) => {
       purchasedItems={purchasedItems}
       onTogglePurchased={togglePurchased}
     />
-  );
+  </> 
+);
  
   if (loading && products.length === 0) return <div className="min-h-screen flex items-center justify-center dark:bg-primary dark:text-white font-mono text-[11px] uppercase tracking-[0.2em]">Conectando a Mercado...</div>;
  
@@ -767,77 +784,87 @@ const toggleFavorite = useCallback((id: number) => {
         profile={profile}
         trendFilter={trendFilter} setTrendFilter={setTrendFilter}
       />
-      <main>
+    <main>
         <Routes>
-          <Route path="/" element={listPageElement} />
-          <Route path="/carnes" element={listPageElement} />
-          <Route path="/verdu" element={listPageElement} />
-          <Route path="/bebidas" element={listPageElement} />
-          <Route path="/lacteos" element={listPageElement} />
-          <Route path="/almacen" element={listPageElement} />
-          <Route path="/limpieza" element={listPageElement} />
-          <Route path="/perfumeria" element={listPageElement} />
-          <Route path="/mascotas" element={listPageElement} />
-          <Route path="/varios" element={listPageElement} />
-  <Route path="/chango" element={
-    <>
-      {filteredProducts.length > 0 && (
-        <CartSummary 
-          items={filteredProducts.map(p => ({ ...p, quantity: favorites[p.id] || 1 }))}
-          benefits={benefits} 
-          userMemberships={profile?.membresias} 
-          onSaveCart={handleSaveCurrentCart}
-          canSave={!!user}
-          savedCarts={savedCarts}
-          onLoadCart={handleLoadSavedCart}
-          onDeleteCart={handleDeleteSavedCart}
-        />
-      )}
-      <MemoizedProductList 
-        products={filteredProducts as any} 
-        onProductClick={handleProductClick}                
-        onFavoriteToggle={toggleFavorite} 
-        isFavorite={id => !!favorites[id]}
-        isCartView={true} 
-        quantities={favorites}
-        onUpdateQuantity={handleFavoriteChangeInCart}
-        searchTerm={searchTerm}
-        purchasedItems={purchasedItems}
-        onTogglePurchased={togglePurchased}
-      />
-    </>
-  } />
+          <Route path="/" element={listPageElement(descriptions['/'])} />
+          <Route path="/carnes" element={listPageElement(descriptions['/carnes'])} />
+          <Route path="/verdu" element={listPageElement(descriptions['/verdu'])} />
+          <Route path="/bebidas" element={listPageElement(descriptions['/bebidas'])} />
+          <Route path="/lacteos" element={listPageElement(descriptions['/lacteos'])} />
+          <Route path="/almacen" element={listPageElement(descriptions['/almacen'])} />
+          <Route path="/limpieza" element={listPageElement(descriptions['/limpieza'])} />
+          <Route path="/perfumeria" element={listPageElement(descriptions['/perfumeria'])} />
+          <Route path="/mascotas" element={listPageElement(descriptions['/mascotas'])} />
+          <Route path="/varios" element={
+            <>
+              <MetaTags description={descriptions['/varios']} robots="noindex, follow" />
+              <MemoizedProductList 
+                products={filteredProducts as any} 
+                onProductClick={handleProductClick}                
+                onFavoriteToggle={toggleFavorite} 
+                isFavorite={id => !!favorites[id]}
+                searchTerm={searchTerm}
+              />
+            </>
+          } />
+          <Route path="/chango" element={
+            <>
+              {filteredProducts.length > 0 && (
+                <CartSummary 
+                  items={filteredProducts.map(p => ({ ...p, quantity: favorites[p.id] || 1 }))}
+                  benefits={benefits} 
+                  userMemberships={profile?.membresias} 
+                  onSaveCart={handleSaveCurrentCart}
+                  canSave={!!user}
+                  savedCarts={savedCarts}
+                  onLoadCart={handleLoadSavedCart}
+                  onDeleteCart={handleDeleteSavedCart}
+                />
+              )}
+              <MemoizedProductList 
+                products={filteredProducts as any} 
+                onProductClick={handleProductClick}                
+                onFavoriteToggle={toggleFavorite} 
+                isFavorite={id => !!favorites[id]}
+                isCartView={true} 
+                quantities={favorites}
+                onUpdateQuantity={handleFavoriteChangeInCart}
+                searchTerm={searchTerm}
+                purchasedItems={purchasedItems}
+                onTogglePurchased={togglePurchased}
+              />
+            </>
+          } />
+          {/* Todas las rutas deben estar DENTRO de un solo <Routes> */}
+          <Route path="/:category/:slug" element={
+            <ProductDetailWrapper 
+              products={products} 
+              favorites={favorites} 
+              toggleFavorite={toggleFavorite} 
+              theme={theme} 
+              onUpdateQuantity={handleFavoriteChangeInCart} 
+            />
+          } />
+          <Route path="/acerca-de" element={<AboutView onClose={() => navigate('/')} content={config.acerca_de} />} />
+          <Route path="/terminos" element={<TermsView onClose={() => navigate('/')} content={config.terminos} />} />
+          <Route path="/contacto" element={<ContactView onClose={() => navigate('/')} content={config.contacto} email={profile?.email} />} />
+          <Route path="/update-password" element={
+              <MemoizedProductList 
+                products={filteredProducts as any} 
+                onProductClick={handleProductClick}
+                onFavoriteToggle={toggleFavorite} 
+                isFavorite={id => !!favorites[id]}
+                isCartView={false} 
+                quantities={favorites}
+                onUpdateQuantity={handleFavoriteChangeInCart}
+                searchTerm={searchTerm}
+                purchasedItems={purchasedItems}
+                onTogglePurchased={togglePurchased}
+              />
+            } />
+        </Routes>
 
-<Route path="/:category/:slug" element={
-  <ProductDetailWrapper 
-    products={products} 
-    favorites={favorites} 
-    toggleFavorite={toggleFavorite} 
-    theme={theme} 
-    onUpdateQuantity={handleFavoriteChangeInCart} 
-  />
-} />
-  <Route path="/acerca-de" element={<AboutView onClose={() => navigate('/')} content={config.acerca_de} />} />
-  <Route path="/terminos" element={<TermsView onClose={() => navigate('/')} content={config.terminos} />} />
-  <Route path="/contacto" element={<ContactView onClose={() => navigate('/')} content={config.contacto} email={profile?.email} />} />
-  <Route path="/update-password" element={
-      <MemoizedProductList 
-        products={filteredProducts as any} 
-        onProductClick={handleProductClick}
-        onFavoriteToggle={toggleFavorite} 
-        isFavorite={id => !!favorites[id]}
-        isCartView={false} 
-        quantities={favorites}
-        onUpdateQuantity={handleFavoriteChangeInCart}
-        searchTerm={searchTerm}
-        purchasedItems={purchasedItems}
-        onTogglePurchased={togglePurchased}
-      />
-    } />
-
-</Routes>
         {/* --- BOTÓN DE CARGA POR LOTES --- */}
-        {/* Solo aparece si NO estamos en el Chango y si hay más productos para mostrar */}
         {['/', '/carnes', '/verdu', '/bebidas', '/varios'].includes(location.pathname) && filteredProducts.length > displayLimit && (
           <div className="flex justify-center py-6">
             <button 
