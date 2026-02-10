@@ -7,7 +7,7 @@ interface ProductWithStats extends Product {
     min: number;
     spread: string;
     trendClass: string;
-    icon: string;
+    icon: string; 
     isUp: boolean;
     isDown: boolean;
   };
@@ -117,7 +117,8 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
          {isCartView && (
            <button 
             onClick={(e) => { e.stopPropagation(); onTogglePurchased?.(p.id); }}
-            className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isPurchased ? 'bg-green-500 border-green-500 text-white' : 'border-neutral-300 dark:border-neutral-700'}`}
+            aria-label="Marcar como comprado"
+            className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isPurchased ? 'bg-green-500 border-green-500 text-white' : 'border-neutral-600 dark:border-neutral-700'}`}
            >
              {isPurchased && <i className="fa-solid fa-check text-[10px]"></i>}
            </button>
