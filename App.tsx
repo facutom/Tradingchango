@@ -752,6 +752,7 @@ const toggleFavorite = useCallback((id: number) => {
           setShowPwaPill(false);
         }}
         className="absolute -top-1.5 -right-1.5 bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-lg border-2 border-white dark:border-neutral-900 active:scale-90 transition-transform"
+        aria-label="Cerrar aviso de instalación"
       >
         <i className="fa-solid fa-xmark text-[10px]"></i>
       </button>
@@ -776,6 +777,7 @@ const toggleFavorite = useCallback((id: number) => {
       <button 
         onClick={handleInstallClick}
         className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 shadow-lg shadow-green-500/20"
+        aria-label="Instalar la aplicación"
       >
         Instalar
       </button>
@@ -878,6 +880,7 @@ const toggleFavorite = useCallback((id: number) => {
             <button 
               onClick={() => setDisplayLimit(prev => prev + 20)}
               className="bg-neutral-50 dark:bg-[#1f2c34] text-black dark:text-white px-8 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest hover:scale-105 active:scale-95 transition-all border border-neutral-200 dark:border-[#233138] shadow-md mb-4"
+              aria-label={`Cargar más productos, ${filteredProducts.length - displayLimit} restantes`}
             >
               Cargar más productos ({filteredProducts.length - displayLimit} restantes)
             </button>

@@ -13,7 +13,7 @@ const Footer: React.FC = () => {
             Invitame un Cafecito ☕
           </a>
         </div>
-        <p className="text-[10px] font-mono font-bold text-neutral-300 dark:text-neutral-700 uppercase tracking-[0.2em]">
+        <p className="text-[10px] font-mono font-bold text-neutral-600 dark:text-neutral-700 uppercase tracking-[0.2em]">
           © 2026 TradingChango Todos los derechos reservados.
         </p>
       </div>

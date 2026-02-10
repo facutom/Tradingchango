@@ -74,6 +74,7 @@ const ProductList: React.FC<ProductListProps> = ({
           key={p.id}
           product={p}
           isFirst={index === 0}
+          index={index}
           isFavorite={isFavorite(p.id)}
           isPurchased={purchasedItems?.has(p.id) || false}
           quantity={quantities ? (quantities[p.id] || 1) : 1}

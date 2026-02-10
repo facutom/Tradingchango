@@ -102,7 +102,7 @@ export const ContactView: React.FC<InfoViewProps & { email?: string }> = ({ onCl
             <p className="text-[10px] font-mono text-neutral-400 uppercase">soporte@tradingchango.com</p>
           </div>
         </div>
-        <i className="fa-solid fa-chevron-right text-neutral-300"></i>
+        <i className="fa-solid fa-chevron-right text-neutral-600"></i>
       </a>
       
       {/* Contenido Dinámico (HTML) desde Supabase */}

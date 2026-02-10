@@ -155,7 +155,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, benefits, userMembersh
                   </div>
                   <div>
                      <p className="text-base font-black uppercase text-indigo-600 dark:text-indigo-400 leading-tight">¡Súper Ahorro!</p>
-                     <p className="text-[10px] font-bold text-neutral-600 dark:text-neutral-300 uppercase leading-none">Sacá la {paymentAdvice.recommend.entidad_nombre} y ahorrá {paymentAdvice.recommend.descuento}%*</p>
+                     <p className="text-[10px] font-bold text-neutral-600 dark:text-neutral-600 uppercase leading-none">Sacá la {paymentAdvice.recommend.entidad_nombre} y ahorrá {paymentAdvice.recommend.descuento}%*</p>
                   </div>
                 </a>
               )}

@@ -288,7 +288,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
               </button>
               <button onClick={() => setView('membresias')} className="w-full bg-neutral-50 dark:bg-neutral-900 p-4 rounded-xl text-left flex items-center justify-between border border-neutral-100 dark:border-neutral-800 hover:border-black dark:hover:border-white transition-all hidden">
                 <div className="flex items-center gap-3"><i className="fa-solid fa-id-card text-neutral-400"></i><span className="text-[11px] font-bold dark:text-white uppercase">Bancos & Membresías</span></div>
-                <i className="fa-solid fa-chevron-right text-neutral-300 text-[10px]"></i>
+                <i className="fa-solid fa-chevron-right text-neutral-600 text-[10px]"></i>
               </button>
               <button onClick={handleSignOut} className="w-full text-red-500 text-[9px] font-black uppercase tracking-widest py-3 mt-4">Cerrar Sesión</button>
             </div>
