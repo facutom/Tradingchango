@@ -249,6 +249,18 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      const script = document.createElement('script');
+      script.src = "https://platform.twitter.com/widgets.js";
+      script.async = true;
+      script.charset = "utf-8";
+      document.body.appendChild(script);
+    }, 3000); // Retraso de 3 segundos
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
     if (theme === 'dark') document.documentElement.classList.add('dark');
     else document.documentElement.classList.remove('dark');
     localStorage.setItem('theme', theme);
@@ -425,6 +437,20 @@ const App: React.FC = () => {
     document.removeEventListener("visibilitychange", handleVisibilityChange);
   };
 }, [favorites, savedCarts, user, loading]);
+
+  useEffect(() => {
+    if (products.length > 0 && !document.getElementById('lcp-preload')) {
+      const firstProductImage = products[0].imagen_url;
+      if (firstProductImage) {
+        const link = document.createElement('link');
+        link.id = 'lcp-preload';
+        link.rel = 'preload';
+        link.as = 'image';
+        link.href = `${firstProductImage}?format=webp&resize=64x64&quality=80`;
+        document.head.appendChild(link);
+      }
+    }
+  }, [products]);
 
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 

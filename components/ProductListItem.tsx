@@ -125,7 +125,7 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
          )}
          <div className="w-16 h-16 rounded-lg bg-white border border-neutral-100 flex items-center justify-center overflow-hidden shrink-0 aspect-square">
         <img
-    src={`${p.imagen_url}?format=webp&resize=64x64` || 'https://via.placeholder.com/64?text=N/A'}
+    src={`${p.imagen_url}?format=webp&resize=64x64&quality=80` || 'https://via.placeholder.com/64?text=N/A'}
     alt={p.nombre}
     className="w-full h-full object-contain p-1"
     width="64"
