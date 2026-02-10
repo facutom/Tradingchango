@@ -439,15 +439,18 @@ const App: React.FC = () => {
 }, [favorites, savedCarts, user, loading]);
 
   useEffect(() => {
-    if (products.length > 0 && !document.getElementById('lcp-preload')) {
+    if (products.length > 0) {
       const firstProductImage = products[0].imagen_url;
       if (firstProductImage) {
-        const link = document.createElement('link');
-        link.id = 'lcp-preload';
-        link.rel = 'preload';
-        link.as = 'image';
-        link.href = `${firstProductImage}?width=200&quality=80`;
-        document.head.appendChild(link);
+        // Evita duplicar el preload si el componente se re-renderiza
+        const existingLink = document.querySelector(`link[rel="preload"][href^="${firstProductImage}"]`);
+        if (!existingLink) {
+          const link = document.createElement('link');
+          link.rel = 'preload';
+          link.as = 'image';
+          link.href = `${firstProductImage}?width=200&quality=80`;
+          document.head.appendChild(link);
+        }
       }
     }
   }, [products]);
