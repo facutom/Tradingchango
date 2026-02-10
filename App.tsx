@@ -448,7 +448,7 @@ const App: React.FC = () => {
           const link = document.createElement('link');
           link.rel = 'preload';
           link.as = 'image';
-          link.href = `${firstProductImage}?width=200&quality=80`;
+          link.href = `${firstProductImage}?width=120&height=120&resize=contain&quality=80`;
           document.head.appendChild(link);
         }
       }

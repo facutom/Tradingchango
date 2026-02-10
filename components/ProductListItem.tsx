@@ -125,14 +125,14 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
          )}
          <div className="w-16 h-16 rounded-lg bg-white border border-neutral-100 flex items-center justify-center overflow-hidden shrink-0 aspect-square">
         <img
-    src={p.imagen_url ? `${p.imagen_url}?width=200&quality=80` : 'https://via.placeholder.com/64?text=N/A'}
+    src={p.imagen_url ? `${p.imagen_url}?width=120&height=120&resize=contain&quality=80` : 'https://via.placeholder.com/78?text=N/A'}
     alt={p.nombre}
     className="w-full h-full object-contain p-1"
-    width="64"
-    height="64"
-    loading={index < 2 ? 'eager' : 'lazy'}
-    decoding={index < 2 ? 'auto' : 'async'}
-    fetchPriority={index < 2 ? 'high' : 'auto'}
+    width="78"
+    height="78"
+    loading={index < 4 ? 'eager' : 'lazy'}
+    decoding="async"
+    fetchPriority={index < 4 ? 'high' : 'auto'}
 />
       </div>
       </div>
