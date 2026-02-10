@@ -7,7 +7,7 @@ import Header from './components/Header';
 import ProductList from './components/ProductList';
 import BottomNav from './components/BottomNav';
 const AuthModal = lazy(() => import('./components/AuthModal'));
-import CartSummary from './components/CartSummary';
+const CartSummary = lazy(() => import('./components/CartSummary'));
 import Footer from './components/Footer';
 const AboutView = lazy(() => import('./components/InfoViews').then(module => ({ default: module.AboutView })));
 const TermsView = lazy(() => import('./components/InfoViews').then(module => ({ default: module.TermsView })));
@@ -464,7 +464,7 @@ const App: React.FC = () => {
           const link = document.createElement('link');
           link.rel = 'preload';
           link.as = 'image';
-          link.href = `${firstProductImage}?width=150&quality=80&resize=contain`;
+          link.href = `${firstProductImage}?width=120&quality=75&format=webp`;
           document.head.appendChild(link);
         }
       }
@@ -858,6 +858,7 @@ const toggleFavorite = useCallback((id: number) => {
         trendFilter={trendFilter} setTrendFilter={setTrendFilter}
       />
     <main>
+      <Suspense fallback={<LoadingSpinner />}>
         <Routes>
           <Route path="/" element={listPageElement(descriptions['/'])} />
           <Route path="/carnes" element={listPageElement(descriptions['/carnes'])} />
@@ -871,10 +872,10 @@ const toggleFavorite = useCallback((id: number) => {
           <Route path="/varios" element={
             <>
               <MetaTags description={descriptions['/varios']} robots="noindex, follow" />
-              <MemoizedProductList 
-                products={filteredProducts as any} 
-                onProductClick={handleProductClick}                
-                onFavoriteToggle={toggleFavorite} 
+              <MemoizedProductList
+                products={filteredProducts as any}
+                onProductClick={handleProductClick}
+                onFavoriteToggle={toggleFavorite}
                 isFavorite={(id: number) => !!favorites[id]}
                 searchTerm={searchTerm}
               />
@@ -883,10 +884,10 @@ const toggleFavorite = useCallback((id: number) => {
           <Route path="/chango" element={
             <>
               {filteredProducts.length > 0 && (
-                <CartSummary 
+                <CartSummary
                   items={filteredProducts.map(p => ({ ...p, quantity: favorites[p.id] || 1 }))}
-                  benefits={benefits} 
-                  userMemberships={profile?.membresias} 
+                  benefits={benefits}
+                  userMemberships={profile?.membresias}
                   onSaveCart={handleSaveCurrentCart}
                   canSave={!!user}
                   savedCarts={savedCarts}
@@ -894,12 +895,12 @@ const toggleFavorite = useCallback((id: number) => {
                   onDeleteCart={handleDeleteSavedCart}
                 />
               )}
-              <MemoizedProductList 
-                products={filteredProducts as any} 
-                onProductClick={handleProductClick}                
-                onFavoriteToggle={toggleFavorite} 
+              <MemoizedProductList
+                products={filteredProducts as any}
+                onProductClick={handleProductClick}
+                onFavoriteToggle={toggleFavorite}
                 isFavorite={(id: number) => !!favorites[id]}
-                isCartView={true} 
+                isCartView={true}
                 quantities={favorites}
                 onUpdateQuantity={handleFavoriteChangeInCart}
                 searchTerm={searchTerm}
@@ -910,34 +911,33 @@ const toggleFavorite = useCallback((id: number) => {
           } />
           {/* Todas las rutas deben estar DENTRO de un solo <Routes> */}
           <Route path="/:category/:slug" element={
-            <Suspense fallback={<LoadingSpinner />}>
-              <ProductDetailWrapper 
-                products={products} 
-                favorites={favorites} 
-                toggleFavorite={toggleFavorite} 
-                theme={theme} 
-                onUpdateQuantity={handleFavoriteChangeInCart} 
-              />
-            </Suspense>
+            <ProductDetailWrapper
+              products={products}
+              favorites={favorites}
+              toggleFavorite={toggleFavorite}
+              theme={theme}
+              onUpdateQuantity={handleFavoriteChangeInCart}
+            />
           } />
-          <Route path="/acerca-de" element={<Suspense fallback={<LoadingSpinner />}><AboutView onClose={() => navigate('/')} content={config.acerca_de} /></Suspense>} />
-          <Route path="/terminos" element={<Suspense fallback={<LoadingSpinner />}><TermsView onClose={() => navigate('/')} content={config.terminos} /></Suspense>} />
-          <Route path="/contacto" element={<Suspense fallback={<LoadingSpinner />}><ContactView onClose={() => navigate('/')} content={config.contacto} email={profile?.email} /></Suspense>} />
+          <Route path="/acerca-de" element={<AboutView onClose={() => navigate('/')} content={config.acerca_de} />} />
+          <Route path="/terminos" element={<TermsView onClose={() => navigate('/')} content={config.terminos} />} />
+          <Route path="/contacto" element={<ContactView onClose={() => navigate('/')} content={config.contacto} email={profile?.email} />} />
           <Route path="/update-password" element={
-              <MemoizedProductList 
-                products={filteredProducts as any} 
-                onProductClick={handleProductClick}
-                onFavoriteToggle={toggleFavorite} 
-                isFavorite={(id: number) => !!favorites[id]}
-                isCartView={false} 
-                quantities={favorites}
-                onUpdateQuantity={handleFavoriteChangeInCart}
-                searchTerm={searchTerm}
-                purchasedItems={purchasedItems}
-                onTogglePurchased={togglePurchased}
-              />
-            } />
+            <MemoizedProductList
+              products={filteredProducts as any}
+              onProductClick={handleProductClick}
+              onFavoriteToggle={toggleFavorite}
+              isFavorite={(id: number) => !!favorites[id]}
+              isCartView={false}
+              quantities={favorites}
+              onUpdateQuantity={handleFavoriteChangeInCart}
+              searchTerm={searchTerm}
+              purchasedItems={purchasedItems}
+              onTogglePurchased={togglePurchased}
+            />
+          } />
         </Routes>
+      </Suspense>
 
         {/* --- BOTÓN DE CARGA POR LOTES --- */}
         {['/', '/carnes', '/verdu', '/bebidas', '/varios'].includes(location.pathname) && filteredProducts.length > displayLimit && (
