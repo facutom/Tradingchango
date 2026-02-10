@@ -130,7 +130,7 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
     className="w-full h-full object-contain p-1"
     width="64"
     height="64"
-    loading={index < 2 ? 'eager' : 'lazy'}
+    loading={isFirst ? 'eager' : 'lazy'}
     decoding="async"
     fetchPriority={isFirst ? 'high' : 'auto'}
 />
