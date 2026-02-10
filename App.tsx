@@ -6,10 +6,12 @@ import { calculateStoreTotal } from './utils/calculateStoreTotal';
 import Header from './components/Header';
 import ProductList from './components/ProductList';
 import BottomNav from './components/BottomNav';
-import AuthModal from './components/AuthModal';
+const AuthModal = lazy(() => import('./components/AuthModal'));
 import CartSummary from './components/CartSummary';
 import Footer from './components/Footer';
-import { AboutView, TermsView, ContactView } from './components/InfoViews';
+const AboutView = lazy(() => import('./components/InfoViews').then(module => ({ default: module.AboutView })));
+const TermsView = lazy(() => import('./components/InfoViews').then(module => ({ default: module.TermsView })));
+const ContactView = lazy(() => import('./components/InfoViews').then(module => ({ default: module.ContactView })));
 import { Routes, Route, useNavigate, useLocation, useParams, Navigate } from 'react-router-dom';
 import MetaTags from './components/MetaTags';
 
@@ -855,9 +857,9 @@ const toggleFavorite = useCallback((id: number) => {
               />
             </Suspense>
           } />
-          <Route path="/acerca-de" element={<AboutView onClose={() => navigate('/')} content={config.acerca_de} />} />
-          <Route path="/terminos" element={<TermsView onClose={() => navigate('/')} content={config.terminos} />} />
-          <Route path="/contacto" element={<ContactView onClose={() => navigate('/')} content={config.contacto} email={profile?.email} />} />
+          <Route path="/acerca-de" element={<Suspense fallback={<LoadingSpinner />}><AboutView onClose={() => navigate('/')} content={config.acerca_de} /></Suspense>} />
+          <Route path="/terminos" element={<Suspense fallback={<LoadingSpinner />}><TermsView onClose={() => navigate('/')} content={config.terminos} /></Suspense>} />
+          <Route path="/contacto" element={<Suspense fallback={<LoadingSpinner />}><ContactView onClose={() => navigate('/')} content={config.contacto} email={profile?.email} /></Suspense>} />
           <Route path="/update-password" element={
               <MemoizedProductList 
                 products={filteredProducts as any} 
@@ -891,19 +893,21 @@ const toggleFavorite = useCallback((id: number) => {
       <MemoizedBottomNav cartCount={visibleCartCount} />
 
       {isAuthOpen && (
-        <AuthModal 
-          isOpen={isAuthOpen} 
-          onClose={() => setIsAuthOpen(false)} 
-          user={user} 
-          profile={profile} 
-          onSignOut={handleSignOut} 
-          onProfileUpdate={() => loadData(user)}
-          savedCarts={savedCarts}
-          onSaveCart={handleSaveCurrentCart}
-          onDeleteCart={handleDeleteSavedCart}
-          onLoadCart={handleLoadSavedCart}
-          currentActiveCartSize={visibleCartCount}
-        />
+        <Suspense fallback={<LoadingSpinner />}>
+          <AuthModal 
+            isOpen={isAuthOpen} 
+            onClose={() => setIsAuthOpen(false)} 
+            user={user} 
+            profile={profile} 
+            onSignOut={handleSignOut} 
+            onProfileUpdate={() => loadData(user)}
+            savedCarts={savedCarts}
+            onSaveCart={handleSaveCurrentCart}
+            onDeleteCart={handleDeleteSavedCart}
+            onLoadCart={handleLoadSavedCart}
+            currentActiveCartSize={visibleCartCount}
+          />
+        </Suspense>
       )}
       
       <MemoizedFooter />
