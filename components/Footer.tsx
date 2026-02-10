@@ -6,7 +6,7 @@ const Footer: React.FC = () => {
       <div className="flex flex-col items-center text-center">
         <div className="flex justify-center w-full max-w-screen-md mx-auto mb-4 text-xs gap-8">
           <a href="https://linktr.ee/facutom" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white">
-            <img src="https://ugc.production.linktr.ee/2fb027da-4522-4b25-8855-39f77182ce8b_mQO6eyvY-400x400.png?io=true&size=avatar-v3_0" alt="Facu Tom" className="w-5 h-5 rounded-full" />
+            <img src="https://ugc.production.linktr.ee/2fb027da-4522-4b25-8855-39f77182ce8b_mQO6eyvY-400x400.png?io=true&size=avatar-v3_0&format=webp&resize=40x40" alt="Facu Tom" className="w-5 h-5 rounded-full" width="20" height="20" loading="lazy" decoding="async" />
             Creado por @facutom
           </a>
           <a href="https://cafecito.app/facutom" target="_blank" rel="noopener noreferrer" className="flex items-center text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white">
