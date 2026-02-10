@@ -48,10 +48,10 @@ const Header: React.FC<HeaderProps> = ({
   return (
     <header className="sticky top-0 z-40 bg-white dark:bg-primary p-4 border-b border-neutral-100 dark:border-[#233138]">
       <div className="flex justify-between items-center mb-4">
-        <Link to="/" className="logo-link cursor-pointer">
+        <Link to="/" className="logo-link cursor-pointer ml-2">
           <div className="logo">
             <div className="logo-icon-wrapper">
-               <i className="fa-solid fa-cart-shopping" style={{ fontSize: '18px' }}></i>
+               <i className="fa-solid fa-cart-shopping"></i>
                <i className="fa-solid fa-arrow-trend-up trend-icon-overlay"></i>
             </div>
             TradingChango
