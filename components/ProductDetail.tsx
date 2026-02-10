@@ -280,7 +280,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
           <div className="flex gap-4 items-start mb-4">
             <div className="w-24 h-24 md:w-32 md:h-32 bg-white rounded-xl border border-neutral-100 shadow-sm flex items-center justify-center p-2 shrink-0">
               <img 
-                src={product.imagen_url ? `${product.imagen_url}?width=120&height=120&resize=contain&quality=80` : 'https://via.placeholder.com/78?text=N/A'}
+                src={product.imagen_url ? `${product.imagen_url}?width=150&quality=80&resize=contain` : 'https://via.placeholder.com/78?text=N/A'}
                 alt={product.nombre} 
                 className="w-full h-full object-contain"
                 width="78"
