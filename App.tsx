@@ -446,7 +446,7 @@ const App: React.FC = () => {
         link.id = 'lcp-preload';
         link.rel = 'preload';
         link.as = 'image';
-        link.href = `${firstProductImage}?format=webp&resize=64x64&quality=80`;
+        link.href = `${firstProductImage}?width=200&height=200&resize=contain&format=webp&quality=80`;
         document.head.appendChild(link);
       }
     }
