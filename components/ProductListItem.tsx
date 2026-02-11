@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
 import { Product } from '../types';
+import { isPriceOutlier } from '../utils/outlierDetection';
 
 // Copiamos las interfaces y constantes necesarias desde ProductList
 interface ProductWithStats extends Product {
@@ -75,7 +76,9 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
 
       const validPrices = STORES.map(s => {
         const storeKey = s.name.toLowerCase().replace(' ', '');
-        const isOutlier = outlierData[storeKey] === true;
+        const isOutlierFromDB = outlierData[storeKey] === true;
+        const isOutlierDynamic = isPriceOutlier(p, s.key);
+        const isOutlier = isOutlierFromDB || isOutlierDynamic;
         const price = (p as any)[s.key];
         const hasStock = (p as any)[`stock_${storeKey}`] !== false;
         return { price, isOutlier, hasStock, storeKey };
@@ -90,7 +93,18 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
         : p.oferta_gondola;
 
       const filteredOferta = ofertaGondola ? Object.entries(ofertaGondola).reduce((acc, [storeKey, value]) => {
-        if (!outlierData[storeKey]) {
+        const isOutlierFromDB = outlierData[storeKey] === true;
+        // Map storeKey to price key (ej: 'coto' -> 'p_coto')
+        const priceKeyMap: any = {
+          'coto': 'p_coto',
+          'carrefour': 'p_carrefour',
+          'diaonline': 'p_dia',
+          'jumbo': 'p_jumbo',
+          'masonline': 'p_masonline'
+        };
+        const priceKey = priceKeyMap[storeKey.toLowerCase()];
+        const isOutlierDynamic = priceKey ? isPriceOutlier(p, priceKey) : false;
+        if (!isOutlierFromDB && !isOutlierDynamic) {
           acc[storeKey] = value;
         }
         return acc;

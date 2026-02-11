@@ -12,6 +12,7 @@ import {
 import { getProductHistory } from '../services/supabase';
 import { Product, PriceHistory } from '../types';
 import { supabase } from '../services/supabase';
+import { isPriceOutlier, detectOutliersByMedian } from '../utils/outlierDetection';
 
 // Tipos para el gráfico
 interface ChartDataItem {
@@ -180,15 +181,17 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
     };
   }, [onClose]);
 
-  const { minPrice, minStore, avgPrice, minStoreUrl, unitPrice, unitMeasure } = useMemo(() => {
-    if (!product) return { minPrice: 0, minStore: '', avgPrice: 0, minStoreUrl: '#', unitPrice: 0, unitMeasure: '' };
+  const { minPrice, minStore, avgPrice, minStoreUrl, unitPrice, unitMeasure, outliersDetected } = useMemo(() => {
+    if (!product) return { minPrice: 0, minStore: '', avgPrice: 0, minStoreUrl: '#', unitPrice: 0, unitMeasure: '', outliersDetected: [] };
     
     const prices = STORES
       .map(s => {
         const storeKey = s.name.toLowerCase().replace(' ', '');
         const stockKey = `stock_${storeKey}`;
         const hasStock = (product as any)[stockKey] !== false;
-        const isOutlier = outlierData[storeKey] === true;
+        const isOutlierFromDB = outlierData[storeKey] === true;
+        // Detección dinámica de outliers
+        const isOutlierDynamic = isPriceOutlier(product, s.key);
         
         return {
           name: s.name,
@@ -196,12 +199,21 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
           val: (product as any)[s.key] as number,
           url: (product as any)[s.url] as string,
           stock: hasStock,
-          isOutlier: isOutlier
+          isOutlier: isOutlierFromDB || isOutlierDynamic
         };
       })
       .filter(p => p.val > 0 && p.stock && !p.isOutlier);
 
-    if (prices.length === 0) return { minPrice: 0, minStore: '', avgPrice: 0, minStoreUrl: '#', unitPrice: 0, unitMeasure: '' };
+    const outliersDetected = STORES
+      .map(s => {
+        const storeKey = s.name.toLowerCase().replace(' ', '');
+        const isOutlierFromDB = outlierData[storeKey] === true;
+        const isOutlierDynamic = isPriceOutlier(product, s.key);
+        return (isOutlierFromDB || isOutlierDynamic) ? s.name : null;
+      })
+      .filter(Boolean) as string[];
+
+    if (prices.length === 0) return { minPrice: 0, minStore: '', avgPrice: 0, minStoreUrl: '#', unitPrice: 0, unitMeasure: '', outliersDetected };
     
     const min = Math.min(...prices.map(p => p.val));
     const winner = prices.find(p => p.val === min);
@@ -213,7 +225,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       avgPrice: prices.reduce((acc, curr) => acc + curr.val, 0) / prices.length,
       minStoreUrl: winner?.url || '#',
       unitPrice: (min > 0 && contNum > 0) ? Math.round(min / contNum) : 0,
-      unitMeasure: (product as any)?.unidad_medida || ''
+      unitMeasure: (product as any)?.unidad_medida || '',
+      outliersDetected
     };
   }, [product, outlierData]);
 
@@ -438,7 +451,10 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       };
       
       const storeKey = internalKeys[s.name];
-      const isOutlier = outlierData[storeKey] === true;
+      // Combinar outlier de BD con detección dinámica
+      const isOutlierFromDB = outlierData[storeKey] === true;
+      const isOutlierDynamic = isPriceOutlier(product, s.key);
+      const isOutlier = isOutlierFromDB || isOutlierDynamic;
       const stockKey = `stock_${storeKey}`;
       const hasStock = (product as any)[stockKey] !== false;
       const hasUrl = url && url !== '#' && url.length > 5;
