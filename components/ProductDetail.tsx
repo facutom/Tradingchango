@@ -130,9 +130,32 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   useEffect(() => {
     const fetchHistory = async () => {
       if (product) {
+        // Intentar cargar desde caché primero para carga rápida
+        const cacheKey = `tc_product_history_${product.nombre}_${days}`;
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          try {
+            const cachedData = JSON.parse(cached);
+            const cacheDate = new Date(cachedData.timestamp || 0);
+            const now = new Date();
+            // Si el caché tiene menos de 5 minutos, usarlo
+            if (now.getTime() - cacheDate.getTime() < 5 * 60 * 1000) {
+              setHistory(cachedData.data || []);
+              // Cargar datos frescos en segundo plano
+            }
+          } catch (e) {
+            // Si el caché está corrupto, continuar con la carga normal
+          }
+        }
+        
         try {
           const data = await getProductHistory(product.nombre, days);
           setHistory(data || []);
+          // Guardar en caché
+          localStorage.setItem(cacheKey, JSON.stringify({
+            data: data || [],
+            timestamp: new Date().getTime()
+          }));
         } catch (err) {
           console.error("❌ Error historial:", err);
           setHistory([]);

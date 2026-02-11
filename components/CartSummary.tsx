@@ -33,13 +33,13 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, benefits, userMembersh
       const { total, subtotal, discount } = calculateStoreTotal(items, store.key);
 
       // 2. Verificamos si la tienda es válida para comparar
+      // Debe ser consistente con calculateStoreTotal que requiere regularPrice > 0
       const hasAllItems = items.every(item => {
-        const price = item[`p_${store.key}` as keyof CartItem] as number;
         const regularPrice = item[`pr_${store.key}` as keyof CartItem] as number;
         const url = item[`url_${store.key}` as keyof CartItem] as string;
         const stock = item[`stock_${store.key}` as keyof CartItem] as boolean;
         
-        return (price > 0 || regularPrice > 0) && url && url.length > 5 && stock !== false;
+        return regularPrice > 0 && url && url.length > 5 && stock !== false;
       });
       
       return { 
@@ -75,7 +75,6 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, benefits, userMembersh
 
   const best = results[0];
   const others = results.slice(1);
-  const worstOption = results.length > 1 ? results[results.length - 1] : best;
   const potentialSavings = results.length > 1 
     ? (results[results.length - 1].total - best.total) 
     : best.savings;

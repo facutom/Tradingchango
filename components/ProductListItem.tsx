@@ -130,9 +130,9 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
     className="w-full h-full object-contain p-1"
     width="120"
     height="120"
-    loading={index < 3 ? 'eager' : 'lazy'}
+    loading={index < 6 ? 'eager' : 'lazy'}
     decoding="async"
-    fetchPriority={index < 3 ? 'high' : 'auto'}
+    fetchPriority={index < 6 ? 'high' : 'auto'}
 />
       </div>
       </div>
@@ -140,7 +140,7 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
       <div className="flex-1 flex items-center justify-between pr-2 min-w-0 ml-3">
         <div className="flex flex-col gap-0 min-w-0">
           <div className="flex items-center flex-wrap gap-1">
-            <span className={`font-[800] text-black dark:text-white text-[14px] tracking-tight uppercase font-mono leading-none ${isPurchased ? 'line-through' : ''}`}>
+            <span className={`font-[800] text-black dark:text-white text-[14px] tracking-tight uppercase leading-none ${isPurchased ? 'line-through' : ''}`}>
               {p.ticker || p.nombre.substring(0, 5).toUpperCase()}
             </span>
             {badges && !isPurchased && badges.map((b, idx) => (
@@ -196,9 +196,11 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
 const MemoizedProductListItem = memo(ProductListItem, (prevProps, nextProps) => {
   // Comprobación rápida y eficiente para ver si algo cambió.
   return prevProps.product.id === nextProps.product.id &&
+         prevProps.index === nextProps.index &&
          prevProps.isFavorite === nextProps.isFavorite &&
          prevProps.isPurchased === nextProps.isPurchased &&
          prevProps.quantity === nextProps.quantity &&
+         prevProps.isCartView === nextProps.isCartView &&
          // Comparamos la data clave de stats que se muestra en la UI.
          prevProps.product.stats.spread === nextProps.product.stats.spread &&
          prevProps.product.stats.trendClass === nextProps.product.stats.trendClass;

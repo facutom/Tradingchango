@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense, memo,
 import type { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { supabase, getProducts, getPriceHistory, getProfile, getConfig, getBenefits, getSavedCartData, saveCartData } from './services/supabase';
 import { Product, PriceHistory, Profile, TabType, ProductStats, Benefit, CartItem } from './types';
-import { calculateStoreTotal } from './utils/calculateStoreTotal';
 import Header from './components/Header';
 import ProductList from './components/ProductList';
 import BottomNav from './components/BottomNav';
@@ -276,6 +275,16 @@ const App: React.FC = () => {
     }
   };
 
+  const favoriteItems = useMemo(() => {
+    return Object.keys(favorites)
+      .map(id => {
+        const product = products.find(p => p.id === Number(id));
+        if (!product) return null;
+        return { ...product, quantity: favorites[Number(id)] };
+      })
+      .filter((p): p is CartItem => p !== null);
+  }, [favorites, products]);
+
   const [error, setError] = useState<string | null>(null);
 
     const loadData = useCallback(async (sessionUser: User | null, attempt = 1) => {
@@ -289,6 +298,11 @@ const App: React.FC = () => {
         if (cachedProds) {
           setProducts(JSON.parse(cachedProds));
           setLoading(false); // Muestra el caché y sigue actualizando en segundo plano
+        }
+        // También cargar historial desde caché para cálculo inmediato de variaciones
+        const cachedHistory = localStorage.getItem('tc_cache_history');
+        if (cachedHistory) {
+          setHistory(JSON.parse(cachedHistory));
         }
       }
 
@@ -325,7 +339,11 @@ const App: React.FC = () => {
       localStorage.setItem('tc_cache_config', JSON.stringify(configData || {}));
 
       // Carga de datos secundarios que no son críticos para el render inicial
-      getPriceHistory(7).then(hist => localStorage.setItem('tc_cache_history', JSON.stringify(hist || [])));
+      getPriceHistory(7).then(hist => {
+        const histData = hist || [];
+        setHistory(histData); // Guardar en estado para que los useMemo lo usen
+        localStorage.setItem('tc_cache_history', JSON.stringify(histData)); // Persistir en caché
+      });
       getBenefits(new Date().getDay()).then(setBenefits);
 
       if (sessionUser) {
@@ -536,28 +554,23 @@ const App: React.FC = () => {
       const productHistory = history.filter(h => h.nombre_producto === p.nombre);
       let h7_price = 0;
 
-      // Si hay historial, lo procesamos para determinar la tendencia.
+      // Si hay historial con al menos 2 registros en fechas diferentes, usamos el precio más antiguo
       if (productHistory.length > 0) {
-        // Ordenamos por fecha para encontrar el más antiguo y el más reciente.
+        // Ordenamos por fecha para encontrar el más antiguo
         productHistory.sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
         
         const oldestRecord = productHistory[0];
-        const newestRecord = productHistory[productHistory.length - 1];
-
-        // Si solo hay un día de datos, o si el precio más antiguo y el más nuevo son iguales,
-        // la variación de tendencia es 0. Para lograrlo, pasamos el precio actual a getStats
-        // como precio histórico, forzando una diferencia de 0.
-        if (oldestRecord.fecha === newestRecord.fecha || oldestRecord.precio_minimo === newestRecord.precio_minimo) {
-          const currentPrices = prices.filter(x => x > 0);
-          // Si hay precios actuales, usamos el mínimo. Si no, no hay base para comparar (h7_price=0).
-          h7_price = currentPrices.length > 0 ? Math.min(...currentPrices) : 0;
-        } else {
-          // Si hay una variación real en el historial, usamos el precio más antiguo como base.
-          h7_price = oldestRecord.precio_minimo || 0;
+        // Usamos el precio más antiguo como base
+        h7_price = oldestRecord.precio_minimo || 0;
+      }
+      
+      // Si no hay historial, usamos el precio actual como base (mostrará 0.0%)
+      if (h7_price === 0) {
+        const currentPrices = prices.filter(x => x > 0);
+        if (currentPrices.length > 0) {
+          h7_price = Math.min(...currentPrices);
         }
       }
-      // Si no hay historial (productHistory.length === 0), h7_price se queda en 0,
-      // lo que también resulta en una variación de tendencia 0 en getStats.
       
       return { ...p, stats: getStats(prices, h7_price), prices };
     })
@@ -609,16 +622,20 @@ const App: React.FC = () => {
     return result;
   }, [products, history, location.pathname, searchTerm, trendFilter]); // useMemo protege el rendimiento
 
-  const filteredProducts = useMemo(() => {
-    if (location.pathname !== '/chango') {
-      return baseFilteredProducts;
-    }
-    const cartItems: CartItem[] = baseFilteredProducts
+  const cartItems = useMemo(() => {
+    return baseFilteredProducts
       .filter(p => favorites[p.id])
-      .map(p => ({ ...p, quantity: favorites[p.id] || 1 }));
-    
-    return cartItems;
-  }, [baseFilteredProducts, location.pathname, favorites]);
+      .map(p => ({ ...p, quantity: favorites[p.id] || 1 } as CartItem));
+  }, [baseFilteredProducts, favorites]);
+
+
+
+  const filteredProducts = useMemo(() => {
+    if (location.pathname === '/chango') {
+      return cartItems;
+    }
+    return baseFilteredProducts;
+  }, [baseFilteredProducts, location.pathname, cartItems]);
 
   const visibleProducts = useMemo(() => {
     return filteredProducts.slice(0, displayLimit);
@@ -627,29 +644,48 @@ const App: React.FC = () => {
 
 
 
-const toggleFavorite = useCallback((id: number) => {
-    if (!user) {
-      setIsAuthOpen(true);
-      return;
-    }
-    const favoritesCount = Object.keys(favorites).length;
-    if (!isPro && favoritesCount >= 5 && !favorites[id]) {
-      alert('Los usuarios FREE solo pueden tener hasta 5 productos en favoritos.');
-      return;
-    }
+const toggleFavorite = useCallback(async (id: number) => {
+    // Optimización: Actualizar estado LOCAL inmediatamente para feedback instantáneo
     setFavorites(prev => {
       const next = { ...prev };
-      if (next[id]) {
-        delete next[id];
-        const newPurchased = new Set(purchasedItems);
-        newPurchased.delete(id);
-        setPurchasedItems(newPurchased);
-      } else {
+      const isAdding = !next[id];
+      
+      if (isAdding) {
         next[id] = 1;
+      } else {
+        delete next[id];
+        setPurchasedItems(prevPurchased => {
+          const newPurchased = new Set(prevPurchased);
+          newPurchased.delete(id);
+          return newPurchased;
+        });
       }
       return next;
     });
-  }, [user, isPro, favorites, purchasedItems]);
+
+    // Validar sesión en background y sincronizar
+    try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      
+      if (!currentUser) {
+        setIsAuthOpen(true);
+        setFavorites(prev => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+        return;
+      }
+      
+      const favoritesCount = Object.keys(favorites).length + 1;
+      if (!isPro && favoritesCount > 5 && !favorites[id]) {
+        alert('Los usuarios FREE solo pueden tener hasta 5 productos en favoritos.');
+      }
+      
+    } catch (e) {
+      console.error('Error en toggleFavorite:', e);
+    }
+  }, [isPro, favorites]);
 
 
   const handleFavoriteChangeInCart = useCallback((id: number, delta: number) => {
@@ -664,12 +700,17 @@ const toggleFavorite = useCallback((id: number) => {
     });
   }, []);
 
-  const togglePurchased = (id: number) => {
-    const newPurchased = new Set(purchasedItems);
-    if (newPurchased.has(id)) newPurchased.delete(id);
-    else newPurchased.add(id);
-    setPurchasedItems(newPurchased);
-  };
+  const togglePurchased = useCallback((id: number) => {
+    setPurchasedItems(prev => {
+      const newPurchased = new Set(prev);
+      if (newPurchased.has(id)) {
+        newPurchased.delete(id);
+      } else {
+        newPurchased.add(id);
+      }
+      return newPurchased;
+    });
+  }, []);
 
   const handleSaveCurrentCart = (name: string) => {
     const limit = isPro ? 10 : 2;
@@ -873,7 +914,7 @@ const toggleFavorite = useCallback((id: number) => {
             <>
               <MetaTags description={descriptions['/varios']} robots="noindex, follow" />
               <MemoizedProductList
-                products={filteredProducts as any}
+                products={cartItems as any}
                 onProductClick={handleProductClick}
                 onFavoriteToggle={toggleFavorite}
                 isFavorite={(id: number) => !!favorites[id]}
@@ -883,17 +924,17 @@ const toggleFavorite = useCallback((id: number) => {
           } />
           <Route path="/chango" element={
             <>
-              {filteredProducts.length > 0 && (
-                <CartSummary
-                  items={filteredProducts.map(p => ({ ...p, quantity: favorites[p.id] || 1 }))}
-                  benefits={benefits}
-                  userMemberships={profile?.membresias}
-                  onSaveCart={handleSaveCurrentCart}
-                  canSave={!!user}
-                  savedCarts={savedCarts}
-                  onLoadCart={handleLoadSavedCart}
-                  onDeleteCart={handleDeleteSavedCart}
-                />
+              {cartItems.length > 0 && (
+                  <CartSummary
+                    items={favoriteItems}
+                    benefits={benefits}
+                    userMemberships={profile?.membresias}
+                    onSaveCart={handleSaveCurrentCart}
+                    canSave={!!user}
+                    savedCarts={savedCarts}
+                    onLoadCart={handleLoadSavedCart}
+                    onDeleteCart={handleDeleteSavedCart}
+                  />
               )}
               <MemoizedProductList
                 products={filteredProducts as any}

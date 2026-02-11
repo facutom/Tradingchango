@@ -40,11 +40,10 @@ export const calculateStoreTotal = (cartItems: CartItem[], storeKey: string): { 
 
     if (pRegular <= 0 || quantity <= 0) return;
 
-    // 1. SUBTOTAL: Siempre precio regular * cantidad
+    // 1. Subtotal: Siempre se calcula con el precio regular.
     subtotal += pRegular * quantity;
 
-    // 2. BUSCAR OFERTA (Insensible a mayúsculas en la llave)
-    // Buscamos si existe "Carrefour", "carrefour" o "CARREFOUR" en el objeto
+    // 2. Total Estimado: Lógica de promociones.
     let ofertaTexto = "";
     if (item.oferta_gondola) {
       const actualKey = Object.keys(item.oferta_gondola).find(
@@ -56,25 +55,30 @@ export const calculateStoreTotal = (cartItems: CartItem[], storeKey: string): { 
     }
 
     const threshold = getOfferThreshold(ofertaTexto);
-    const pFinal = pPromo > 0 ? pPromo : pRegular;
-
     let itemTotal = 0;
 
-    if (threshold !== null) {
-      // --- CASO CON CONDICIÓN (2do al 70%, 3x2, etc.) ---
+    if (threshold !== null && pPromo > 0) {
+      // --- CASO CON PROMOCIÓN POR CANTIDAD (e.g., 3x2, 2da al 70%) ---
       if (quantity >= threshold) {
-        const unitsInPromoGroups = Math.floor(quantity / threshold) * threshold;
-        const leftoverUnits = quantity % threshold;
-        itemTotal = (unitsInPromoGroups * pFinal) + (leftoverUnits * pRegular);
+        // La cantidad es suficiente para activar la promo.
+        const promoGroupCount = Math.floor(quantity / threshold);
+        const itemsInPromo = promoGroupCount * threshold;
+        const remainingItems = quantity % threshold;
+        
+        // p_ es el precio final por unidad DENTRO de la promo.
+        itemTotal = (itemsInPromo * pPromo) + (remainingItems * pRegular);
       } else {
-        // SI NO CUMPLE LA CONDICIÓN (Ej: tiene 1 y la promo es 2do al...)
-        // USAMOS PRECIO REGULAR
+        // No se alcanza la cantidad mínima para la promo, se usa precio regular para todo.
         itemTotal = quantity * pRegular;
       }
     } else {
-      // --- CASO SIN CONDICIÓN O CAMPO VACÍO ---
-      // Se aplica p_ a todo
-      itemTotal = quantity * pFinal;
+      // --- CASO SIN PROMOCIÓN POR CANTIDAD o SIN PRECIO PROMO ---
+      // Se usa el precio regular. Si hay un p_ (ej. "precio más bajo"), se podría considerar,
+      // pero para ser estrictos con la regla, nos basamos en la oferta_gondola.
+      // Si quieres que p_ se aplique siempre que sea más bajo, incluso sin oferta_gondola,
+      // la línea sería: const priceToUse = (pPromo > 0 && pPromo < pRegular) ? pPromo : pRegular;
+      // itemTotal = quantity * priceToUse;
+      itemTotal = quantity * pRegular;
     }
 
     total += itemTotal;
@@ -82,10 +86,11 @@ export const calculateStoreTotal = (cartItems: CartItem[], storeKey: string): { 
 
   const finalSubtotal = Number(subtotal.toFixed(2));
   const finalTotal = Number(total.toFixed(2));
+  const discount = Math.max(0, Number((finalSubtotal - finalTotal).toFixed(2)));
 
   return {
     subtotal: finalSubtotal,
     total: finalTotal,
-    discount: Math.max(0, Number((finalSubtotal - finalTotal).toFixed(2))),
+    discount: discount,
   };
 };
