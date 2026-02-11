@@ -29,32 +29,33 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, benefits, userMembersh
 
   const results = useMemo(() => {
     const storeResults = STORES.map((store) => {
-      // 1. Calculamos el total y subtotal desde nuestra función especializada.
+      // 1. Calculamos los valores reales usando la lógica de umbrales
       const { total, subtotal, discount } = calculateStoreTotal(items, store.key);
 
-      // 2. Verificamos si la tienda es válida para comparar
-      // Debe ser consistente con calculateStoreTotal que requiere regularPrice > 0
+      // 2. Validación de disponibilidad:
+      // Filtramos tiendas que no tengan el producto o precio regular cargado
       const hasAllItems = items.every(item => {
-        const regularPrice = item[`pr_${store.key}` as keyof CartItem] as number;
-        const url = item[`url_${store.key}` as keyof CartItem] as string;
-        const stock = item[`stock_${store.key}` as keyof CartItem] as boolean;
+        const pReg = item[`pr_${store.key}` as keyof CartItem];
+        const url = item[`url_${store.key}` as keyof CartItem];
+        const stock = item[`stock_${store.key}` as keyof CartItem];
         
-        return regularPrice > 0 && url && url.length > 5 && stock !== false;
+        return Number(pReg) > 0 && typeof url === 'string' && url.length > 5 && stock !== false;
       });
       
       return { 
         name: store.name,
-        total, // Este es el que define quién gana
-        regularTotal: subtotal,
-        savings: discount,
+        total,          // PRECIO REAL SEGÚN CANTIDAD (Define el ranking)
+        regularTotal: subtotal, // SUMA DE pr_
+        savings: discount,      // DIFERENCIA REAL
         storeBenefits: benefits.filter(b => b.supermercado.toUpperCase() === store.name.toUpperCase()),
         hasAllItems
       };
     });
 
+    // Filtramos y ordenamos: el TOTAL más bajo (respetando umbrales) gana el trofeo.
     return storeResults
       .filter(r => r.hasAllItems && items.length > 0)
-      .sort((a, b) => a.total - b.total); // El que tenga el total real más bajo, queda primero.
+      .sort((a, b) => a.total - b.total); 
   }, [items, benefits]);
 
   if (items.length === 0) return null;

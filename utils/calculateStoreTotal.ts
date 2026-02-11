@@ -17,80 +17,81 @@ const sanitizePrice = (price: any): number => {
 const getOfferThreshold = (offerString: string): number | null => {
   if (!offerString) return null;
   const lower = String(offerString).toLowerCase();
-
-  // Caso: "3x2", "4 x 3"
   const xForY = lower.match(/(\d+)\s*x\s*(\d+)/);
   if (xForY) return parseInt(xForY[1], 10);
-
-  // Caso: "2do al 70%", "2da al 50%"
-  const nthUnit = lower.match(/(\d+)(?:do|da|ra|ro)\s*al/);
+  const nthUnit = lower.match(/(\d+)(?:do|da|ra|ro|ta|to)\s*al/);
   if (nthUnit) return parseInt(nthUnit[1], 10);
-
   return null;
 };
 
-export const calculateStoreTotal = (cartItems: CartItem[], storeKey: string): { subtotal: number; total: number; discount: number } => {
-  let subtotal = 0;
-  let total = 0;
+export const calculateStoreTotal = (
+  cartItems: CartItem[], 
+  storeKey: string
+): { subtotal: number; total: number; discount: number } => {
+  let subtotalAcc = 0;
+  let totalAcc = 0;
 
   cartItems.forEach((item) => {
-    const pRegular = sanitizePrice(item[`pr_${storeKey}` as keyof CartItem]);
-    const pPromo = sanitizePrice(item[`p_${storeKey}` as keyof CartItem]);
     const quantity = Math.max(0, Number(item.quantity) || 0);
+    if (quantity <= 0) return;
 
-    if (pRegular <= 0 || quantity <= 0) return;
+    // 1. OBTENCIÓN DE PRECIOS
+    const pRegRaw = sanitizePrice(item[`pr_${storeKey}` as keyof CartItem]);
+    const pPromoRaw = sanitizePrice(item[`p_${storeKey}` as keyof CartItem]);
 
-    // 1. Subtotal: Siempre se calcula con el precio regular.
-    subtotal += pRegular * quantity;
+    // SEGURIDAD: El precio regular SIEMPRE debe ser el mayor de los dos
+    // Esto evita que si el scraper guardó mal los campos, el subtotal se rompa
+    const pRegular = Math.max(pRegRaw, pPromoRaw);
+    const pPromo = Math.min(pRegRaw, pPromoRaw);
 
-    // 2. Total Estimado: Lógica de promociones.
+    if (pRegular <= 0) return;
+
+    // 2. REGLA PARA SUBTOTAL: Siempre el precio de lista (el más alto)
+    subtotalAcc += pRegular * quantity;
+
+    // 3. EXTRACCIÓN DE ETIQUETA
     let ofertaTexto = "";
-    if (item.oferta_gondola) {
+    if (item.oferta_gondola && typeof item.oferta_gondola === 'object') {
       const actualKey = Object.keys(item.oferta_gondola).find(
         (key) => key.toLowerCase() === storeKey.toLowerCase()
       );
       if (actualKey) {
-        ofertaTexto = String(item.oferta_gondola[actualKey as keyof typeof item.oferta_gondola] || "");
+        ofertaTexto = String((item.oferta_gondola as any)[actualKey] || "");
       }
     }
 
-    const threshold = getOfferThreshold(ofertaTexto);
-    let itemTotal = 0;
+    // DENTRO DEL BUCLE item.forEach en calculateStoreTotal.ts
 
-    if (threshold !== null && pPromo > 0) {
-      // --- CASO CON PROMOCIÓN POR CANTIDAD (e.g., 3x2, 2da al 70%) ---
-      if (quantity >= threshold) {
-        // La cantidad es suficiente para activar la promo.
-        const promoGroupCount = Math.floor(quantity / threshold);
-        const itemsInPromo = promoGroupCount * threshold;
-        const remainingItems = quantity % threshold;
-        
-        // p_ es el precio final por unidad DENTRO de la promo.
-        itemTotal = (itemsInPromo * pPromo) + (remainingItems * pRegular);
-      } else {
-        // No se alcanza la cantidad mínima para la promo, se usa precio regular para todo.
-        itemTotal = quantity * pRegular;
-      }
-    } else {
-      // --- CASO SIN PROMOCIÓN POR CANTIDAD o SIN PRECIO PROMO ---
-      // Se usa el precio regular. Si hay un p_ (ej. "precio más bajo"), se podría considerar,
-      // pero para ser estrictos con la regla, nos basamos en la oferta_gondola.
-      // Si quieres que p_ se aplique siempre que sea más bajo, incluso sin oferta_gondola,
-      // la línea sería: const priceToUse = (pPromo > 0 && pPromo < pRegular) ? pPromo : pRegular;
-      // itemTotal = quantity * priceToUse;
-      itemTotal = quantity * pRegular;
-    }
+const threshold = getOfferThreshold(ofertaTexto);
+let itemTotalFinal = 0;
 
-    total += itemTotal;
+if (threshold !== null && threshold > 0 && pPromo > 0 && pPromo < pRegular) {
+  // 1. Calculamos cuántos combos completos (ej: cuántos grupos de 3)
+  const numCombos = Math.floor(quantity / threshold);
+  
+  // 2. Calculamos cuántas unidades quedan fuera del combo (el resto)
+  const remainder = quantity % threshold;
+
+  // 3. Unidades en combo van a precio pPromo, las sueltas a pRegular
+  const unitsInPromo = numCombos * threshold;
+  
+  itemTotalFinal = (unitsInPromo * pPromo) + (remainder * pRegular);
+} else {
+  // Caso sin umbral o promo directa: se aplica a todo si pPromo es mejor
+  const priceToUse = (pPromo > 0 && pPromo < pRegular) ? pPromo : pRegular;
+  itemTotalFinal = quantity * priceToUse;
+}
+
+totalAcc += itemTotalFinal;
   });
 
-  const finalSubtotal = Number(subtotal.toFixed(2));
-  const finalTotal = Number(total.toFixed(2));
-  const discount = Math.max(0, Number((finalSubtotal - finalTotal).toFixed(2)));
+  const finalSub = Number(subtotalAcc.toFixed(2));
+  const finalTot = Number(totalAcc.toFixed(2));
+  const finalDisc = Number((finalSub - finalTot).toFixed(2));
 
   return {
-    subtotal: finalSubtotal,
-    total: finalTotal,
-    discount: discount,
+    subtotal: finalSub,
+    total: finalTot,
+    discount: Math.max(0, finalDisc),
   };
 };
