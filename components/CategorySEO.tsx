@@ -182,10 +182,10 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
             </button>
             {/* Tooltip */}
             {activeTooltip === 'leader' && (
-            <div className="absolute bottom-full right-0 mb-2 w-[80vw] max-w-[280px] p-2 bg-gradient-to-br from-neutral-800 to-neutral-900 text-white text-[11px] rounded shadow-lg z-50 text-center whitespace-normal">
+            <div className="absolute bottom-full right-0 mb-2 w-[80vw] max-w-[260px] p-2 bg-gradient-to-br from-neutral-800 to-neutral-900 text-white text-[11px] leading-snug rounded shadow-xl z-50 text-center whitespace-normal border border-white/10 backdrop-blur-sm">
               Supermercado con el precio promedio más bajo para esta categoría
-              {/* Flechita apuntando al botón a la derecha */}
-              <div className="absolute top-full right-6 border-4 border-transparent border-t-neutral-800"></div>
+              {/* Flecha fija a la derecha cerca de la estrella */}
+              <div className="absolute top-full right-5 border-4 border-transparent border-t-neutral-800"></div>
             </div>
           )}
           </div>
