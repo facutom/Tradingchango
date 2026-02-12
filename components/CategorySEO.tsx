@@ -138,7 +138,8 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
   }, [categoryName]);
 
   // Valores con valores por defecto
-  const weeklyVariation = metrics?.weeklyVariation ?? 0;
+  const hasHistoricalData = metrics?.hasHistoricalData ?? false;
+  const weeklyVariation = metrics?.weeklyVariation ?? null;
   const dispersion = metrics?.dispersion ?? 0;
   const leaderStore = metrics?.leaderStore ?? '-';
 
@@ -160,7 +161,13 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
               onClick={() => setActiveTooltip(activeTooltip === 'weekly' ? null : 'weekly')}
               className="text-xs font-bold px-2 py-1 rounded border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 cursor-help"
             >
-              {loading ? '...' : (weeklyVariation >= 0 ? '↑' : '↓')} {loading ? '-' : Math.abs(weeklyVariation)}% SEMANAL
+              {loading ? '...' : 
+                !hasHistoricalData ? 
+                  <span className="text-neutral-400">Sin datos</span> : 
+                  <>
+                    {(weeklyVariation! >= 0 ? '↑' : '↓')} {Math.abs(weeklyVariation!)}% SEMANAL
+                  </>
+              }
             </button>
             {/* Tooltip */}
             {activeTooltip === 'weekly' && (

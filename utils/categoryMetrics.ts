@@ -69,7 +69,8 @@ export function getCheapestStore(product: Product): { store: string; price: numb
 // Interfaz para mÃ©tricas de categorÃ­a
 export interface CategoryMetrics {
   categoryName: string;
-  weeklyVariation: number; // % variaciÃ³n semanal
+  weeklyVariation: number | null; // null = sin datos histÃ³ricos
+  hasHistoricalData: boolean; // indica si hay datos histÃ³ricos
   dispersion: number; // % dispersiÃ³n (brecha entre max y min)
   leaderStore: string; // Supermercado lÃ­der
   productCount: number;
@@ -83,9 +84,15 @@ interface PriceHistory {
   supermercado: string;
 }
 
+// Interfaz para resultado de variaciÃ³n semanal
+interface WeeklyVariationResult {
+  variation: number;
+  hasData: boolean;
+}
+
 // Calcular variaciÃ³n semanal real desde Supabase
-async function getWeeklyVariationReal(products: Product[]): Promise<number> {
-  if (products.length === 0) return 0;
+async function getWeeklyVariationReal(products: Product[]): Promise<WeeklyVariationResult> {
+  if (products.length === 0) return { variation: 0, hasData: false };
   
   try {
     // Obtener fecha de hace 7 dÃ­as
@@ -96,10 +103,9 @@ async function getWeeklyVariationReal(products: Product[]): Promise<number> {
     // Obtener nombres Ãºnicos de productos
     const productNames = [...new Set(products.map(p => p.nombre))];
     
-    if (productNames.length === 0) return 0;
+    if (productNames.length === 0) return { variation: 0, hasData: false };
     
-    // Obtener TODOS los precios histÃ³ricos de la semana pasada (sin limite de 50)
-    // Dividir en batches si hay muchos productos
+    // Obtener TODOS los precios histÃ³ricos de la semana pasada
     const batchSize = 50;
     const batches = [];
     for (let i = 0; i < productNames.length; i += batchSize) {
@@ -111,52 +117,64 @@ async function getWeeklyVariationReal(products: Product[]): Promise<number> {
     for (const batch of batches) {
       const { data, error } = await supabase
         .from('historial_precios')
-        .select('nombre_producto, precio_promedio, precio_minimo')
+        .select('nombre_producto, precio_minimo')
         .eq('fecha', dateStr)
         .in('nombre_producto', batch);
       
-      if (!error && data) {
+      if (error) {
+        console.warn('Error consultando historial:', error.message);
+      }
+      
+      if (data) {
         allHistoryData = [...allHistoryData, ...data];
       }
     }
     
-    // Si no hay datos histÃ³ricos, retornar 0 (no simular)
+    // Debug: log para ver datos
+    console.log(`[CategoryMetrics] Fecha: ${dateStr}, Productos: ${productNames.length}, Historial encontrado: ${allHistoryData.length}`);
+    
+    // Si no hay datos histÃ³ricos
     if (allHistoryData.length === 0) {
-      return 0;
+      return { variation: 0, hasData: false };
     }
     
-    // Calcular variaciÃ³n para CADA producto que tiene datos histÃ³ricos
+    // Calcular variación para cada producto con datos históricos
     const variations: number[] = [];
+    console.log(`[CategoryMetrics] Calculating variations for ${products.length} products.`);
     
     for (const product of products) {
       const historicalPrices = allHistoryData.filter(h => h.nombre_producto === product.nombre);
       
       if (historicalPrices.length > 0) {
-        // Usar precio_promedio histÃ³rico
-        const historicalAvg = historicalPrices.reduce((sum: number, h: any) => sum + h.precio_promedio, 0) / historicalPrices.length;
+        const historicalAvg = historicalPrices.reduce((sum: number, h: any) => sum + h.precio_minimo, 0) / historicalPrices.length;
         
         if (historicalAvg > 0) {
-          const currentPrice = getAveragePrice(product);
+          const currentPrice = getMinPrice(product);
           if (currentPrice > 0) {
             const variation = ((currentPrice - historicalAvg) / historicalAvg) * 100;
             variations.push(variation);
+            console.log(`[CategoryMetrics] Product: ${product.nombre}, Current Min: ${currentPrice.toFixed(2)}, Historical Avg: ${historicalAvg.toFixed(2)}, Variation: ${variation.toFixed(2)}%`);
           }
         }
       }
     }
     
-    // Si ningÃºn producto tiene datos histÃ³ricos coincidentes, retornar 0
+    // Si ningún producto tiene datos coincidentes
     if (variations.length === 0) {
-      return 0;
+      console.log('[CategoryMetrics] No products with matching historical data found.');
+      return { variation: 0, hasData: false };
     }
     
-    // Promediar las variaciones
     const avgVariation = variations.reduce((sum, v) => sum + v, 0) / variations.length;
+    console.log(`[CategoryMetrics] Final average variation: ${avgVariation.toFixed(2)}%`);
     
-    return Math.round(avgVariation * 10) / 10;
+    return { 
+      variation: Math.round(avgVariation * 10) / 10,
+      hasData: true
+    };
   } catch (error) {
     console.error('Error calculando variaciÃ³n semanal:', error);
-    return 0;
+    return { variation: 0, hasData: false };
   }
 }
 
@@ -212,27 +230,32 @@ export async function calculateCategoryMetrics(products: Product[]): Promise<Cat
     return {
       categoryName,
       weeklyVariation: 0,
+      hasHistoricalData: false,
       dispersion: 0,
       leaderStore: '-',
       productCount: products.length
     };
   }
   
-  // Calcular dispersiÃ³n promedio (brecha entre precio mÃ¡s alto y mÃ¡s bajo)
+  // --- LOGS PARA DISPERSIÓN ---
+  console.log('[CategoryMetrics] Calculating dispersion...');
   const dispersions = products.map(p => {
     const min = getMinPrice(p);
     const max = getMaxPrice(p);
     if (min === 0 || max === 0) return 0;
     const dispersion = ((max - min) / min) * 100;
-    // Limitar dispersiÃ³n mÃ¡xima a 150% (valores mayores son outliers)
-    return Math.min(dispersion, 150);
+    const limitedDispersion = Math.min(dispersion, 150);
+    console.log(`[CategoryMetrics] Dispersion for ${p.nombre}: Min: ${min}, Max: ${max}, Dispersion: ${dispersion.toFixed(2)}%, Limited: ${limitedDispersion.toFixed(2)}%`);
+    return limitedDispersion;
   }).filter(d => d > 0);
   
   const avgDispersion = dispersions.length > 0 
     ? dispersions.reduce((a, b) => a + b, 0) / dispersions.length 
     : 0;
+  console.log(`[CategoryMetrics] Final average dispersion: ${avgDispersion.toFixed(2)}%`);
   
-  // Calcular supermercado lÃ­der (el que tiene mÃ¡s productos cheapest)
+  // --- LOGS PARA LÍDER ---
+  console.log('[CategoryMetrics] Calculating leader store...');
   const storeCounts: Record<string, number> = {};
   products.forEach(p => {
     const cheapest = getCheapestStore(p);
@@ -241,16 +264,19 @@ export async function calculateCategoryMetrics(products: Product[]): Promise<Cat
       storeCounts[storeName] = (storeCounts[storeName] || 0) + 1;
     }
   });
+  console.log('[CategoryMetrics] Cheapest product counts per store:', storeCounts);
   
   const leaderStore = Object.entries(storeCounts)
     .sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
+  console.log(`[CategoryMetrics] Determined leader store: ${leaderStore}`);
   
-  // Calcular variaciÃ³n semanal real
-  const weeklyVariation = await getWeeklyVariationReal(products);
+  // Calcular variación semanal real
+  const variationResult = await getWeeklyVariationReal(products);
   
   return {
     categoryName,
-    weeklyVariation,
+    weeklyVariation: variationResult.variation,
+    hasHistoricalData: variationResult.hasData,
     dispersion: Math.round(avgDispersion * 10) / 10,
     leaderStore,
     productCount: products.length
@@ -270,4 +296,3 @@ export function formatStoreName(store: string): string {
   };
   return storeNames[store.toLowerCase()] || store.toUpperCase();
 }
-
