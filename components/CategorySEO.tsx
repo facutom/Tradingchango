@@ -203,7 +203,7 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
                 onClick={() => setActiveTooltip(activeTooltip === 'dispersion' ? null : 'dispersion')}
                 className={`text-xs font-bold px-2 py-1 rounded border cursor-help transition-colors ${dispersionStyle}`}
               >
-                ◩ {loading ? '-' : dispersion}% BRECHA DE PRECIOS
+                ◩ {loading ? '-' : dispersion}% BRECHA
               </button>
               {/* Tooltip */}
               {activeTooltip === 'dispersion' && (
