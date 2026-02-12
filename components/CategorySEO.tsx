@@ -114,8 +114,8 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
 
   return (
     <div className="category-seo mb-2 bg-white dark:bg-primary">
-      {/* Primera fila: Título a la izquierda, rectángulos a la derecha */}
-      <div className="flex items-center justify-between flex-wrap gap-2 px-4 pt-2">
+      {/* Primera fila: Título centrado con rectángulos */}
+      <div className="flex flex-col items-center flex-wrap gap-2 px-4 pt-2">
         {/* Título con emoji */}
         <h1 className="text-[5vw] xs:text-[20px] sm:text-[24px] font-[800] uppercase tracking-tighter text-black dark:text-white m-0 flex items-center gap-2">
           <span>{emoji}</span>
@@ -153,7 +153,7 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
       {/* Tercera fila: Contenido desplegable */}
       {isOpen && (
         <div className="px-4 pb-2">
-          <p className="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400 m-0 w-full text-left">
+          <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 m-0 w-full text-justify">
             {data.dropdownDescription}
           </p>
         </div>

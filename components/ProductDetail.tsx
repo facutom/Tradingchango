@@ -466,14 +466,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
             ))}
           </div>
 
-          {/* Indicadores de navegación */}
-          {(onPreviousProduct || onNextProduct) && (
-            <div className="flex items-center justify-center gap-2 py-2">
-              <div className={`w-2 h-2 rounded-full transition-colors ${onPreviousProduct ? 'bg-neutral-300 dark:bg-neutral-600' : 'bg-neutral-100 dark:bg-neutral-800'}`} />
-              <div className={`w-2 h-2 rounded-full transition-colors ${onNextProduct ? 'bg-neutral-300 dark:bg-neutral-600' : 'bg-neutral-100 dark:bg-neutral-800'}`} />
-            </div>
-          )}
-
           {/* Gráfico */}
           <div className="mb-1 w-full">
             <div className="flex flex-col items-center text-center mb-2">

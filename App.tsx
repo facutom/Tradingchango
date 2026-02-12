@@ -147,23 +147,42 @@ const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUp
   if (!product) return <Navigate to="/" replace />;
 
   const handleClose = () => {
-    // Si el usuario vino del inicio (/), volver al inicio
-    // Si vino de una categoría, volver a esa categoría
-    if (location.state?.from === 'home' || location.pathname === '/') {
+    // Si el usuario vino del chango (/chango), volver al chango
+    if (location.state?.from === 'chango' || location.pathname === '/chango') {
+      navigate('/chango', { replace: true });
+    }
+    // Si el usuario vino del home (/), volver al home
+    else if (location.state?.from === 'home' || location.pathname === '/') {
       navigate('/', { replace: true });
-    } else {
-      // Ir a la categoría del producto actual
+    }
+    // Sino, volver a la categoría del producto actual
+    else {
       navigate(`/${slugify(product.categoria || 'general')}`, { replace: true });
     }
   };
 
-  // Encontrar productos anterior y siguiente en la misma categoría
+  // Determinar si el usuario vino del chango
+  const isFromChango = location.state?.from === 'chango' || location.pathname === '/chango';
+  
+  // Encontrar productos para navegación
+  // Si vino del chango, filtrar solo productos del chango (favorites)
+  // Si vino de una categoría, filtrar productos de esa categoría
   const categoryProducts = useMemo(() => {
-    return products.filter((p: any) => 
-      p.categoria === product.categoria && 
-      p.visible_web !== false
-    );
-  }, [products, product.categoria]);
+    if (isFromChango) {
+      // Navegación dentro del chango - solo productos favoritos
+      const favoriteIds = Object.keys(favorites).map(id => parseInt(id));
+      return products.filter((p: any) => 
+        favoriteIds.includes(p.id) && 
+        p.visible_web !== false
+      );
+    } else {
+      // Navegación dentro de una categoría
+      return products.filter((p: any) => 
+        p.categoria === product.categoria && 
+        p.visible_web !== false
+      );
+    }
+  }, [products, product.categoria, isFromChango, favorites]);
   
   const currentIndex = useMemo(() => {
     return categoryProducts.findIndex((p: any) => p.id === product.id);
@@ -863,8 +882,10 @@ const toggleFavorite = useCallback(async (id: number) => {
     scrollPositionRef.current = window.scrollY;
     const categorySlug = slugify(product.categoria || 'general');
     const productSlug = slugify(product.nombre);
-    // Pasar state para saber si vino del home o de una categoría
-    const from = location.pathname === '/' ? 'home' : 'category';
+    // Pasar state para saber si vino del home, chango o de una categoría
+    let from: 'home' | 'chango' | 'category' = 'category';
+    if (location.pathname === '/') from = 'home';
+    else if (location.pathname === '/chango') from = 'chango';
     navigate(`/${categorySlug}/${productSlug}`, { state: { from } });
   }, [navigate, location.pathname]);
 
