@@ -5,6 +5,10 @@ import { Product, PriceHistory, Profile, TabType, ProductStats, Benefit, CartIte
 import Header from './components/Header';
 import ProductList from './components/ProductList';
 import BottomNav from './components/BottomNav';
+import SEOTags from './components/SEOTags';
+import CategorySEO from './components/CategorySEO';
+import { getCategorySEO, categorySEOConfig } from './utils/categorySEO';
+
 const AuthModal = lazy(() => import('./components/AuthModal'));
 const CartSummary = lazy(() => import('./components/CartSummary'));
 import Footer from './components/Footer';
@@ -143,26 +147,79 @@ const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUp
   if (!product) return <Navigate to="/" replace />;
 
   const handleClose = () => {
-    // Si el usuario puede volver atrás en el historial, lo hacemos.
-    // La key 'default' nos dice si es la primera página en el stack.
-    if (location.key !== 'default') {
-      navigate(-1);
-    } else {
-      // Si no hay historial (abrió con link directo), lo mandamos al inicio.
+    // Si el usuario vino del inicio (/), volver al inicio
+    // Si vino de una categoría, volver a esa categoría
+    if (location.state?.from === 'home' || location.pathname === '/') {
       navigate('/', { replace: true });
+    } else {
+      // Ir a la categoría del producto actual
+      navigate(`/${slugify(product.categoria || 'general')}`, { replace: true });
     }
   };
+
+  // Encontrar productos anterior y siguiente en la misma categoría
+  const categoryProducts = useMemo(() => {
+    return products.filter((p: any) => 
+      p.categoria === product.categoria && 
+      p.visible_web !== false
+    );
+  }, [products, product.categoria]);
+  
+  const currentIndex = useMemo(() => {
+    return categoryProducts.findIndex((p: any) => p.id === product.id);
+  }, [categoryProducts, product.id]);
+  
+  // Navegación circular: al llegar al final vuelve al inicio
+  const handlePreviousProduct = useCallback(() => {
+    if (categoryProducts.length === 0) return;
+    
+    let newIndex: number;
+    if (currentIndex <= 0) {
+      // Ir al último producto (circular)
+      newIndex = categoryProducts.length - 1;
+    } else {
+      newIndex = currentIndex - 1;
+    }
+    
+    const prevProduct = categoryProducts[newIndex];
+    // Mantener el state original (de dónde vino inicialmente)
+    const from = location.state?.from || 'category';
+    navigate(`/${slugify(prevProduct.categoria || 'general')}/${slugify(prevProduct.nombre)}`, { state: { from } });
+  }, [categoryProducts, currentIndex, navigate, location.state]);
+  
+  const handleNextProduct = useCallback(() => {
+    if (categoryProducts.length === 0) return;
+    
+    let newIndex: number;
+    if (currentIndex >= categoryProducts.length - 1) {
+      // Ir al primer producto (circular)
+      newIndex = 0;
+    } else {
+      newIndex = currentIndex + 1;
+    }
+    
+    const nextProduct = categoryProducts[newIndex];
+    // Mantener el state original (de dónde vino inicialmente)
+    const from = location.state?.from || 'category';
+    navigate(`/${slugify(nextProduct.categoria || 'general')}/${slugify(nextProduct.nombre)}`, { state: { from } });
+  }, [categoryProducts, currentIndex, navigate, location.state]);
+
+  // Para navegación circular siempre hay anterior y siguiente
+  const hasPrevious = categoryProducts.length > 1;
+  const hasNext = categoryProducts.length > 1;
 
   return (
     <ProductDetail 
         productId={product.id}
-        onClose={handleClose} // Usamos la nueva función
+        onClose={handleClose}
         isFavorite={!!favorites[product.id]}
         onFavoriteToggle={toggleFavorite}
         products={products}
         theme={theme}
         quantities={favorites}
         onUpdateQuantity={onUpdateQuantity}
+        onPreviousProduct={hasPrevious ? handlePreviousProduct : undefined}
+        onNextProduct={hasNext ? handleNextProduct : undefined}
       />
   );
 };
@@ -622,6 +679,71 @@ const App: React.FC = () => {
     return result;
   }, [products, history, location.pathname, searchTerm, trendFilter]); // useMemo protege el rendimiento
 
+  // Productos de la categoría original (sin filtros de búsqueda/tendencia) para métricas de CategorySEO
+  const categoryProducts = useMemo(() => {
+    if (location.pathname === '/chango') return [];
+    
+    const currentPath = location.pathname;
+    let result = products.map(p => {
+      let outlierData: any = {};
+      try {
+        outlierData = typeof p.outliers === 'string' ? JSON.parse(p.outliers) : (p.outliers || {});
+      } catch (e) { outlierData = {}; }
+
+      const prices = STORES.map(s => {
+        const storeKey = s.name.toLowerCase().replace(' ', '');
+        const price = (p as any)[s.key] || 0;
+        const url = (p as any)[s.url];
+        const stockKey = `stock_${storeKey}`;
+        const hasStock = (p as any)[stockKey] !== false;
+        const isOutlier = outlierData[storeKey] === true;
+        const hasUrl = url && url !== '#' && url.length > 5;
+
+        if (price > 0 && hasUrl && !isOutlier && hasStock) {
+          return price;
+        }
+        return 0;
+      });
+
+      const productHistory = history.filter(h => h.nombre_producto === p.nombre);
+      let h7_price = 0;
+
+      if (productHistory.length > 0) {
+        productHistory.sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
+        h7_price = productHistory[0].precio_minimo || 0;
+      }
+      
+      if (h7_price === 0) {
+        const currentPrices = prices.filter(x => x > 0);
+        if (currentPrices.length > 0) {
+          h7_price = Math.min(...currentPrices);
+        }
+      }
+      
+      return { ...p, stats: getStats(prices, h7_price), prices };
+    })
+    .filter(p => p.prices.filter((price: number) => price > 0).length >= 2);
+
+    // Solo filtrar por categoría, sin búsqueda ni tendencia
+    if (currentPath === '/carnes') result = result.filter(p => normalizeText(p.categoria || '').includes('carne'));
+    else if (currentPath === '/verdu') result = result.filter(p => normalizeText(p.categoria || '').includes('verdu') || normalizeText(p.categoria || '').includes('fruta'));
+    else if (currentPath === '/bebidas') result = result.filter(p => normalizeText(p.categoria || '').includes('bebida'));
+    else if (currentPath === '/lacteos') result = result.filter(p => normalizeText(p.categoria || '').includes('lacteo'));
+    else if (currentPath === '/almacen') result = result.filter(p => normalizeText(p.categoria || '').includes('almacen'));
+    else if (currentPath === '/limpieza') result = result.filter(p => normalizeText(p.categoria || '').includes('limpieza'));
+    else if (currentPath === '/perfumeria') result = result.filter(p => normalizeText(p.categoria || '').includes('perfumeria'));
+    else if (currentPath === '/mascotas') result = result.filter(p => normalizeText(p.categoria || '').includes('mascota'));
+    else if (currentPath === '/varios') {
+      const excludedCategories = ['carne', 'verdu', 'fruta', 'bebida', 'lacteo', 'almacen', 'limpieza', 'perfumeria', 'mascota'];
+      result = result.filter(p => {
+        const cat = normalizeText(p.categoria || '');
+        return !excludedCategories.some(excluded => cat.includes(excluded));
+      });
+    }
+
+    return result;
+  }, [products, history, location.pathname]); // Sin searchTerm ni trendFilter
+
   const cartItems = useMemo(() => {
     return baseFilteredProducts
       .filter(p => favorites[p.id])
@@ -741,8 +863,10 @@ const toggleFavorite = useCallback(async (id: number) => {
     scrollPositionRef.current = window.scrollY;
     const categorySlug = slugify(product.categoria || 'general');
     const productSlug = slugify(product.nombre);
-    navigate(`/${categorySlug}/${productSlug}`);
-  }, [navigate]);
+    // Pasar state para saber si vino del home o de una categoría
+    const from = location.pathname === '/' ? 'home' : 'category';
+    navigate(`/${categorySlug}/${productSlug}`, { state: { from } });
+  }, [navigate, location.pathname]);
 
   useEffect(() => {
     const listPaths = ['/', '/chango', '/carnes', '/verdu', '/varios', '/bebidas', '/almacen'];
@@ -805,9 +929,10 @@ const toggleFavorite = useCallback(async (id: number) => {
 
   const isFavorite = useCallback((id: number) => !!favorites[id], [favorites]);
 
-  const listPageElement = (description: string) => (
+  const listPageElement = (description: string, category?: string) => (
    <>
     <MetaTags description={description} />
+     {category && <CategorySEO data={getCategorySEO(category)} categoryName={category} products={categoryProducts as any} />}
     <MemoizedProductList
       products={visibleProducts as any}
       onProductClick={handleProductClick}
@@ -901,27 +1026,25 @@ const toggleFavorite = useCallback(async (id: number) => {
     <main>
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
-          <Route path="/" element={listPageElement(descriptions['/'])} />
-          <Route path="/carnes" element={listPageElement(descriptions['/carnes'])} />
-          <Route path="/verdu" element={listPageElement(descriptions['/verdu'])} />
-          <Route path="/bebidas" element={listPageElement(descriptions['/bebidas'])} />
-          <Route path="/lacteos" element={listPageElement(descriptions['/lacteos'])} />
-          <Route path="/almacen" element={listPageElement(descriptions['/almacen'])} />
-          <Route path="/limpieza" element={listPageElement(descriptions['/limpieza'])} />
-          <Route path="/perfumeria" element={listPageElement(descriptions['/perfumeria'])} />
-          <Route path="/mascotas" element={listPageElement(descriptions['/mascotas'])} />
-          <Route path="/varios" element={
+          <Route path="/" element={
             <>
-              <MetaTags description={descriptions['/varios']} robots="noindex, follow" />
-              <MemoizedProductList
-                products={cartItems as any}
-                onProductClick={handleProductClick}
-                onFavoriteToggle={toggleFavorite}
-                isFavorite={(id: number) => !!favorites[id]}
-                searchTerm={searchTerm}
+              <SEOTags 
+                title="TradingChango | Compará Precios de Supermercados en Argentina"
+                description={descriptions['/']}
+                keywords="precios supermercado Argentina, comparar precios, ofertas Coto Carrefour Jumbo, ahorrar compra"
               />
+              {listPageElement(descriptions['/'])}
             </>
           } />
+          <Route path="/carnes" element={listPageElement(descriptions['/carnes'], 'carnes')} />
+          <Route path="/verdu" element={listPageElement(descriptions['/verdu'], 'verdulería')} />
+          <Route path="/bebidas" element={listPageElement(descriptions['/bebidas'], 'bebidas')} />
+          <Route path="/lacteos" element={listPageElement(descriptions['/lacteos'], 'lácteos')} />
+          <Route path="/almacen" element={listPageElement(descriptions['/almacen'], 'almacén')} />
+          <Route path="/limpieza" element={listPageElement(descriptions['/limpieza'], 'limpieza')} />
+          <Route path="/perfumeria" element={listPageElement(descriptions['/perfumeria'], 'perfumería')} />
+          <Route path="/mascotas" element={listPageElement(descriptions['/mascotas'], 'mascotas')} />
+          <Route path="/varios" element={listPageElement(descriptions['/varios'], 'varios')} />
           <Route path="/chango" element={
             <>
               {cartItems.length > 0 && (

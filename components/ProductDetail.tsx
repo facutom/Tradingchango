@@ -31,6 +31,8 @@ interface ProductDetailProps {
   theme: 'light' | 'dark';
   quantities?: Record<number, number>;
   onUpdateQuantity?: (id: number, delta: number) => void;
+  onPreviousProduct?: () => void;
+  onNextProduct?: () => void;
 }
 
 // Alias para evitar conflictos de tipos con Recharts en TS
@@ -60,11 +62,15 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   products, 
   theme,
   quantities,
-  onUpdateQuantity
+  onUpdateQuantity,
+  onPreviousProduct,
+  onNextProduct
 }) => {
   const [history, setHistory] = useState<PriceHistory[]>([]);
   const [days, setDays] = useState(7);
   const modalRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef<number>(0);
+  const touchEndX = useRef<number>(0);
 
   const product = useMemo(() => products.find(p => p.id === productId), [products, productId]);
 
@@ -167,19 +173,83 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
     fetchHistory();
   }, [product, days]);
 
+  // Ref para evitar múltiples ejecuciones
+  const lastActionRef = useRef<{ key: string; time: number } | null>(null);
+  
   useEffect(() => {
-    const handleEvents = (e: MouseEvent | KeyboardEvent) => {
-      if (e instanceof MouseEvent) {
-        if (modalRef.current && !modalRef.current.contains(e.target as Node)) onClose();
-      } else if (e instanceof KeyboardEvent && e.key === 'Escape') onClose();
+    // Manejo de teclado - ESC solo cierra, flechas solo navegan
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const now = Date.now();
+      // Evitar múltiples ejecuciones del mismo evento en 100ms
+      if (lastActionRef.current && 
+          lastActionRef.current.key === e.key && 
+          now - lastActionRef.current.time < 100) {
+        return;
+      }
+      
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        lastActionRef.current = { key: e.key, time: now };
+        onClose();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        e.stopPropagation();
+        lastActionRef.current = { key: e.key, time: now };
+        onPreviousProduct?.();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        e.stopPropagation();
+        lastActionRef.current = { key: e.key, time: now };
+        onNextProduct?.();
+      }
     };
-    document.addEventListener('mousedown', handleEvents);
-    document.addEventListener('keydown', handleEvents);
+    
+    // Manejo de click en el backdrop para cerrar
+    const handleBackdropClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      // Solo cerrar si el click es directamente en el backdrop (no en el modal)
+      if (target.classList.contains('product-detail-backdrop')) {
+        e.preventDefault();
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    
+    // Manejo de gestos táctiles
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartX.current = e.changedTouches[0].screenX;
+    };
+    
+    const handleTouchEnd = (e: TouchEvent) => {
+      touchEndX.current = e.changedTouches[0].screenX;
+      const diff = touchStartX.current - touchEndX.current;
+      const swipeThreshold = 50;
+      
+      if (Math.abs(diff) > swipeThreshold) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (diff > 0) {
+          onNextProduct?.();
+        } else if (diff < 0) {
+          onPreviousProduct?.();
+        }
+      }
+    };
+    
+    // Usar capture phase para tener prioridad sobre otros listeners
+    document.addEventListener('keydown', handleKeyDown, { passive: false, capture: true });
+    document.addEventListener('click', handleBackdropClick, { capture: true });
+    document.addEventListener('touchstart', handleTouchStart);
+    document.addEventListener('touchend', handleTouchEnd);
+    
     return () => {
-      document.removeEventListener('mousedown', handleEvents);
-      document.removeEventListener('keydown', handleEvents);
+      document.removeEventListener('keydown', handleKeyDown, { capture: true });
+      document.removeEventListener('click', handleBackdropClick, { capture: true });
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [onClose]);
+  }, [onClose, onPreviousProduct, onNextProduct]);
 
   const { minPrice, minStore, avgPrice, minStoreUrl, unitPrice, unitMeasure, outliersDetected } = useMemo(() => {
     if (!product) return { minPrice: 0, minStore: '', avgPrice: 0, minStoreUrl: '#', unitPrice: 0, unitMeasure: '', outliersDetected: [] };
@@ -293,8 +363,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm md:p-4">
-      <div ref={modalRef} className="w-full max-w-lg h-auto max-h-full md:max-h-[95vh] bg-white dark:bg-primary md:rounded-[1.2rem] overflow-y-auto shadow-2xl relative">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm md:p-4 product-detail-backdrop">
+      <div ref={modalRef} data-keep-open className="product-detail-modal w-full max-w-lg h-auto max-h-full md:max-h-[95vh] bg-white dark:bg-primary md:rounded-[1.2rem] overflow-y-auto shadow-2xl relative">
         
         <div className="sticky top-0 z-20 bg-white/95 dark:bg-primary/95 backdrop-blur-md px-4 py-2 flex items-center justify-between border-b border-neutral-100 dark:border-[#233138]">
           <button onClick={onClose} className="text-black dark:text-[#e9edef] p-2">
@@ -395,6 +465,14 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
               </button>
             ))}
           </div>
+
+          {/* Indicadores de navegación */}
+          {(onPreviousProduct || onNextProduct) && (
+            <div className="flex items-center justify-center gap-2 py-2">
+              <div className={`w-2 h-2 rounded-full transition-colors ${onPreviousProduct ? 'bg-neutral-300 dark:bg-neutral-600' : 'bg-neutral-100 dark:bg-neutral-800'}`} />
+              <div className={`w-2 h-2 rounded-full transition-colors ${onNextProduct ? 'bg-neutral-300 dark:bg-neutral-600' : 'bg-neutral-100 dark:bg-neutral-800'}`} />
+            </div>
+          )}
 
           {/* Gráfico */}
           <div className="mb-1 w-full">
