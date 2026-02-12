@@ -139,18 +139,19 @@ function calculateSimulatedVariation(products: Product[]): number {
   // Usar la dispersiÃ³n promedio como indicador de volatilidad
   const avgDispersion = dispersions.reduce((a, b) => a + b, 0) / dispersions.length;
   
-  // Generar valor determinÃ­stico basado en el hash de los nombres de productos
-  // Esto asegura que el mismo producto siempre genere el mismo porcentaje
-  const productHash = products.reduce((hash, p) => {
-    const nameHash = p.nombre.split('').reduce((h, c) => h + c.charCodeAt(0), 0);
-    return hash + nameHash;
+  // Generar hash determinÃ­stico basado en los IDs y nombres de productos
+  // Usar un hash simple que se normalice a un rango 0-1
+  const hashValue = products.reduce((hash, p) => {
+    const id = p.id || p.nombre;
+    const charSum = id.toString().split('').reduce((h, c) => h + c.charCodeAt(0), 0);
+    return (hash + charSum * 31) | 0;
   }, 0);
   
-  // Usar el hash para generar un factor pseudo-aleatorio pero consistente
-  const pseudoRandom = Math.abs(Math.sin(productHash));
+  // Normalizar hash a rango 0-1 usando mÃ³dulo
+  const normalizedHash = Math.abs(hashValue % 1000) / 1000;
   
   // VariaciÃ³n basada en volatilidad (entre -3% y +3%), determinÃ­stica
-  const baseVariation = (pseudoRandom * 2 - 1) * Math.min(avgDispersion / 10, 3);
+  const baseVariation = (normalizedHash * 2 - 1) * Math.min(avgDispersion / 10, 3);
   
   return Math.round(baseVariation * 10) / 10;
 }

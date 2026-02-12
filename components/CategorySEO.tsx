@@ -14,7 +14,7 @@ const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 horas en ms
 const CACHE_KEY_PREFIX = 'tc_category_metrics_';
 
 // Función para cargar métricas desde cache
-const getCachedMetrics = (cacheKey: string): CategoryMetrics | null => {
+const getCachedMetrics = (cacheKey: string, productsHash: number): CategoryMetrics | null => {
   try {
     const cached = localStorage.getItem(cacheKey);
     if (cached) {
@@ -23,14 +23,22 @@ const getCachedMetrics = (cacheKey: string): CategoryMetrics | null => {
       const now = new Date();
       const cacheAge = now.getTime() - cacheDate.getTime();
       
-      // Usar cache si es reciente (menos de 24h) y dispersión es razonable (≤150%)
-      if (cacheAge < CACHE_DURATION && parsed.data && parsed.data.dispersion <= 150) {
+      // Usar cache si:
+      // 1. Es reciente (menos de 24h)
+      // 2. Dispersión es razonable (≤150%)
+      // 3. El hash de productos coincide (asegura que los mismos productos generan el mismo valor)
+      if (cacheAge < CACHE_DURATION && 
+          parsed.data && 
+          parsed.data.dispersion <= 150 &&
+          parsed.productsHash === productsHash) {
+        console.log(`[CategorySEO] Usando cache para ${cacheKey}, hash: ${productsHash}`);
         return parsed.data;
       }
     }
   } catch (e) {
     return null;
   }
+  console.log(`[CategorySEO] Cache no válido para ${cacheKey}, hash actual: ${productsHash}`);
   return null;
 };
 
@@ -56,10 +64,22 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
   // Generar clave única para esta categoría
   const cacheKey = `${CACHE_KEY_PREFIX}${categoryName.toLowerCase()}`;
 
+  // Generar un hash determinístico de los productos para detectar cambios
+  const productsHash = useMemo(() => {
+    const hash = products.reduce((h, p) => {
+      const id = p.id || p.nombre;
+      const charSum = id.toString().split('').reduce((h2, c) => h2 + c.charCodeAt(0), 0);
+      return (h + charSum * 31) | 0;
+    }, 0);
+    // Log para debuggear diferencias entre dispositivos
+    console.log(`[CategorySEO] ${categoryName}: ${products.length} productos, hash: ${hash}`);
+    return hash;
+  }, [products, categoryName]);
+
   // Actualizar métricas cuando cambia la categoría o productos
   useEffect(() => {
     // Verificar si hay cache válido
-    const cached = getCachedMetrics(cacheKey);
+    const cached = getCachedMetrics(cacheKey, productsHash);
     
     if (cached) {
       setMetrics(cached);
@@ -73,11 +93,12 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
           try {
             const result = await calculateCategoryMetrics(products);
             setMetrics(result);
-            // Guardar en localStorage
+            // Guardar en localStorage con el hash de productos
             localStorage.setItem(cacheKey, JSON.stringify({
               data: result,
               timestamp: new Date().getTime(),
-              categoryName: categoryName
+              categoryName: categoryName,
+              productsHash: productsHash
             }));
             loadedRef.current = true;
           } catch (error) {
@@ -91,7 +112,7 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
         setLoading(false);
       }
     }
-  }, [categoryName, products.length]); // Depende de categoría y cantidad de productos
+  }, [categoryName, productsHash, cacheKey]);
 
   // Memoizar emoji para evitar recalcularlo
   const emoji = useMemo(() => {
