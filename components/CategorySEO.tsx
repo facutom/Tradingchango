@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { CategorySEOData } from '../utils/categorySEO';
 import { Product } from '../types';
 import { calculateCategoryMetrics, formatStoreName, CategoryMetrics } from '../utils/categoryMetrics';
+import OptimizedImage from './OptimizedImage';
 
 interface CategorySEOProps {
   data: CategorySEOData;
@@ -109,7 +110,7 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
     }
   }, [categoryName, productsHash, cacheKey]);
 
-  // Memoizar emoji para evitar recalcularlo
+  // Memoizar emoji y imagen para evitar recalcularlos
   const emoji = useMemo(() => {
     const normalizedName = categoryName.toLowerCase().trim();
     const emojis: Record<string, string> = {
@@ -137,6 +138,34 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
     return emojis[normalizedName] || '📊';
   }, [categoryName]);
 
+  // Memoizar imagen de categoría (URLs nuevas verificadas)
+  const categoryImage = useMemo(() => {
+    const normalizedName = categoryName.toLowerCase().trim();
+    const images: Record<string, string> = {
+      carnes: 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?q=80&w=800&auto=format&fit=crop',
+      carne: 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?q=80&w=800&auto=format&fit=crop',
+      verdu: 'https://images.unsplash.com/photo-1610348725531-843dff563e2c?q=80&w=800&auto=format&fit=crop',
+      verdulería: 'https://images.unsplash.com/photo-1610348725531-843dff563e2c?q=80&w=800&auto=format&fit=crop',
+      verdura: 'https://images.unsplash.com/photo-1610348725531-843dff563e2c?q=80&w=800&auto=format&fit=crop',
+      fruta: 'https://images.unsplash.com/photo-1610348725531-843dff563e2c?q=80&w=800&auto=format&fit=crop',
+      frutas: 'https://images.unsplash.com/photo-1610348725531-843dff563e2c?q=80&w=800&auto=format&fit=crop',
+      bebidas: 'https://storage.googleapis.com/tprt0ezsggqjornc7nf1wwluvgulhr/BlogImageUrl/SwzsS7fQpq5czkKU.webp',
+      bebida: 'https://storage.googleapis.com/tprt0ezsggqjornc7nf1wwluvgulhr/BlogImageUrl/SwzsS7fQpq5czkKU.webp',
+      lacteos: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?q=80&w=800&auto=format&fit=crop',
+      lácteos: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?q=80&w=800&auto=format&fit=crop',
+      lacteo: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?q=80&w=800&auto=format&fit=crop',
+      almacen: 'https://images.unsplash.com/photo-1534723452862-4c874018d66d?q=80&w=800&auto=format&fit=crop',
+      almacén: 'https://images.unsplash.com/photo-1534723452862-4c874018d66d?q=80&w=800&auto=format&fit=crop',
+      limpieza: 'https://tosbourn.com/img/clean-out-your-links.webp',
+      perfumería: 'https://nusantaralifestyle.com/wp-content/uploads/2024/12/Bali-bathroom-accessories-1.webp',
+      perfumeria: 'https://nusantaralifestyle.com/wp-content/uploads/2024/12/Bali-bathroom-accessories-1.webp',
+      mascotas: 'https://luvncare.net/wp-content/uploads/2024/05/iStock-1180944659-2.webp',
+      mascota: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQ0bdu-hf6CqzsCfMSGFycRyVexk8By8_GWA&s',
+      varios: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=800&auto=format&fit=crop'
+    };
+    return images[normalizedName] || null;
+  }, [categoryName]);
+
   // Valores con valores por defecto
   const hasHistoricalData = metrics?.hasHistoricalData ?? false;
   const weeklyVariation = metrics?.weeklyVariation ?? null;
@@ -146,33 +175,43 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
   // --- Lógica de Estilos Dinámicos ---
   const variationStyle = useMemo(() => {
     if (loading || !hasHistoricalData || weeklyVariation === null) {
-      return "text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700";
+      return "bg-black/60 text-white border-neutral-500/50";
     }
     if (weeklyVariation > 0) { // Precio subió (malo)
-      return "text-red-600 dark:text-red-400 border-red-200 dark:border-red-500/50";
+      return "bg-red-900/80 text-white border-red-400/60";
     }
     // Precio bajó (bueno)
-    return "text-green-600 dark:text-green-400 border-green-200 dark:border-green-500/50";
+    return "bg-green-900/80 text-white border-green-400/60";
   }, [loading, hasHistoricalData, weeklyVariation]);
 
-  const leaderStyle = "text-green-700 dark:text-green-400 border-green-300 dark:border-green-600 bg-green-50 dark:bg-green-900/30";
-  const dispersionStyle = "text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700";
+  const leaderStyle = "text-white font-bold border-green-400/80 bg-green-800/80";
+  const dispersionStyle = "bg-black/60 text-white border-neutral-500/50";
   const tooltipStyle = "absolute bottom-full mb-2 w-max max-w-[280px] p-2 bg-black/80 backdrop-blur-sm border border-neutral-700 text-white text-[11px] rounded shadow-lg z-50 text-center whitespace-normal";
 
 
   return (
-    <div className="category-seo mb-2 bg-transparent rounded-xl shadow-sm">
-      {/* Fondo para título con soporte modo oscuro/claro */}
-      <div className="px-4 pt-2 pb-2">
-        {/* Primera fila: Título centrado con rectángulos */}
-        <div className="flex flex-col items-center flex-wrap gap-2">
+    <div className="category-seo mb-2 bg-transparent rounded-xl shadow-sm overflow-hidden">
+      {/* Contenedor del Título con Imagen de Fondo */}
+      <div
+        className="relative px-4 pt-3 pb-4"
+        style={{
+          backgroundImage: `url(${categoryImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        {/* Overlay oscuro para contraste */}
+        <div className="absolute inset-0 bg-black/50 z-0"></div>
+
+        {/* Contenido del Título (sobre el overlay) */}
+        <div className="relative z-10 flex flex-col items-center flex-wrap gap-2">
           {/* Título con emoji */}
-          <h1 className="text-[5vw] xs:text-[20px] sm:text-[24px] font-[800] uppercase tracking-tighter text-black dark:text-white m-0 flex items-center gap-2">
+          <h1 className="text-[5vw] xs:text-[20px] sm:text-[24px] font-[800] uppercase tracking-tighter text-white m-0 flex items-center gap-2">
             <span>{emoji}</span>
             <span>{categoryName}</span>
           </h1>
 
-          {/* Rectángulos con métricas calculadas - con tooltips por click */}
+          {/* Rectángulos con métricas calculadas */}
           <div className="flex gap-1 relative flex-wrap justify-center" ref={tooltipRef}>
             {/* % SEMANAL */}
             <div className="relative">
@@ -188,10 +227,9 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
                     </>
                 }
               </button>
-              {/* Tooltip */}
               {activeTooltip === 'weekly' && (
                 <div className={`${tooltipStyle} left-0`}>
-                  Indica cuánto cambió el precio mínimo de los productos de esta categoría en los últimos 7 días.
+                  Variación promedio de precios de la categoría respecto a la semana pasada
                   <div className="absolute top-full left-4 border-4 border-transparent border-t-black/80"></div>
                 </div>
               )}
@@ -203,12 +241,11 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
                 onClick={() => setActiveTooltip(activeTooltip === 'dispersion' ? null : 'dispersion')}
                 className={`text-xs font-bold px-2 py-1 rounded border cursor-help transition-colors ${dispersionStyle}`}
               >
-                ◩ {loading ? '-' : dispersion}% BRECHA
+                ◩ {loading ? '-' : dispersion}% DISPERSIÓN
               </button>
-              {/* Tooltip */}
               {activeTooltip === 'dispersion' && (
                 <div className={`${tooltipStyle} left-1/2 -translate-x-1/2`}>
-                  Muestra la diferencia promedio entre el lugar más caro y el más barato para cada producto. Cuanto más alto es este porcentaje, más dinero ahorrás comparando en TradingChango.
+                  Diferencia porcentual entre el precio más alto y más bajo de la categoría
                   <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-black/80"></div>
                 </div>
               )}
@@ -222,7 +259,6 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
               >
                 🏆 {loading ? '-' : formatStoreName(leaderStore)} LÍDER
               </button>
-              {/* Tooltip */}
               {activeTooltip === 'leader' && (
                 <div className={`${tooltipStyle} right-0`}>
                   Supermercado con el precio promedio más bajo para esta categoría
@@ -235,7 +271,7 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
       </div>
 
       {/* Segunda fila: Botón desplegable */}
-      <div className="px-4 mb-2">
+      <div className="px-4 mb-2 mt-2">
         <button 
           onClick={() => setIsOpen(!isOpen)}
           className="flex items-center justify-center w-full gap-2 bg-transparent border-none cursor-pointer text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400 hover:opacity-70 transition-opacity p-1"
@@ -244,7 +280,7 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
             <path d="M3 3v18h18" />
             <path d="M18 9l-5 5-4-4-3 3" />
           </svg>
-          Sobre la categoria
+          Mas info de la categoria
           <span className="bg-neutral-200 dark:bg-neutral-600 px-2 py-0.5 rounded text-[10px] font-bold text-neutral-700 dark:text-neutral-200">
             {products.length} productos encontrados
           </span>
