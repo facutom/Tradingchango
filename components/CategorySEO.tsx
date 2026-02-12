@@ -147,11 +147,12 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
             </button>
             {/* Tooltip */}
             {activeTooltip === 'weekly' && (
-              <div className="absolute bottom-full right-0 mb-2 w-[80vw] max-w-[250px] p-2 bg-gradient-to-br from-neutral-800 to-neutral-900 text-white text-[11px] rounded shadow-lg z-50 text-center whitespace-normal">
-                Variación promedio de precios de la categoría respecto a la semana anterior
-                <div className="absolute top-full right-4 border-4 border-transparent border-t-neutral-800"></div>
-              </div>
-            )}
+            <div className="absolute bottom-full left-0 mb-2 w-[80vw] max-w-[250px] p-2 bg-gradient-to-br from-neutral-800 to-neutral-900 text-white text-[11px] rounded shadow-lg z-50 text-center whitespace-normal">
+              Variación promedio de precios de la categoría respecto a la semana anterior
+              {/* Flecha ajustada a la izquierda del botón */}
+              <div className="absolute top-full left-4 border-4 border-transparent border-t-neutral-800"></div>
+            </div>
+          )}
           </div>
           
           {/* % DISPERSIÓN */}
