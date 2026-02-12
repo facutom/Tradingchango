@@ -165,9 +165,9 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
             </button>
             {/* Tooltip */}
             {activeTooltip === 'dispersion' && (
-              <div className="absolute bottom-full right-0 mb-2 w-[80vw] max-w-[250px] p-2 bg-gradient-to-br from-neutral-800 to-neutral-900 text-white text-[11px] rounded shadow-lg z-50 text-center whitespace-normal">
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-[85vw] max-w-[280px] p-2 bg-gradient-to-br from-neutral-800 to-neutral-900 text-white text-[11px] rounded shadow-lg z-50 text-center whitespace-normal">
                 Diferencia porcentual entre el precio más alto y más bajo de la categoría
-                <div className="absolute top-full right-4 border-4 border-transparent border-t-neutral-800"></div>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-neutral-800"></div>
               </div>
             )}
           </div>
@@ -185,7 +185,7 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
             <div className="absolute bottom-full right-0 mb-2 w-[80vw] max-w-[280px] p-2 bg-gradient-to-br from-neutral-800 to-neutral-900 text-white text-[11px] rounded shadow-lg z-50 text-center whitespace-normal">
               Supermercado con el precio promedio más bajo para esta categoría
               {/* Flechita apuntando al botón a la derecha */}
-              <div className="absolute top-full right-4 border-4 border-transparent border-t-neutral-800"></div>
+              <div className="absolute top-full right-6 border-4 border-transparent border-t-neutral-800"></div>
             </div>
           )}
           </div>
