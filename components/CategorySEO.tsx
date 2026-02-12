@@ -147,7 +147,7 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
             </button>
             {/* Tooltip */}
             {activeTooltip === 'weekly' && (
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-[90vw] sm:w-[360px] p-2 bg-gradient-to-br from-neutral-800 to-neutral-900 text-white text-xs rounded shadow-lg z-50 text-center">
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-[85vw] max-w-[calc(100vw-16px)] sm:w-[360px] p-2 bg-gradient-to-br from-neutral-800 to-neutral-900 text-white text-xs rounded shadow-lg z-50 text-center">
                 Variación promedio de precios de la categoría respecto a la semana anterior
                 <div className="absolute top-full left-1/2 -translate-x-1/2 border-2 border-transparent border-t-neutral-800"></div>
               </div>
@@ -164,7 +164,7 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
             </button>
             {/* Tooltip */}
             {activeTooltip === 'dispersion' && (
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-[90vw] sm:w-[360px] p-2 bg-gradient-to-br from-neutral-800 to-neutral-900 text-white text-xs rounded shadow-lg z-50 text-center">
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-[85vw] max-w-[calc(100vw-16px)] sm:w-[360px] p-2 bg-gradient-to-br from-neutral-800 to-neutral-900 text-white text-xs rounded shadow-lg z-50 text-center">
                 Diferencia porcentual entre el precio más alto y más bajo de la categoría
                 <div className="absolute top-full left-1/2 -translate-x-1/2 border-2 border-transparent border-t-neutral-800"></div>
               </div>
@@ -181,7 +181,7 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
             </button>
             {/* Tooltip */}
             {activeTooltip === 'leader' && (
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-[90vw] sm:w-[360px] p-2 bg-gradient-to-br from-neutral-800 to-neutral-900 text-white text-xs rounded shadow-lg z-50 text-center">
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-[85vw] max-w-[calc(100vw-16px)] sm:w-[360px] p-2 bg-gradient-to-br from-neutral-800 to-neutral-900 text-white text-xs rounded shadow-lg z-50 text-center">
                 Supermercado con el precio promedio más bajo para esta categoría
                 <div className="absolute top-full left-1/2 -translate-x-1/2 border-2 border-transparent border-t-neutral-800"></div>
               </div>
