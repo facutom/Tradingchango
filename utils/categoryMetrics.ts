@@ -124,7 +124,7 @@ async function getWeeklyVariationReal(products: Product[]): Promise<number> {
   }
 }
 
-// SimulaciÃ³n basada en variabilidad de precios actuales
+// SimulaciÃ³n basada en variabilidad de precios actuales (determinÃ­stica)
 function calculateSimulatedVariation(products: Product[]): number {
   // Calcular la volatilidad basada en la dispersiÃ³n de precios actuales
   const dispersions = products.map(p => {
@@ -139,8 +139,18 @@ function calculateSimulatedVariation(products: Product[]): number {
   // Usar la dispersiÃ³n promedio como indicador de volatilidad
   const avgDispersion = dispersions.reduce((a, b) => a + b, 0) / dispersions.length;
   
-  // Simular variaciÃ³n basada en volatilidad (entre -3% y +3%)
-  const baseVariation = (Math.random() * 2 - 1) * Math.min(avgDispersion / 10, 3);
+  // Generar valor determinÃ­stico basado en el hash de los nombres de productos
+  // Esto asegura que el mismo producto siempre genere el mismo porcentaje
+  const productHash = products.reduce((hash, p) => {
+    const nameHash = p.nombre.split('').reduce((h, c) => h + c.charCodeAt(0), 0);
+    return hash + nameHash;
+  }, 0);
+  
+  // Usar el hash para generar un factor pseudo-aleatorio pero consistente
+  const pseudoRandom = Math.abs(Math.sin(productHash));
+  
+  // VariaciÃ³n basada en volatilidad (entre -3% y +3%), determinÃ­stica
+  const baseVariation = (pseudoRandom * 2 - 1) * Math.min(avgDispersion / 10, 3);
   
   return Math.round(baseVariation * 10) / 10;
 }
