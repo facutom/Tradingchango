@@ -143,6 +143,5 @@
       "destination": "/sw.js"
     }
   ],
-  "compress": true,
   "trailingSlash": false
 }
