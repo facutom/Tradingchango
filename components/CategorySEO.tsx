@@ -175,22 +175,22 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
   // --- Lógica de Estilos Dinámicos ---
   const variationStyle = useMemo(() => {
     if (loading || !hasHistoricalData || weeklyVariation === null) {
-      return "bg-black/60 text-white border-neutral-500/50";
+      return "bg-neutral-800 text-white border-neutral-600";
     }
     if (weeklyVariation > 0) { // Precio subió (malo)
-      return "bg-red-900/80 text-white border-red-400/60";
+      return "bg-red-800 text-white border-red-600";
     }
     // Precio bajó (bueno)
-    return "bg-green-900/80 text-white border-green-400/60";
+    return "bg-green-800 text-white border-green-600";
   }, [loading, hasHistoricalData, weeklyVariation]);
 
-  const leaderStyle = "text-white font-bold border-green-400/80 bg-green-800/80";
-  const dispersionStyle = "bg-black/60 text-white border-neutral-500/50";
+  const leaderStyle = "text-white font-bold border-green-500 bg-green-800";
+  const dispersionStyle = "bg-neutral-800 text-white border-neutral-600";
   const tooltipStyle = "absolute bottom-full mb-2 w-max max-w-[280px] p-2 bg-black/80 backdrop-blur-sm border border-neutral-700 text-white text-[11px] rounded shadow-lg z-50 text-center whitespace-normal";
 
 
   return (
-    <div className="category-seo mb-2 bg-transparent rounded-xl shadow-sm overflow-hidden">
+    <div className="category-seo mb-2 bg-transparent shadow-sm overflow-hidden">
       {/* Contenedor del Título con Imagen de Fondo */}
       <div
         className="relative px-4 pt-3 pb-4"
