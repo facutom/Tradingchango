@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { Product } from '../types';
 import { isPriceOutlier } from '../utils/outlierDetection';
+import OptimizedImage from './OptimizedImage';
 
 // Copiamos las interfaces y constantes necesarias desde ProductList
 interface ProductWithStats extends Product {
@@ -25,7 +26,7 @@ const STORES = [
 interface ProductListItemProps {
   product: ProductWithStats;
   isFirst: boolean;
-  index: number; // <-- Agregamos el índice aquí
+  index: number;
   isFavorite: boolean;
   isPurchased: boolean;
   quantity: number;
@@ -67,8 +68,8 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
   onUpdateQuantity,
 }) => {
 
-  // La lógica de cálculo de displayMinPrice y badges se mueve aquí
-  const { displayMinPrice, badges } = (() => {
+  // Memoizar cálculos para evitar recálculos
+  const { displayMinPrice, badges } = React.useMemo(() => {
     try {
       const outlierData = typeof p.outliers === 'string' 
         ? JSON.parse(p.outliers) 
@@ -94,7 +95,6 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
 
       const filteredOferta = ofertaGondola ? Object.entries(ofertaGondola).reduce((acc, [storeKey, value]) => {
         const isOutlierFromDB = outlierData[storeKey] === true;
-        // Map storeKey to price key (ej: 'coto' -> 'p_coto')
         const priceKeyMap: any = {
           'coto': 'p_coto',
           'carrefour': 'p_carrefour',
@@ -120,7 +120,7 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
         badges: getPromoBadges(p.oferta_gondola)
       };
     }
-  })();
+  }, [p]);
 
   return (
     <div 
@@ -138,17 +138,16 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
            </button>
          )}
          <div className="w-16 h-16 rounded-lg bg-white border border-neutral-100 flex items-center justify-center overflow-hidden shrink-0 aspect-square">
-        <img
-    src={p.imagen_url ? `${p.imagen_url}?width=120&quality=75&format=webp` : 'https://via.placeholder.com/120?text=N/A'}
-    alt={p.nombre}
-    className="w-full h-full object-contain p-1"
-    width="120"
-    height="120"
-    loading={index < 6 ? 'eager' : 'lazy'}
-    decoding="async"
-    fetchPriority={index < 6 ? 'high' : 'auto'}
-/>
-      </div>
+          <OptimizedImage
+            src={p.imagen_url ? `${p.imagen_url}?width=120&quality=75&format=webp` : 'https://via.placeholder.com/120?text=N/A'}
+            alt={p.nombre}
+            className="w-full h-full object-contain p-1"
+            width={120}
+            height={120}
+            priority={index < 4}
+            format="auto"
+          />
+         </div>
       </div>
 
       <div className="flex-1 flex items-center justify-between pr-2 min-w-0 ml-3">
@@ -208,14 +207,12 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
 };
 
 const MemoizedProductListItem = memo(ProductListItem, (prevProps, nextProps) => {
-  // Comprobación rápida y eficiente para ver si algo cambió.
   return prevProps.product.id === nextProps.product.id &&
          prevProps.index === nextProps.index &&
          prevProps.isFavorite === nextProps.isFavorite &&
          prevProps.isPurchased === nextProps.isPurchased &&
          prevProps.quantity === nextProps.quantity &&
          prevProps.isCartView === nextProps.isCartView &&
-         // Comparamos la data clave de stats que se muestra en la UI.
          prevProps.product.stats.spread === nextProps.product.stats.spread &&
          prevProps.product.stats.trendClass === nextProps.product.stats.trendClass;
 });

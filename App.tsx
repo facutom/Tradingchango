@@ -582,7 +582,7 @@ const App: React.FC = () => {
         icon = '▲'; 
         isUp = true; 
       } else if (diff < -0.1) { 
-        tc = 'text-green-600'; 
+        tc = 'text-green-700'; 
         icon = '▼'; 
         isDown = true; 
       }

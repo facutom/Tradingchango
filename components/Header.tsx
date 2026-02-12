@@ -119,7 +119,7 @@ const Header: React.FC<HeaderProps> = ({
         <div className="flex gap-2">
           <button 
             onClick={() => setTrendFilter(trendFilter === 'down' ? null : 'down')} 
-            className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-[11px] font-[800] uppercase border transition-all ${trendFilter === 'down' ? 'bg-green-600 text-white border-green-600 shadow-lg shadow-green-600/20' : 'bg-white dark:bg-primary text-green-600 dark:border-[#233138] dark:border-[#233138]'}`}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-[11px] font-[800] uppercase border transition-all ${trendFilter === 'down' ? 'bg-green-700 text-white border-green-700 shadow-lg shadow-green-700/20' : 'bg-white dark:bg-primary text-green-700 dark:border-[#233138] dark:border-[#233138]'}`}
             aria-label="Filtrar por precios que están bajando"
           >
             <i className="fa-solid fa-arrow-trend-down"></i> Precios bajando

@@ -177,7 +177,7 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
           <div className="relative">
             <button 
               onClick={() => setActiveTooltip(activeTooltip === 'leader' ? null : 'leader')}
-              className="text-xs font-bold px-2 py-1 rounded border border-neutral-200 dark:border-neutral-700 text-green-600 cursor-help"
+              className="text-xs font-bold px-2 py-1 rounded border border-neutral-200 dark:border-neutral-700 text-green-700 cursor-help"
             >
               🏆 {loading ? '-' : formatStoreName(leaderStore)} LÍDER
             </button>

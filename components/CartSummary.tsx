@@ -107,8 +107,8 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, benefits, userMembersh
                 {best.name}
               </h2>
               <div className="flex items-baseline gap-1">
-                <span className="text-lg font-black uppercase text-green-600 dark:text-green-400">Ahorrás:</span>
-                <div className="text-lg font-black text-green-600 dark:text-green-400 tracking-tighter font-mono">${format(Math.round(potentialSavings))}</div>
+                <span className="text-lg font-black uppercase text-green-700 dark:text-green-400">Ahorrás:</span>
+                <div className="text-lg font-black text-green-700 dark:text-green-400 tracking-tighter font-mono">${format(Math.round(potentialSavings))}</div>
               </div>
             </div>
 
