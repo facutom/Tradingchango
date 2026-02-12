@@ -25,7 +25,9 @@ export default {
         'chart-green': '#00c853',
         'chart-red': '#ff3b30',
         'bg-card-light': '#f9f9f9',
-        'bg-card-dark': '#1f2c34'
+        'bg-card-dark': '#1f2c34',
+        'secondary': '#f0f0f0',
+        'secondary-dark': '#2d3748'
       }
     }
   },
