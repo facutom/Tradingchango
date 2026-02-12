@@ -193,10 +193,10 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
       </div>
 
       {/* Segunda fila: Botón desplegable */}
-      <div className="px-4 mb-2">
+      <div className="px-4 mb-4">
         <button 
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 bg-transparent border-none cursor-pointer text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400 hover:opacity-70 transition-opacity p-0"
+          className="flex items-center gap-2 bg-transparent border-none cursor-pointer text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400 hover:opacity-70 transition-opacity p-1"
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M3 3v18h18" />
