@@ -85,42 +85,78 @@ interface PriceHistory {
 
 // Calcular variaciÃ³n semanal real desde Supabase
 async function getWeeklyVariationReal(products: Product[]): Promise<number> {
+  if (products.length === 0) return 0;
+  
   try {
     // Obtener fecha de hace 7 dÃ­as
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const dateStr = sevenDaysAgo.toISOString().split('T')[0];
     
-    // Obtener nombres de productos de la categorÃ­a
+    // Obtener nombres Ãºnicos de productos
     const productNames = [...new Set(products.map(p => p.nombre))];
     
-    // Obtener precios actuales (promedio de todos los productos)
-    const currentAvg = products.reduce((sum, p) => sum + getAveragePrice(p), 0) / products.length;
+    if (productNames.length === 0) return 0;
     
-    if (currentAvg === 0) return 0;
-    
-    // Obtener historial de la Ãºltima semana
-    const { data: historyData, error } = await supabase
-      .from('historial_precios')
-      .select('precio_promedio')
-      .eq('fecha', dateStr)
-      .in('nombre_producto', productNames.slice(0, 50)); // Limitar a 50 productos por consulta
-    
-    if (error || !historyData || historyData.length === 0) {
-      // Si no hay datos histÃ³ricos, usar simulaciÃ³n basada en variabilidad actual
-      return calculateSimulatedVariation(products);
+    // Obtener TODOS los precios histÃ³ricos de la semana pasada (sin limite de 50)
+    // Dividir en batches si hay muchos productos
+    const batchSize = 50;
+    const batches = [];
+    for (let i = 0; i < productNames.length; i += batchSize) {
+      batches.push(productNames.slice(i, i + batchSize));
     }
     
-    // Calcular precio promedio histÃ³rico
-    const historicalAvg = historyData.reduce((sum: number, item: any) => sum + item.precio_promedio, 0) / historyData.length;
+    let allHistoryData: any[] = [];
     
-    if (historicalAvg === 0) return 0;
+    for (const batch of batches) {
+      const { data, error } = await supabase
+        .from('historial_precios')
+        .select('nombre_producto, precio_promedio, precio_minimo')
+        .eq('fecha', dateStr)
+        .in('nombre_producto', batch);
+      
+      if (!error && data) {
+        allHistoryData = [...allHistoryData, ...data];
+      }
+    }
     
-    // VariaciÃ³n porcentual
-    return Math.round(((currentAvg - historicalAvg) / historicalAvg) * 1000) / 10;
+    // Si no hay datos histÃ³ricos, retornar 0 (no simular)
+    if (allHistoryData.length === 0) {
+      return 0;
+    }
+    
+    // Calcular variaciÃ³n para CADA producto que tiene datos histÃ³ricos
+    const variations: number[] = [];
+    
+    for (const product of products) {
+      const historicalPrices = allHistoryData.filter(h => h.nombre_producto === product.nombre);
+      
+      if (historicalPrices.length > 0) {
+        // Usar precio_promedio histÃ³rico
+        const historicalAvg = historicalPrices.reduce((sum: number, h: any) => sum + h.precio_promedio, 0) / historicalPrices.length;
+        
+        if (historicalAvg > 0) {
+          const currentPrice = getAveragePrice(product);
+          if (currentPrice > 0) {
+            const variation = ((currentPrice - historicalAvg) / historicalAvg) * 100;
+            variations.push(variation);
+          }
+        }
+      }
+    }
+    
+    // Si ningÃºn producto tiene datos histÃ³ricos coincidentes, retornar 0
+    if (variations.length === 0) {
+      return 0;
+    }
+    
+    // Promediar las variaciones
+    const avgVariation = variations.reduce((sum, v) => sum + v, 0) / variations.length;
+    
+    return Math.round(avgVariation * 10) / 10;
   } catch (error) {
     console.error('Error calculando variaciÃ³n semanal:', error);
-    return calculateSimulatedVariation(products);
+    return 0;
   }
 }
 
