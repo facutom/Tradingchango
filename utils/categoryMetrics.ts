@@ -134,7 +134,10 @@ function calculateSimulatedVariation(products: Product[]): number {
     return ((max - min) / min) * 100;
   }).filter(d => d > 0);
   
-  if (dispersions.length === 0) return 0;
+  if (dispersions.length === 0) {
+    console.log(`[CategoryMetrics] Sin dispersiones vÃ¡lidas para ${products.length} productos`);
+    return 0;
+  }
   
   // Usar la dispersiÃ³n promedio como indicador de volatilidad
   const avgDispersion = dispersions.reduce((a, b) => a + b, 0) / dispersions.length;
@@ -152,8 +155,10 @@ function calculateSimulatedVariation(products: Product[]): number {
   
   // VariaciÃ³n basada en volatilidad (entre -3% y +3%), determinÃ­stica
   const baseVariation = (normalizedHash * 2 - 1) * Math.min(avgDispersion / 10, 3);
+  const result = Math.round(baseVariation * 10) / 10;
   
-  return Math.round(baseVariation * 10) / 10;
+  console.log(`[CategoryMetrics] ${products.length} productos, dispersion: ${avgDispersion.toFixed(2)}, hash: ${hashValue}, normalized: ${normalizedHash.toFixed(3)}, variation: ${result}`);
+  return result;
 }
 
 // Calcular mÃ©tricas para una categorÃ­a
