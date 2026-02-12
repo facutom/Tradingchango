@@ -20,6 +20,12 @@
   <meta http-equiv="Cache-Control" content="public, max-age=3600">
   <meta name="theme-color" content="#0b141a">
   
+  <!-- Preconnect hints -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://idghvkvkfdklvkvkdvkv.supabase.co">
+  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+  
   <!-- SEO Básico -->
   <title>TradingChango | Compará Precios de Supermercados en Argentina</title>
   <meta name="description" content="Compará precios de supermercados en Argentina. Coto, Carrefour, Jumbo, Día y Mas Online. Ahorrá hasta 30% en tu carrito con TradingChango.">
@@ -58,27 +64,35 @@
   <link rel="apple-touch-icon" href="/logo192.png" />
   <link rel="manifest" href="/manifest.json" />
 
-  <!-- Google Fonts: Preconnect and Asynchronous Load -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://idghvkvkfdklvkvkdvkv.supabase.co">
+  <!-- Font Awesome: Cargar de forma asíncrona con delay para no bloquear render -->
+  <script>
+    // Cargar Font Awesome después de que el DOM esté listo, no bloquea el render
+    function loadFontAwesome() {
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+      link.media = 'print';
+      link.onload = function() { this.media = 'all' };
+      document.head.appendChild(link);
+    }
+    // Retrasar carga de Font Awesome 500ms para priorizar contenido visible
+    setTimeout(loadFontAwesome, 500);
+  </script>
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+
+  <!-- Google Fonts: Cargar de forma asíncrona con display swap -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
-
-  <!-- Font Awesome: Preconnect and Asynchronous Load -->
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
-  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
 
   <script type="importmap">
   {
     "imports": {
-      "react": "https://esm.sh/react@19.2.3",
-      "react-dom": "https://esm.sh/react-dom@19.2.3",
-      "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.90.1",
-      "recharts": "https://esm.sh/recharts@3.6.0",
-      "vite": "https://esm.sh/vite@7.3.1",
-      "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@5.1.2"
+      "react": "https://esm.sh/react@19.2.3?bundle",
+      "react-dom": "https://esm.sh/react-dom@19.2.3?bundle",
+      "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.90.1?bundle",
+      "recharts": "https://esm.sh/recharts@3.6.0?bundle",
+      "vite": "https://esm.sh/vite@7.3.1?bundle",
+      "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@5.1.2?bundle"
     }
   }
   </script>

@@ -2,7 +2,6 @@ import React from 'react';
 import { Product } from '../types';
 import ProductListItem from './ProductListItem';
 
-// La interfaz ProductWithStats ya hereda de Product, así que no hay que cambiarla.
 interface ProductWithStats extends Product {
   stats: {
     min: number;
@@ -17,7 +16,7 @@ interface ProductWithStats extends Product {
 interface ProductListProps {
   products: ProductWithStats[];
   onProductClick: (product: Product) => void;
-  onFavoriteToggle: (id: number) => void;
+  onFavoriteToggle?: (id: number) => void;
   isFavorite: (id: number) => boolean;
   isCartView?: boolean;
   quantities?: Record<number, number>;
@@ -40,8 +39,9 @@ const ProductList: React.FC<ProductListProps> = ({
   onTogglePurchased
 }) => {
 
-  // Corregido: La línea está DENTRO del componente y 'p' tiene su tipo.
-  const visibleProducts = products.filter(p => p.visible_web !== false);
+  const visibleProducts = React.useMemo(() => {
+    return products.filter(p => p.visible_web !== false);
+  }, [products]);
 
   if (visibleProducts.length === 0 && searchTerm) {
     return (
@@ -68,7 +68,10 @@ const ProductList: React.FC<ProductListProps> = ({
   }
 
   return (
-    <div className="divide-neutral-100 dark:divide-neutral-900">
+    <div 
+      className="divide-neutral-100 dark:divide-neutral-900"
+      style={{ contentVisibility: 'auto', containIntrinsicSize: '1px 1000px' }}
+    >
       {visibleProducts.map((p, index) => (
         <ProductListItem
           key={p.id}
@@ -80,7 +83,7 @@ const ProductList: React.FC<ProductListProps> = ({
           quantity={quantities ? (quantities[p.id] || 1) : 1}
           isCartView={isCartView}
           onProductClick={onProductClick}
-          onFavoriteToggle={onFavoriteToggle}
+          onFavoriteToggle={onFavoriteToggle || (() => {})}
           onTogglePurchased={onTogglePurchased}
           onUpdateQuantity={onUpdateQuantity}
         />
