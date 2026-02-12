@@ -25,7 +25,7 @@ export const categorySEOConfig: Record<string, CategorySEOData> = {
     ],
     icon: '',
     dropdownTitle: 'Carnes',
-    dropdownDescription: 'Encontrá el mejor precio de carne hoy analizando las ofertas de las principales cadenas de supermercados como Coto, Carrefour, Jumbo y Disco. Sabemos que el asado de los domingos y las milanesas de la semana son sagrados, por eso nuestro sistema releva diariamente los precios de la canasta cárnica para que no pagues de más.'
+    dropdownDescription: 'En esta sección podés comparar precios de carnes en los principales supermercados de Argentina. TradingChango reúne valores actualizados de cortes vacunos, pescado, pollo y cerdo, permitiéndote ver dónde conviene comprar según el precio por kilo y las promociones disponibles. Además, podés analizar la evolución histórica de cada producto para detectar aumentos, bajas y oportunidades reales de ahorro. Si buscás qué supermercado tiene hoy la carne más barata, acá encontrás la información organizada y fácil de consultar.'
   },
   verdu: {
     title: 'Verduras y Frutas - Compará Precios en Argentina',
@@ -40,7 +40,7 @@ export const categorySEOConfig: Record<string, CategorySEOData> = {
     ],
     icon: '',
     dropdownTitle: 'Verdulería',
-    dropdownDescription: 'Comprá verduras y frutas frescas al mejor precio en Argentina. Encontrá banana, manzana, naranja, limón, tomate, lechuga, zapallo y cebolla al costo más bajo. Compará precios de frutas y verduras de estación en todos los supermercados con actualización diaria.'
+    dropdownDescription: 'Los precios de frutas y verduras cambian todos los días y varían mucho entre cadenas. En Verdulería podés comparar rápidamente cuánto cuesta cada producto según el supermercado y revisar su comportamiento a lo largo del tiempo. TradingChango transforma esa dispersión en datos claros para ayudarte a elegir mejor dónde comprar y aprovechar ofertas genuinas. Ideal para identificar qué verdura o fruta conviene en cada momento.'
   },
   bebidas: {
     title: 'Bebidas - Compará Precios de Gaseosas, Aguas y Más',
@@ -55,7 +55,7 @@ export const categorySEOConfig: Record<string, CategorySEOData> = {
     ],
     icon: '',
     dropdownTitle: 'Bebidas',
-    dropdownDescription: 'Comprá bebidas al mejor precio en Argentina. Encontrá gaseosas, agua mineral, jugos, vinos y cervezas al costo más bajo. Compará ofertas de las mejores marcas en Carrefour, Jumbo, Coto y Disco con precios actualizados semanalmente.'
+    dropdownDescription: 'Explorá y compará precios de gaseosas, aguas, jugos, cervezas y otras bebidas. TradingChango recopila los valores publicados por cada supermercado y los organiza para que encuentres rápidamente la alternativa más económica. El seguimiento histórico también te permite reconocer cuándo aparece una oferta real.'
   },
   lacteos: {
     title: 'Lácteos - Compará Precios de Leche, Queso y Yogurt',
@@ -70,7 +70,7 @@ export const categorySEOConfig: Record<string, CategorySEOData> = {
     ],
     icon: '',
     dropdownTitle: 'Lácteos',
-    dropdownDescription: 'Encontrá lácteos al mejor precio en Argentina. Comprá leche, queso, yogurt y manteca al costo más bajo. Compará precios de todas las marcas en Carrefour, Jumbo, Coto y Supermercados Día con ofertas semanales actualizadas.'
+    dropdownDescription: 'Compará precios de leche, yogures, quesos y otros lácteos entre supermercados de Argentina. La plataforma te muestra el precio actual, descuentos vigentes y el historial para entender si se trata de una promoción real o de una variación temporal. Con información centralizada y objetiva, es más fácil decidir dónde comprar lácteos al mejor precio.'
   },
   almacen: {
     title: 'Almacén - Compará Precios de Aceites, Arroz y Fideos',
@@ -85,7 +85,7 @@ export const categorySEOConfig: Record<string, CategorySEOData> = {
     ],
     icon: '',
     dropdownTitle: 'Almacén',
-    dropdownDescription: 'Comprá productos de almacén al mejor precio en Argentina. Encontrá aceite, arroz, fideos, conservas y más al costo más bajo. Compará precios de aceites, legumbres y conservas en todos los supermercados con actualización diaria.'
+    dropdownDescription: 'Los productos de almacén son los que más influyen en el gasto mensual. En esta categoría podés comparar precios de fideos, arroz, aceites, conservas y mucho más, viendo en qué supermercado conviene comprar hoy. Además del precio actual, tenés acceso al historial para evaluar tendencias y anticipar subas. Información concreta para decisiones de compra inteligentes.'
   },
   limpieza: {
     title: 'Productos de Limpieza - Compará Precios en Argentina',
@@ -100,7 +100,7 @@ export const categorySEOConfig: Record<string, CategorySEOData> = {
     ],
     icon: '',
     dropdownTitle: 'Limpieza',
-    dropdownDescription: 'Encontrá productos de limpieza al mejor precio en Argentina. Comprá detergente, lavandina, jabón y artículos de limpieza al costo más bajo. Compará ofertas de todas las marcas en Carrefour, Jumbo, Coto y Supermercados Día.'
+    dropdownDescription: 'Detergentes, lavandinas, desinfectantes y productos para el hogar presentan grandes diferencias de precio según la cadena. TradingChango centraliza la información para que puedas comparar de forma rápida, identificar promociones y evaluar el historial de cada artículo. Una herramienta clave para reducir el gasto cotidiano.'
   },
   perfumeria: {
     title: 'Perfumería - Compará Precios de Shampoo y Desodorante',
@@ -115,7 +115,7 @@ export const categorySEOConfig: Record<string, CategorySEOData> = {
     ],
     icon: '',
     dropdownTitle: 'Perfumería',
-    dropdownDescription: 'Comprá perfumería al mejor precio en Argentina. Encontrá shampoo, desodorante, cremas y perfumes al costo más bajo. Compará ofertas de cuidado personal de todas las marcas en Carrefour, Jumbo, Coto y Disco con precios actualizados.'
+    dropdownDescription: 'Los artículos de cuidado personal suelen tener promociones frecuentes, pero no siempre es fácil saber si el descuento es conveniente. En Perfumería podés comparar precios actuales entre supermercados y revisar la evolución del producto en el tiempo. Así distinguís rebajas auténticas de simples cambios de referencia.'
   },
   mascotas: {
     title: 'Mascotas - Comida para Perros y Gatos al Mejor Precio',
@@ -130,7 +130,7 @@ export const categorySEOConfig: Record<string, CategorySEOData> = {
     ],
     icon: '',
     dropdownTitle: 'Mascotas',
-    dropdownDescription: 'Cuidá a tu mascota al mejor precio en Argentina. Encontrá comida para perros y gatos, balanceado, snacks y accesorios al costo más bajo. Compará ofertas de Pedigree, Purina, Whiskas y las mejores marcas en todos los supermercados.'
+    dropdownDescription: 'Encontrá el alimento y los productos para mascotas al mejor precio. TradingChango te permite comparar entre distintas cadenas, ver promociones activas y seguir la evolución del valor de cada artículo en el tiempo. Si querés ahorrar en balanceado, piedras sanitarias o accesorios, esta sección te ayuda a detectar rápidamente la opción más conveniente.'
   },
   varios: {
     title: 'Varios - Ofertas en Productos Variados',
@@ -144,7 +144,7 @@ export const categorySEOConfig: Record<string, CategorySEOData> = {
     ],
     icon: '',
     dropdownTitle: 'Varios',
-    dropdownDescription: 'Encontrá productos variados al mejor precio en Argentina. Comprá electrónica, artículos para el hogar, bazar y cocina al costo más bajo. Compará ofertas de supermercado en un solo lugar con precios de todos los principales comercios.'
+    dropdownDescription: 'Los productos de almacén son los que más influyen en el gasto mensual. En esta categoría podés comparar precios de fideos, arroz, aceites, conservas y mucho más, viendo en qué supermercado conviene comprar hoy. Además del precio actual, tenés acceso al historial para evaluar tendencias y anticipar subas. Información concreta para decisiones de compra inteligentes.'
   }
 };
 

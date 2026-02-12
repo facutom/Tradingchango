@@ -23,7 +23,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ cartCount }) => {
 
   const variosCategories = [
     { label: 'Bebidas', path: '/bebidas' },
-    { label: 'Lacteos', path: '/lacteos' },
+    { label: 'Lácteos', path: '/lacteos' },
     { label: 'Almacén', path: '/almacen' },
     { label: 'Limpieza', path: '/limpieza' },
     { label: 'Perfumería', path: '/perfumeria' },
