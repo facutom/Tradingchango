@@ -38,7 +38,20 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
   const [isOpen, setIsOpen] = useState(false);
   const [metrics, setMetrics] = useState<CategoryMetrics | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
   const loadedRef = useRef(false);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+
+  // Cerrar tooltip al hacer click fuera
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (tooltipRef.current && !tooltipRef.current.contains(e.target as Node)) {
+        setActiveTooltip(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
   
   // Generar clave única para esta categoría
   const cacheKey = `${CACHE_KEY_PREFIX}${categoryName.toLowerCase()}`;
@@ -122,17 +135,58 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
           <span>{categoryName}</span>
         </h1>
 
-        {/* Rectángulos con métricas calculadas */}
-        <div className="flex gap-1">
-          <span className="text-xs font-medium px-2 py-1 rounded border border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400">
-            {loading ? '...' : (weeklyVariation >= 0 ? '↑' : '↓')} {loading ? '-' : Math.abs(weeklyVariation)}% SEMANAL
-          </span>
-          <span className="text-xs font-medium px-2 py-1 rounded border border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400">
-            ◩ {loading ? '-' : dispersion}% DISPERSIÓN
-          </span>
-          <span className="text-xs font-medium px-2 py-1 rounded border border-neutral-200 dark:border-neutral-700 text-green-600">
-            ★ {loading ? '-' : formatStoreName(leaderStore)} LÍDER
-          </span>
+        {/* Rectángulos con métricas calculadas - con tooltips por click */}
+        <div className="flex gap-1 relative" ref={tooltipRef}>
+          {/* % SEMANAL */}
+          <div className="relative">
+            <button 
+              onClick={() => setActiveTooltip(activeTooltip === 'weekly' ? null : 'weekly')}
+              className="text-xs font-medium px-2 py-1 rounded border border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 cursor-help"
+            >
+              {loading ? '...' : (weeklyVariation >= 0 ? '↑' : '↓')} {loading ? '-' : Math.abs(weeklyVariation)}% SEMANAL
+            </button>
+            {/* Tooltip */}
+            {activeTooltip === 'weekly' && (
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs rounded shadow-lg z-50 text-center">
+                Variación promedio de precios de la categoría respecto a la semana anterior
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-neutral-900 dark:border-t-white"></div>
+              </div>
+            )}
+          </div>
+          
+          {/* % DISPERSIÓN */}
+          <div className="relative">
+            <button 
+              onClick={() => setActiveTooltip(activeTooltip === 'dispersion' ? null : 'dispersion')}
+              className="text-xs font-medium px-2 py-1 rounded border border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 cursor-help"
+            >
+              ◩ {loading ? '-' : dispersion}% DISPERSIÓN
+            </button>
+            {/* Tooltip */}
+            {activeTooltip === 'dispersion' && (
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs rounded shadow-lg z-50 text-center">
+                Diferencia porcentual entre el precio más alto y más bajo de la categoría
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-neutral-900 dark:border-t-white"></div>
+              </div>
+            )}
+          </div>
+          
+          {/* LÍDER */}
+          <div className="relative">
+            <button 
+              onClick={() => setActiveTooltip(activeTooltip === 'leader' ? null : 'leader')}
+              className="text-xs font-medium px-2 py-1 rounded border border-neutral-200 dark:border-neutral-700 text-green-600 cursor-help"
+            >
+              ★ {loading ? '-' : formatStoreName(leaderStore)} LÍDER
+            </button>
+            {/* Tooltip */}
+            {activeTooltip === 'leader' && (
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs rounded shadow-lg z-50 text-center">
+                Supermercado con el precio promedio más bajo para esta categoría
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-neutral-900 dark:border-t-white"></div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
