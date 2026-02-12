@@ -126,39 +126,41 @@ async function getWeeklyVariationReal(products: Product[]): Promise<number> {
 
 // SimulaciÃ³n basada en variabilidad de precios actuales (determinÃ­stica)
 function calculateSimulatedVariation(products: Product[]): number {
+  if (products.length === 0) return 0;
+  
   // Calcular la volatilidad basada en la dispersiÃ³n de precios actuales
-  const dispersions = products.map(p => {
+  let totalDispersion = 0;
+  let count = 0;
+  
+  for (const p of products) {
     const min = getMinPrice(p);
     const max = getMaxPrice(p);
-    if (min === 0) return 0;
-    return ((max - min) / min) * 100;
-  }).filter(d => d > 0);
-  
-  if (dispersions.length === 0) {
-    console.log(`[CategoryMetrics] Sin dispersiones vÃ¡lidas para ${products.length} productos`);
-    return 0;
+    if (min > 0) {
+      const dispersion = ((max - min) / min) * 100;
+      totalDispersion += dispersion;
+      count++;
+    }
   }
   
-  // Usar la dispersiÃ³n promedio como indicador de volatilidad
-  const avgDispersion = dispersions.reduce((a, b) => a + b, 0) / dispersions.length;
+  if (count === 0) return 0;
   
-  // Generar hash determinÃ­stico basado en los IDs y nombres de productos
-  // Usar un hash simple que se normalice a un rango 0-1
-  const hashValue = products.reduce((hash, p) => {
-    const id = p.id || p.nombre;
-    const charSum = id.toString().split('').reduce((h, c) => h + c.charCodeAt(0), 0);
-    return (hash + charSum * 31) | 0;
-  }, 0);
+  const avgDispersion = totalDispersion / count;
   
-  // Normalizar hash a rango 0-1 usando mÃ³dulo
+  // Generar hash determinÃ­stico basado en los IDs de productos
+  let hashValue = 0;
+  for (let i = 0; i < products.length; i++) {
+    const id = products[i].id || i;
+    hashValue = ((hashValue << 5) - hashValue + id) | 0;
+  }
+  
+  // Normalizar hash a rango 0-1
   const normalizedHash = Math.abs(hashValue % 1000) / 1000;
   
-  // VariaciÃ³n basada en volatilidad (entre -3% y +3%), determinÃ­stica
-  const baseVariation = (normalizedHash * 2 - 1) * Math.min(avgDispersion / 10, 3);
-  const result = Math.round(baseVariation * 10) / 10;
+  // VariaciÃ³n basada en volatilidad (entre -3% y +3%)
+  const factor = Math.min(avgDispersion / 10, 3);
+  const baseVariation = (normalizedHash * 2 - 1) * factor;
   
-  console.log(`[CategoryMetrics] ${products.length} productos, dispersion: ${avgDispersion.toFixed(2)}, hash: ${hashValue}, normalized: ${normalizedHash.toFixed(3)}, variation: ${result}`);
-  return result;
+  return Math.round(baseVariation * 10) / 10;
 }
 
 // Calcular mÃ©tricas para una categorÃ­a

@@ -31,14 +31,12 @@ const getCachedMetrics = (cacheKey: string, productsHash: number): CategoryMetri
           parsed.data && 
           parsed.data.dispersion <= 150 &&
           parsed.productsHash === productsHash) {
-        console.log(`[CategorySEO] Usando cache para ${cacheKey}, hash: ${productsHash}`);
         return parsed.data;
       }
     }
   } catch (e) {
-    return null;
+    // Ignorar errores de localStorage
   }
-  console.log(`[CategorySEO] Cache no válido para ${cacheKey}, hash actual: ${productsHash}`);
   return null;
 };
 
@@ -66,14 +64,11 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
 
   // Generar un hash determinístico de los productos para detectar cambios
   const productsHash = useMemo(() => {
-    const hash = products.reduce((h, p) => {
+    return products.reduce((h, p) => {
       const id = p.id || p.nombre;
       const charSum = id.toString().split('').reduce((h2, c) => h2 + c.charCodeAt(0), 0);
       return (h + charSum * 31) | 0;
     }, 0);
-    // Log para debuggear diferencias entre dispositivos
-    console.log(`[CategorySEO] ${categoryName}: ${products.length} productos, hash: ${hash}`);
-    return hash;
   }, [products, categoryName]);
 
   // Actualizar métricas cuando cambia la categoría o productos
