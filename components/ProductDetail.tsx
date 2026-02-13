@@ -384,13 +384,13 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         <div className="p-4 pb-0 md:p-5 md:pb-0 flex flex-col">
           {/* Header Producto */}
           <div className="flex gap-4 items-start mb-4">
-            <div className="w-24 h-24 md:w-32 md:h-32 bg-white rounded-xl border border-neutral-100 shadow-sm flex items-center justify-center p-2 shrink-0">
+            <div className="w-32 h-32 md:w-40 md:h-40 bg-white rounded-xl border border-neutral-100 shadow-sm flex items-center justify-center p-2 shrink-0">
               <img
-              src={product.imagen_url ? `${product.imagen_url}?width=120&quality=75&format=webp` : 'https://via.placeholder.com/120?text=N/A'}
+              src={product.imagen_url ? `${product.imagen_url}?width=160&quality=75&format=webp` : 'https://via.placeholder.com/160?text=N/A'}
               alt={product.nombre}
               className="w-full h-full object-contain"
-              width="120"
-              height="120"
+              width="160"
+              height="160"
               fetchPriority="high"
             />
             </div>
@@ -447,10 +447,17 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
             </div>
           </div>
 
-          <hr className="w-full border-neutral-100 dark:border-[#233138] mb-4" />
+          {/* Descripción SEO */}
+          {product.seo_description && (
+            <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed font-medium mb-3 text-justify">
+              {product.seo_description}
+            </p>
+          )}
+
+          <hr className="w-full border-neutral-100 dark:border-[#233138] mb-3" />
 
           {/* Filtros días */}
-          <div className="w-full flex justify-center gap-1 mb-3 overflow-x-auto no-scrollbar pb-1">
+          <div className="w-full flex justify-center gap-1 mb-2 overflow-x-auto no-scrollbar pb-1">
             {[7, 15, 30, 90, 180, 365].map((d) => (
               <button 
                 key={d} 

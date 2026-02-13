@@ -42,6 +42,7 @@ export interface Product {
   outliers?: string | object;
   ticker?: string;
   visible_web?: boolean;
+  seo_description?: string;
 }
 
 export interface CartItem extends Product {
