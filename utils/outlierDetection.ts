@@ -1,175 +1,129 @@
-/**
- * Utilidad para calcular y filtrar outliers en precios de supermercados
- */
+import { Product } from '../types';
 
-/**
- * Detecta outliers en una lista de precios usando el método IQR (Interquartile Range)
- * Un precio es outlier si está fuera del rango [Q1 - 1.5*IQR, Q3 + 1.5*IQR]
- */
-export const detectOutliersIQR = (prices: number[]): Set<number> => {
-  if (prices.length < 4) return new Set();
+const STORES = [
+  { name: "COTO", key: 'p_coto', url: 'url_coto' },
+  { name: "CARREFOUR", key: 'p_carrefour', url: 'url_carrefour' },
+  { name: "DIA", key: 'p_dia', url: 'url_dia' },
+  { name: "JUMBO", key: 'p_jumbo', url: 'url_jumbo' },
+  { name: "MAS ONLINE", key: 'p_masonline', url: 'url_masonline' }
+] as const;
 
+// Función para calcular la mediana de un array de precios
+const calculateMedian = (prices: number[]): number => {
+  if (prices.length === 0) return 0;
   const sorted = [...prices].sort((a, b) => a - b);
-  const q1 = sorted[Math.floor(sorted.length / 4)];
-  const q3 = sorted[Math.floor(sorted.length * 3 / 4)];
-  const iqr = q3 - q1;
-  const lowerBound = q1 - 1.5 * iqr;
-  const upperBound = q3 + 1.5 * iqr;
-
-  const outliers = new Set<number>();
-  prices.forEach((price, index) => {
-    if (price < lowerBound || price > upperBound) {
-      outliers.add(price);
-    }
-  });
-
-  return outliers;
-};
-
-/**
- * Detecta outliers usando un umbral de desviación de la mediana
- * Un precio es outlier si está a más del threshold% de la mediana
- * @param prices - Array de precios
- * @param threshold - Porcentaje umbral (default 60%, es decir, 0.6)
- * @returns Set de precios que son outliers
- */
-export const detectOutliersByMedian = (prices: number[], threshold: number = 0.6): Set<number> => {
-  if (prices.length < 3) return new Set();
-
-  const sorted = [...prices].sort((a, b) => a - b);
-  const median = sorted[Math.floor(sorted.length / 2)];
-
-  if (median === 0) return new Set();
-
-  const outliers = new Set<number>();
-  prices.forEach((price) => {
-    const deviation = Math.abs(price - median) / median;
-    if (deviation > threshold) {
-      outliers.add(price);
-    }
-  });
-
-  return outliers;
-};
-
-/**
- * Interface para representar un precio con metadatos
- */
-export interface PriceWithMeta {
-  key: string;
-  value: number;
-  isOutlier: boolean;
-}
-
-/**
- * Filtra outliers de un array de precios
- * @param prices - Array de precios con metadatos
- * @param threshold - Porcentaje umbral para detectar outliers
- * @returns Array de precios sin outliers
- */
-export const filterOutliersFromPrices = (
-  prices: PriceWithMeta[],
-  threshold: number = 0.5
-): PriceWithMeta[] => {
-  if (prices.length < 3) return prices;
-
-  const validPrices = prices.filter(p => p.value > 0).map(p => p.value);
-  const outlierValues = detectOutliersByMedian(validPrices, threshold);
-
-  return prices.map(p => ({
-    ...p,
-    isOutlier: p.value > 0 && outlierValues.has(p.value)
-  }));
-};
-
-/**
- * Obtiene los keys de precio (p_*) y precio regular (pr_*) de un producto
- */
-export const getPriceKeys = (): { priceKey: string; regularPriceKey: string }[] => [
-  { priceKey: 'p_coto', regularPriceKey: 'pr_coto' },
-  { priceKey: 'p_carrefour', regularPriceKey: 'pr_carrefour' },
-  { priceKey: 'p_dia', regularPriceKey: 'pr_dia' },
-  { priceKey: 'p_jumbo', regularPriceKey: 'pr_jumbo' },
-  { priceKey: 'p_masonline', regularPriceKey: 'pr_masonline' },
-  { priceKey: 'p_disco', regularPriceKey: 'pr_disco' },
-  { priceKey: 'p_vea', regularPriceKey: 'pr_vea' },
-  { priceKey: 'p_laanonima', regularPriceKey: 'pr_laanonima' },
-];
-
-/**
- * Calcula si un precio es outlier comparando con las medianas de p_ y pr_ por separado
- * @param product - El producto con todos los precios
- * @param priceKey - La key del precio a verificar (ej: 'p_coto')
- * @returns boolean indicando si el precio es outlier
- */
-export const isPriceOutlier = (product: any, priceKey: string): boolean => {
-  const priceKeys = getPriceKeys();
-  
-  // Recopilar todos los precios p_
-  const pPrices: { key: string; value: number }[] = [];
-  // Recopilar todos los precios pr_
-  const prPrices: { key: string; value: number }[] = [];
-
-  priceKeys.forEach(({ priceKey: pKey, regularPriceKey: prKey }) => {
-    const pValue = product[pKey];
-    const prValue = product[prKey];
-    
-    if (typeof pValue === 'number' && pValue > 0) {
-      pPrices.push({ key: pKey, value: pValue });
-    }
-    if (typeof prValue === 'number' && prValue > 0) {
-      prPrices.push({ key: prKey, value: prValue });
-    }
-  });
-
-  // Detectar outliers en p_
-  const pOutlierValues = detectOutliersByMedian(pPrices.map(p => p.value), 0.5);
-  // Detectar outliers en pr_
-  const prOutlierValues = detectOutliersByMedian(prPrices.map(p => p.value), 0.5);
-
-  // Verificar si el precio dado es outlier en p_
-  const currentPPrice = product[priceKey];
-  if (typeof currentPPrice === 'number' && currentPPrice > 0) {
-    if (pOutlierValues.has(currentPPrice)) return true;
+  const mid = Math.floor(sorted.length / 2);
+  if (sorted.length % 2 === 0) {
+    return (sorted[mid - 1] + sorted[mid]) / 2;
   }
-
-  // Verificar si el precio regular correspondiente es outlier
-  const regularPriceKey = priceKeys.find(pk => pk.priceKey === priceKey)?.regularPriceKey;
-  if (regularPriceKey) {
-    const currentPrPrice = product[regularPriceKey];
-    if (typeof currentPrPrice === 'number' && currentPrPrice > 0) {
-      if (prOutlierValues.has(currentPrPrice)) return true;
-    }
-  }
-
-  return false;
+  return sorted[mid];
 };
 
-/**
- * Filtra un producto removiendo supermercados que son outliers
- * @param product - El producto original
- * @returns Objeto con el producto filtrado y los outliers detectados
- */
-export const filterProductOutliers = (product: any) => {
-  const priceKeys = getPriceKeys();
-  
-  const outliers: string[] = [];
-  const validPrices: { key: string; value: number }[] = [];
+// Procesar un solo producto para detectar outliers
+const processProductOutlier = (product: Product): string => {
+  const p_prices: number[] = [];
+  const pr_prices: number[] = [];
 
-  priceKeys.forEach(({ priceKey }) => {
-    const price = product[priceKey];
-    if (typeof price === 'number' && price > 0) {
-      if (isPriceOutlier(product, priceKey)) {
-        outliers.push(priceKey);
-      } else {
-        validPrices.push({ key: priceKey, value: price });
+  STORES.forEach((store) => {
+    const p_key = store.key as keyof Product;
+    const pr_key = `pr_${store.key.split('_')[1]}` as keyof Product;
+
+    const p_price = product[p_key] as number;
+    if (p_price > 0) {
+      p_prices.push(p_price);
+    }
+
+    const pr_price = product[pr_key] as number;
+    if (pr_price > 0) {
+      pr_prices.push(pr_price);
+    }
+  });
+
+  const p_median = calculateMedian(p_prices);
+  const pr_median = calculateMedian(pr_prices);
+
+  const outliers: { [key: string]: boolean } = {};
+
+  STORES.forEach((store) => {
+    const storeKey = store.name.toLowerCase().replace(' ', '');
+    const p_key = store.key as keyof Product;
+    const pr_key = `pr_${store.key.split('_')[1]}` as keyof Product;
+
+    const p_price = product[p_key] as number;
+    if (p_median > 0 && p_price > 0) {
+      const p_deviation = Math.abs((p_price - p_median) / p_median);
+      if (p_deviation > 0.5) {
+        outliers[storeKey] = true;
+      }
+    }
+
+    const pr_price = product[pr_key] as number;
+    if (pr_median > 0 && pr_price > 0) {
+      const pr_deviation = Math.abs((pr_price - pr_median) / pr_median);
+      if (pr_deviation > 0.5) {
+        outliers[storeKey] = true;
       }
     }
   });
 
-  return {
-    product: { ...product },
-    outliers,
-    validPrices
-  };
+  return JSON.stringify(outliers);
 };
+
+// Procesar productos en batches para no bloquear el hilo principal
+export const calculateOutliers = async (products: Product[], batchSize: number = 50): Promise<Product[]> => {
+  return new Promise((resolve) => {
+    const results: Product[] = [];
+    let index = 0;
+
+    const processBatch = () => {
+      const end = Math.min(index + batchSize, products.length);
+
+      for (let i = index; i < end; i++) {
+        results.push({
+          ...products[i],
+          outliers: processProductOutlier(products[i]),
+        });
+      }
+
+      index = end;
+
+      if (index < products.length) {
+        // Usar setTimeout para liberar el hilo principal
+        setTimeout(processBatch, 0);
+      } else {
+        resolve(results);
+      }
+    };
+
+    processBatch();
+  });
+};
+
+// Función para verificar si un precio de un producto es outlier
+const isPriceOutlier = (product: Product, storeKey: string): boolean => {
+  const prices: number[] = [];
+  const price = product[storeKey as keyof Product] as number;
+  
+  if (price === 0) return false;
+  
+  // Recopilar precios de todas las tiendas
+  STORES.forEach(store => {
+    const p = product[store.key as keyof Product] as number;
+    if (p > 0) prices.push(p);
+  });
+  
+  if (prices.length === 0) return false;
+  const median = calculateMedian(prices);
+  if (median === 0) return false;
+  const deviation = Math.abs((price - median) / median);
+  return deviation > 0.5;
+};
+
+// Función para detectar outliers en un array de precios
+const detectOutliersByMedian = (prices: number[]): number[] => {
+  if (prices.length === 0) return [];
+  const median = calculateMedian(prices);
+  return prices.filter(price => isPriceOutlier({} as Product, '') && price > 0);
+};
+
+export { isPriceOutlier, detectOutliersByMedian, calculateMedian };

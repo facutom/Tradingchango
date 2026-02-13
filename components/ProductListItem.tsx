@@ -207,14 +207,11 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
 };
 
 const MemoizedProductListItem = memo(ProductListItem, (prevProps, nextProps) => {
+  // Comparación rápida de IDs y estados primitivos
   return prevProps.product.id === nextProps.product.id &&
-         prevProps.index === nextProps.index &&
          prevProps.isFavorite === nextProps.isFavorite &&
          prevProps.isPurchased === nextProps.isPurchased &&
-         prevProps.quantity === nextProps.quantity &&
-         prevProps.isCartView === nextProps.isCartView &&
-         prevProps.product.stats.spread === nextProps.product.stats.spread &&
-         prevProps.product.stats.trendClass === nextProps.product.stats.trendClass;
+         prevProps.quantity === nextProps.quantity;
 });
 
 export default MemoizedProductListItem;

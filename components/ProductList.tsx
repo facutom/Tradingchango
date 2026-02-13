@@ -1,6 +1,7 @@
 import React from 'react';
 import { Product } from '../types';
 import ProductListItem from './ProductListItem';
+import { memo } from 'react';
 
 interface ProductWithStats extends Product {
   stats: {
@@ -92,4 +93,10 @@ const ProductList: React.FC<ProductListProps> = ({
   );
 };
 
-export default React.memo(ProductList);
+export default memo(ProductList, (prevProps, nextProps) => {
+  // Comparación rápida para evitar re-renders innecesarios
+  return prevProps.products === nextProps.products &&
+         prevProps.searchTerm === nextProps.searchTerm &&
+         prevProps.isCartView === nextProps.isCartView &&
+         prevProps.purchasedItems?.size === nextProps.purchasedItems?.size;
+});
