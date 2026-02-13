@@ -659,7 +659,7 @@ const App: React.FC = () => {
       
       return { ...p, stats: getStats(prices, h7_price), prices };
     })
-    .filter(p => p.prices.filter((price: number) => price > 0).length >= 2);
+    .filter(p => p.prices.filter((price: number) => price > 0).length >= 1);
 
     if (currentPath === '/carnes') result = result.filter(p => normalizeText(p.categoria || '').includes('carne'));
     else if (currentPath === '/verdu') result = result.filter(p => normalizeText(p.categoria || '').includes('verdu') || normalizeText(p.categoria || '').includes('fruta'));
@@ -750,7 +750,7 @@ const App: React.FC = () => {
       
       return { ...p, stats: getStats(prices, h7_price), prices };
     })
-    .filter(p => p.prices.filter((price: number) => price > 0).length >= 2);
+    .filter(p => p.prices.filter((price: number) => price > 0).length >= 1);
 
     // Solo filtrar por categoría, sin búsqueda ni tendencia
     if (currentPath === '/carnes') result = result.filter(p => normalizeText(p.categoria || '').includes('carne'));
