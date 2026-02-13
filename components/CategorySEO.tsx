@@ -142,8 +142,8 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
   const categoryImage = useMemo(() => {
     const normalizedName = categoryName.toLowerCase().trim();
     const images: Record<string, string> = {
-      carnes: 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?q=80&w=800&auto=format&fit=crop',
-      carne: 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?q=80&w=800&auto=format&fit=crop',
+      carnes: 'https://uginrayldvkhgodvfhta.supabase.co/storage/v1/object/public/Productos/1.webp',
+      carne: 'https://uginrayldvkhgodvfhta.supabase.co/storage/v1/object/public/Productos/1.webp',
       verdu: 'https://images.unsplash.com/photo-1610348725531-843dff563e2c?q=80&w=800&auto=format&fit=crop',
       verdulería: 'https://images.unsplash.com/photo-1610348725531-843dff563e2c?q=80&w=800&auto=format&fit=crop',
       verdura: 'https://images.unsplash.com/photo-1610348725531-843dff563e2c?q=80&w=800&auto=format&fit=crop',
