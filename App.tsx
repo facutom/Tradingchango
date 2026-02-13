@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense, memo, useRef } from 'react';
 import type { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
-import { supabase, getProducts, getPriceHistory, getProfile, getConfig, getBenefits, getSavedCartData, saveCartData } from './services/supabase';
+import { supabase, getProducts, getPriceHistory, getProfile, getConfig, getBenefits, getSavedCartData, saveCartData, getProductHistoryByEan } from './services/supabase';
 import { Product, PriceHistory, Profile, TabType, ProductStats, Benefit, CartItem } from './types';
 import Header from './components/Header';
 import ProductList from './components/ProductList';
@@ -62,8 +62,7 @@ const descriptions: { [key: string]: string } = {
   '/almacen': 'Los mejores precios en productos de Almacén. Compará y ahorrá en fideos, arroz, aceite y más.',
   '/limpieza': 'Encontrá ofertas en productos de Limpieza para el hogar. Compará precios y mantené tu casa impecable por menos.',
   '/perfumeria': 'Compará precios de productos de Perfumería y cuidado personal. Ahorrá en shampoo, jabón, desodorantes y más.',
-  '/mascotas': 'Ahorrá en alimento y productos para tu Mascota. Compará precios y encontrá las mejores ofertas.',
-  '/varios': 'Descubrí ofertas en una variedad de productos misceláneos de supermercado.'
+  '/mascotas': 'Ahorrá en alimento y productos para tu Mascota. Compará precios y encontrá las mejores ofertas.'
 };
 
 const calculateOutliers = (products: Product[]): Product[] => {
@@ -636,7 +635,12 @@ const App: React.FC = () => {
         return 0;
       });
 
-      const productHistory = history.filter(h => h.nombre_producto === p.nombre);
+      const productHistory = history.filter(h => {
+        if (p.ean && Array.isArray(p.ean) && p.ean.length > 0) {
+          return p.ean.includes(h.ean || '');
+        }
+        return h.nombre_producto === p.nombre;
+      });
       let h7_price = 0;
 
       // Si hay historial con al menos 2 registros en fechas diferentes, usamos el precio más antiguo
@@ -669,13 +673,6 @@ const App: React.FC = () => {
     else if (currentPath === '/limpieza') result = result.filter(p => normalizeText(p.categoria || '').includes('limpieza'));
     else if (currentPath === '/perfumeria') result = result.filter(p => normalizeText(p.categoria || '').includes('perfumeria'));
     else if (currentPath === '/mascotas') result = result.filter(p => normalizeText(p.categoria || '').includes('mascota'));
-    else if (currentPath === '/varios') {
-      const excludedCategories = ['carne', 'verdu', 'fruta', 'bebida', 'lacteo', 'almacen', 'limpieza', 'perfumeria', 'mascota'];
-      result = result.filter(p => {
-        const cat = normalizeText(p.categoria || '');
-        return !excludedCategories.some(excluded => cat.includes(excluded));
-      });
-    }
 
     // --- FILTRO DE BÚSQUEDA OPTIMIZADO ---
     if (searchTerm) {
@@ -733,7 +730,16 @@ const App: React.FC = () => {
         return 0;
       });
 
-      const productHistory = history.filter(h => h.nombre_producto === p.nombre);
+      const productHistory = history.filter(h => {
+        // Buscar por EAN primero
+        if (p.ean && Array.isArray(p.ean) && p.ean.length > 0) {
+          const hasEanMatch = p.ean.includes(h.ean || '');
+          if (hasEanMatch) return true;
+        }
+        // Fallback: comparar nombres normalizados (minúsculas, sin acentos)
+        const normalize = (str: string) => str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        return normalize(h.nombre_producto) === normalize(p.nombre);
+      });
       let h7_price = 0;
 
       if (productHistory.length > 0) {
@@ -761,13 +767,6 @@ const App: React.FC = () => {
     else if (currentPath === '/limpieza') result = result.filter(p => normalizeText(p.categoria || '').includes('limpieza'));
     else if (currentPath === '/perfumeria') result = result.filter(p => normalizeText(p.categoria || '').includes('perfumeria'));
     else if (currentPath === '/mascotas') result = result.filter(p => normalizeText(p.categoria || '').includes('mascota'));
-    else if (currentPath === '/varios') {
-      const excludedCategories = ['carne', 'verdu', 'fruta', 'bebida', 'lacteo', 'almacen', 'limpieza', 'perfumeria', 'mascota'];
-      result = result.filter(p => {
-        const cat = normalizeText(p.categoria || '');
-        return !excludedCategories.some(excluded => cat.includes(excluded));
-      });
-    }
 
     return result;
   }, [products, history, location.pathname]); // Sin searchTerm ni trendFilter
@@ -899,7 +898,7 @@ const toggleFavorite = useCallback(async (id: number) => {
   }, [navigate, location.pathname]);
 
   useEffect(() => {
-    const listPaths = ['/', '/chango', '/carnes', '/verdu', '/varios', '/bebidas', '/almacen'];
+    const listPaths = ['/', '/chango', '/carnes', '/verdu', '/bebidas', '/almacen', '/lacteos', '/limpieza', '/perfumeria', '/mascotas'];
     const currentPath = location.pathname;
     const isCurrentPathList = listPaths.includes(currentPath);
 
@@ -1052,6 +1051,14 @@ const toggleFavorite = useCallback(async (id: number) => {
         onUserClick={() => setIsAuthOpen(true)} user={user}
         profile={profile}
         trendFilter={trendFilter} setTrendFilter={setTrendFilter}
+        onEANFound={(ean: string) => {
+          const found = products.find(p => p.ean && Array.isArray(p.ean) && p.ean.includes(ean));
+          if (found) {
+            navigate(`/${slugify(found.categoria || 'general')}/${slugify(found.nombre)}`);
+          } else {
+            alert(`Producto con EAN ${ean} no encontrado`);
+          }
+        }}
       />
     <main>
       <Suspense fallback={<LoadingSpinner />}>
@@ -1074,7 +1081,7 @@ const toggleFavorite = useCallback(async (id: number) => {
           <Route path="/limpieza" element={listPageElement(descriptions['/limpieza'], 'limpieza')} />
           <Route path="/perfumeria" element={listPageElement(descriptions['/perfumeria'], 'perfumería')} />
           <Route path="/mascotas" element={listPageElement(descriptions['/mascotas'], 'mascotas')} />
-          <Route path="/varios" element={listPageElement(descriptions['/varios'], 'varios')} />
+          <Route path="/varios" element={<Navigate to="/" replace />} />
           <Route path="/chango" element={
             <>
               {cartItems.length > 0 && (
@@ -1133,8 +1140,8 @@ const toggleFavorite = useCallback(async (id: number) => {
         </Routes>
       </Suspense>
 
-        {/* --- BOTÓN DE CARGA POR LOTES --- */}
-        {['/', '/carnes', '/verdu', '/bebidas', '/varios'].includes(location.pathname) && filteredProducts.length > displayLimit && (
+        {/* --- BOTON DE CARGA POR LOTES --- */}
+        {['/', '/carnes', '/verdu', '/bebidas', '/lacteos', '/almacen', '/limpieza', '/perfumeria', '/mascotas'].includes(location.pathname) && filteredProducts.length > displayLimit && (
           <div className="flex justify-center py-6">
             <button 
               onClick={() => setDisplayLimit(prev => prev + 20)}

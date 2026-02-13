@@ -12,6 +12,7 @@ interface HeaderProps {
   profile: Profile | null;
   trendFilter: 'up' | 'down' | null;
   setTrendFilter: (val: 'up' | 'down' | null) => void;
+  onEANFound?: (ean: string) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
@@ -24,9 +25,13 @@ const Header: React.FC<HeaderProps> = ({
   profile,
   trendFilter,
   setTrendFilter,
+  onEANFound,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -45,6 +50,90 @@ const Header: React.FC<HeaderProps> = ({
 
   const isPro = profile?.subscription === 'pro' && profile.subscription_end && new Date(profile.subscription_end) > new Date();
 
+  // Funcion para escanear EAN
+  const startScan = async () => {
+    if (!onEANFound) return;
+    
+    setScanError(null);
+    setIsScanning(true);
+    
+    try {
+      // Verificar si Barcode Detection API esta disponible
+      if (!('BarcodeDetector' in window)) {
+        // API no disponible, pedir EAN manualmente
+        const ean = prompt('Ingresa el codigo EAN del producto:');
+        if (ean) {
+          onEANFound(ean);
+        }
+        setIsScanning(false);
+        return;
+      }
+      
+      // @ts-ignore - BarcodeDetector es experimental
+      const barcodeDetector = new BarcodeDetector({
+        formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39']
+      });
+      
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }
+      });
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+        
+        const scan = async () => {
+          if (!videoRef.current) return;
+          
+          try {
+            const barcodes = await barcodeDetector.detect(videoRef.current);
+            
+            if (barcodes.length > 0) {
+              const ean = barcodes[0].rawValue;
+              
+              // Detener el stream
+              const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+              tracks.forEach(track => track.stop());
+              
+              setIsScanning(false);
+              onEANFound(ean);
+              return;
+            }
+          } catch (e) {
+            console.error('Error escaneando:', e);
+          }
+          
+          // Continuar escaneando
+          if (isScanning) {
+            requestAnimationFrame(scan);
+          }
+        };
+        
+        scan();
+      }
+    } catch (error: any) {
+      console.error('Error accediendo a la camara:', error);
+      setScanError('No se pudo acceder a la camara');
+      setIsScanning(false);
+      
+      // Si el usuario denego el permiso, pedir EAN manualmente
+      if (error.name === 'NotAllowedError') {
+        const ean = prompt('Permiso de camara denegado. Ingresa el codigo EAN del producto:');
+        if (ean && onEANFound) {
+          onEANFound(ean);
+        }
+      }
+    }
+  };
+
+  const stopScan = () => {
+    setIsScanning(false);
+    if (videoRef.current?.srcObject) {
+      const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+      tracks.forEach(track => track.stop());
+    }
+  };
+
   return (
     <header className="sticky top-0 z-40 bg-white dark:bg-primary p-4 border-b border-neutral-100 dark:border-[#233138]">
       <div className="flex justify-between items-center mb-4">
@@ -61,18 +150,18 @@ const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center gap-3">
           <div className="hidden md:flex items-center gap-4 mr-2">
             <Link to="/acerca-de" className="text-[11px] font-bold uppercase tracking-widest text-black dark:text-[#e9edef] hover:opacity-70 transition-colors">Acerca de</Link>
-            <Link to="/terminos" className="text-[11px] font-bold uppercase tracking-widest text-black dark:text-[#e9edef] hover:opacity-70 transition-colors">Términos</Link>
+            <Link to="/terminos" className="text-[11px] font-bold uppercase tracking-widest text-black dark:text-[#e9edef] hover:opacity-70 transition-colors">Terminos</Link>
             <Link to="/contacto" className="text-[11px] font-bold uppercase tracking-widest text-black dark:text-[#e9edef] hover:opacity-70 transition-colors">Contacto</Link>
           </div>
 
           <div className="relative md:hidden" ref={menuRef}>
-            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="w-8 h-8 flex items-center justify-center text-black dark:text-[#e9edef]" aria-label="Menú de información">
+            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="w-8 h-8 flex items-center justify-center text-black dark:text-[#e9edef]" aria-label="Menu de informacion">
               <i className="fa-solid fa-circle-info text-xl"></i>
             </button>
             {isMenuOpen && (
               <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-[#1f2c34] border border-neutral-200 dark:border-[#233138] rounded-xl shadow-xl p-1 z-50 animate-in fade-in zoom-in duration-200">
                 <Link to="/acerca-de" onClick={() => setIsMenuOpen(false)} className="block w-full text-left px-4 py-3 text-[11px] font-bold uppercase dark:text-[#e9edef] hover:bg-neutral-50 dark:hover:bg-[#233138] rounded-lg">Acerca de</Link>
-                <Link to="/terminos" onClick={() => setIsMenuOpen(false)} className="block w-full text-left px-4 py-3 text-[11px] font-bold uppercase dark:text-[#e9edef] hover:bg-neutral-50 dark:hover:bg-[#233138] rounded-lg">Términos</Link>
+                <Link to="/terminos" onClick={() => setIsMenuOpen(false)} className="block w-full text-left px-4 py-3 text-[11px] font-bold uppercase dark:text-[#e9edef] hover:bg-neutral-50 dark:hover:bg-[#233138] rounded-lg">Terminos</Link>
                 <Link to="/contacto" onClick={() => setIsMenuOpen(false)} className="block w-full text-left px-4 py-3 text-[11px] font-bold uppercase dark:text-[#e9edef] hover:bg-neutral-50 dark:hover:bg-[#233138] rounded-lg">Contacto</Link>
                 <a href="https://x.com/tradingchango" target="_blank" rel="noopener noreferrer" onClick={() => setIsMenuOpen(false)} className="block w-full text-left px-4 py-3 text-[11px] font-bold uppercase dark:text-[#e9edef] hover:bg-neutral-50 dark:hover:bg-[#233138] rounded-lg">Seguinos en X</a>
               </div>
@@ -93,41 +182,69 @@ const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-     {/* Cambiamos max-w-md por max-w-2xl para que sea mucho más ancho */}
-{!hideSearch && (
-  <div className="relative mb-2 max-w-2xl mx-auto w-full px-2"> 
-    <i className="fa-solid fa-search absolute left-6 top-1/2 -translate-y-1/2 text-neutral-500 text-xs"></i>
-    <input 
-      type="text" 
-      placeholder="BUSCAR PRODUCTO..." 
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-      className="w-full bg-neutral-50 dark:bg-[#1f2c34] border border-neutral-200 dark:border-[#233138] rounded-lg py-2 pl-12 pr-10 text-sm font-medium focus:outline-none transition-all text-black dark:text-[#e9edef] placeholder:text-neutral-500"
-    />
-    {searchTerm && (
-      <button 
-        onClick={() => setSearchTerm('')}
-        className="absolute right-6 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-black dark:hover:text-white transition-colors w-6 h-6 flex items-center justify-center"
-      >
-        <i className="fa-solid fa-xmark text-sm"></i>
-      </button>
-    )}
-  </div>
-)}
+      {/* Buscador con boton de escaneo EAN */}
+ {!hideSearch && (
+   <div className="relative mb-2 max-w-2xl mx-auto w-full px-2"> 
+     <i className="fa-solid fa-search absolute left-6 top-1/2 -translate-y-1/2 text-neutral-500 text-xs"></i>
+     <input 
+       type="text" 
+       placeholder="BUSCAR PRODUCTO O ESCANEAR..." 
+       value={searchTerm}
+       onChange={(e) => setSearchTerm(e.target.value)}
+       className="w-full bg-neutral-50 dark:bg-[#1f2c34] border border-neutral-200 dark:border-[#233138] rounded-lg py-2 pl-12 pr-24 text-sm font-medium focus:outline-none transition-all text-black dark:text-[#e9edef] placeholder:text-neutral-500"
+     />
+     <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+       {searchTerm && (
+         <button 
+           onClick={() => setSearchTerm('')}
+           className="text-neutral-500 hover:text-black dark:hover:text-white transition-colors w-6 h-6 flex items-center justify-center"
+         >
+           <i className="fa-solid fa-xmark text-sm"></i>
+         </button>
+       )}
+       <button 
+         onClick={isScanning ? stopScan : startScan}
+         className={`p-1.5 rounded-md transition-colors ${isScanning ? 'bg-red-500 text-white' : 'text-neutral-500 hover:text-black dark:hover:text-white bg-neutral-100 dark:bg-[#233138]'}`}
+         title={isScanning ? 'Detener escaneo' : 'Escanear codigo de barras'}
+       >
+         <i className={`fa-solid ${isScanning ? 'fa-stop' : 'fa-barcode'} text-sm`}></i>
+       </button>
+     </div>
+     
+     {/* Video de escaneo */}
+     {isScanning && (
+       <div className="absolute top-full left-0 right-0 mt-2 bg-black rounded-lg overflow-hidden z-50">
+         <video 
+           ref={videoRef} 
+           className="w-full h-48 object-cover"
+           playsInline
+         />
+         {scanError && (
+           <div className="bg-red-500 text-white text-xs p-2">
+             {scanError}
+           </div>
+         )}
+         <div className="bg-white dark:bg-[#1f2c34] p-2 text-center">
+           <p className="text-xs text-neutral-500">Apunta el codigo de barras a la camara</p>
+         </div>
+       </div>
+     )}
+   </div>
+ )}
 
       {!['/chango', '/acerca-de', '/terminos', '/contacto'].includes(location.pathname) && (
         <div className="flex gap-2">
           <button 
             onClick={() => setTrendFilter(trendFilter === 'down' ? null : 'down')} 
             className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-[11px] font-[800] uppercase border transition-all ${trendFilter === 'down' ? 'bg-green-700 text-white border-green-700 shadow-lg shadow-green-700/20' : 'bg-white dark:bg-primary text-green-700 dark:border-[#233138] dark:border-[#233138]'}`}
-            aria-label="Filtrar por precios que están bajando"
+            aria-label="Filtrar por precios que estan bajando"
           >
             <i className="fa-solid fa-arrow-trend-down"></i> Precios bajando
           </button>
           <button 
             onClick={() => setTrendFilter(trendFilter === 'up' ? null : 'up')} 
             className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-[11px] font-[800] uppercase border transition-all ${trendFilter === 'up' ? 'bg-red-600 text-white border-red-600 shadow-lg shadow-red-600/20' : 'bg-white dark:bg-primary text-red-600 dark:border-[#233138] dark:border-[#233138]'}`}
-            aria-label="Filtrar por precios que están subiendo"
+            aria-label="Filtrar por precios que estan subiendo"
           >
             <i className="fa-solid fa-arrow-trend-up"></i> Precios subiendo
           </button>
@@ -136,13 +253,13 @@ const Header: React.FC<HeaderProps> = ({
 
       {showHero && (
        <div className="flex flex-col items-center mt-6 mb-2 px-4 w-full overflow-hidden">
-  <h2 className="text-[4.5vw] xs:text-[18px] sm:text-[22px] font-[800] text-black dark:text-white leading-none tracking-tighter font-sans whitespace-nowrap">
-    Los precios del súper como nunca los viste
-  </h2>
-  <p className="mt-1.5 text-[12px] sm:text-sm text-neutral-500 dark:text-neutral-400 font-medium text-center tracking-tight">
-    Analizá tendencias y compará antes de comprar
-  </p>
-</div>
+   <h2 className="text-[4.5vw] xs:text-[18px] sm:text-[22px] font-[800] text-black dark:text-white leading-none tracking-tighter font-sans whitespace-nowrap">
+     Los precios del super como nunca los viste
+   </h2>
+   <p className="mt-1.5 text-[12px] sm:text-sm text-neutral-500 dark:text-neutral-400 font-medium text-center tracking-tight">
+     Analiza tendencias y compara antes de comprar
+   </p>
+ </div>
       )}
     </header>
   );

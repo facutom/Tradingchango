@@ -219,12 +219,24 @@ function calculateSimulatedVariation(products: Product[]): number {
 
 // Calcular mÃ©tricas para una categorÃ­a
 export async function calculateCategoryMetrics(products: Product[]): Promise<CategoryMetrics | null> {
-  if (products.length === 0) return null;
+  // Filtrar productos visibles (visible_web !== false)
+  const visibleProducts = products.filter(p => p.visible_web !== false);
   
-  const categoryName = products[0].categoria;
+  if (visibleProducts.length === 0) {
+    return {
+      categoryName: '',
+      weeklyVariation: 0,
+      hasHistoricalData: false,
+      dispersion: 0,
+      leaderStore: '-',
+      productCount: 0
+    };
+  }
+  
+  const categoryName = visibleProducts[0].categoria;
   
   // Calcular precio promedio por producto
-  const avgPrices = products.map(p => getAveragePrice(p)).filter(p => p > 0);
+  const avgPrices = visibleProducts.map(p => getAveragePrice(p)).filter(p => p > 0);
   
   if (avgPrices.length === 0) {
     return {
@@ -233,13 +245,13 @@ export async function calculateCategoryMetrics(products: Product[]): Promise<Cat
       hasHistoricalData: false,
       dispersion: 0,
       leaderStore: '-',
-      productCount: products.length
+      productCount: visibleProducts.length
     };
   }
   
   // --- LOGS PARA DISPERSIÓN ---
   console.log('[CategoryMetrics] Calculating dispersion...');
-  const dispersions = products.map(p => {
+  const dispersions = visibleProducts.map(p => {
     const min = getMinPrice(p);
     const max = getMaxPrice(p);
     if (min === 0 || max === 0) return 0;
@@ -257,7 +269,7 @@ export async function calculateCategoryMetrics(products: Product[]): Promise<Cat
   // --- LOGS PARA LÍDER ---
   console.log('[CategoryMetrics] Calculating leader store...');
   const storeCounts: Record<string, number> = {};
-  products.forEach(p => {
+  visibleProducts.forEach(p => {
     const cheapest = getCheapestStore(p);
     if (cheapest) {
       const storeName = cheapest.store.charAt(0).toUpperCase() + cheapest.store.slice(1);
@@ -271,7 +283,7 @@ export async function calculateCategoryMetrics(products: Product[]): Promise<Cat
   console.log(`[CategoryMetrics] Determined leader store: ${leaderStore}`);
   
   // Calcular variación semanal real
-  const variationResult = await getWeeklyVariationReal(products);
+  const variationResult = await getWeeklyVariationReal(visibleProducts);
   
   return {
     categoryName,
@@ -279,7 +291,7 @@ export async function calculateCategoryMetrics(products: Product[]): Promise<Cat
     hasHistoricalData: variationResult.hasData,
     dispersion: Math.round(avgDispersion * 10) / 10,
     leaderStore,
-    productCount: products.length
+    productCount: visibleProducts.length
   };
 }
 

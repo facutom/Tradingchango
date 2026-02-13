@@ -99,6 +99,7 @@ export interface ProductStats {
 
 export interface PriceHistory {
   nombre_producto: string;
+  ean?: string;
   precio_minimo: number;
   fecha: string;
   supermercado: string;

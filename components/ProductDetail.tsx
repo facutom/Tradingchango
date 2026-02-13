@@ -9,7 +9,7 @@ import {
   CartesianGrid,
   TooltipProps
 } from 'recharts';
-import { getProductHistory } from '../services/supabase';
+import { getProductHistory, getProductHistoryByEan } from '../services/supabase';
 import { Product, PriceHistory } from '../types';
 import { supabase } from '../services/supabase';
 import { isPriceOutlier, detectOutliersByMedian } from '../utils/outlierDetection';
@@ -151,8 +151,9 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   useEffect(() => {
     const fetchHistory = async () => {
       if (product) {
-        // Intentar cargar desde caché primero para carga rápida
-        const cacheKey = `tc_product_history_${product.nombre}_${days}`;
+        // Intentar cargar desde caché primero para carga rapida
+        const ean = product.ean && Array.isArray(product.ean) && product.ean.length > 0 ? product.ean[0] : null;
+        const cacheKey = `tc_product_history_${ean || product.nombre}_${days}`;
         const cached = localStorage.getItem(cacheKey);
         if (cached) {
           try {
@@ -170,7 +171,9 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         }
         
         try {
-          const data = await getProductHistory(product.nombre, days);
+          // Usar EAN si está disponible, sino usar nombre
+          const ean = product.ean && Array.isArray(product.ean) && product.ean.length > 0 ? product.ean[0] : null;
+          const data = ean ? await getProductHistoryByEan(ean, days) : await getProductHistory(product.nombre, days);
           setHistory(data || []);
           // Guardar en caché
           localStorage.setItem(cacheKey, JSON.stringify({

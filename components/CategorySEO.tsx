@@ -41,7 +41,14 @@ const getCachedMetrics = (cacheKey: string, productsHash: number): CategoryMetri
   return null;
 };
 
+// Filtrar productos visibles (visible_web !== false)
+const getVisibleProducts = (products: Product[]): Product[] => {
+  return products.filter(p => p.visible_web !== false);
+};
+
 const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products = [] }) => {
+  // Obtener productos visibles
+  const visibleProducts = useMemo(() => getVisibleProducts(products), [products]);
   const [isOpen, setIsOpen] = useState(false);
   const [metrics, setMetrics] = useState<CategoryMetrics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -63,14 +70,14 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
   // Generar clave única para esta categoría
   const cacheKey = `${CACHE_KEY_PREFIX}${categoryName.toLowerCase()}`;
 
-  // Generar un hash determinístico de los productos para detectar cambios
+  // Generar un hash determinístico de los productos visibles para detectar cambios
   const productsHash = useMemo(() => {
-    return products.reduce((h, p) => {
+    return visibleProducts.reduce((h, p) => {
       const id = p.id || p.nombre;
       const charSum = id.toString().split('').reduce((h2, c) => h2 + c.charCodeAt(0), 0);
       return (h + charSum * 31) | 0;
     }, 0);
-  }, [products, categoryName]);
+  }, [visibleProducts, categoryName]);
 
   // Actualizar métricas cuando cambia la categoría o productos
   useEffect(() => {
@@ -83,11 +90,11 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
       setLoading(false);
     } else {
       // Calcular nuevas métricas
-      if (products.length > 0) {
+      if (visibleProducts.length > 0) {
         const loadMetrics = async () => {
           setLoading(true);
           try {
-            const result = await calculateCategoryMetrics(products);
+            const result = await calculateCategoryMetrics(visibleProducts);
             setMetrics(result);
             // Guardar en localStorage con el hash de productos
             localStorage.setItem(cacheKey, JSON.stringify({
@@ -282,7 +289,7 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
           </svg>
           Mas info de la categoria
           <span className="bg-neutral-200 dark:bg-neutral-600 px-2 py-0.5 rounded text-[10px] font-bold text-neutral-700 dark:text-neutral-200">
-            {products.length} productos encontrados
+            {visibleProducts.length} productos encontrados
           </span>
         </button>
       </div>

@@ -65,6 +65,19 @@ export const getProductHistory = async (productName: string, days: number = 30):
   return data || [];
 };
 
+export const getProductHistoryByEan = async (ean: string, days: number = 30): Promise<PriceHistory[]> => {
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  const { data, error } = await supabase
+    .from('historial_precios')
+    .select('*')
+    .eq('ean', ean)
+    .gte('fecha', date.toISOString().split('T')[0])
+    .order('fecha', { ascending: true });
+  if (error) throw error;
+  return data || [];
+};
+
 export const getBenefits = async (dayOfWeek: number): Promise<Benefit[]> => {
   const { data, error } = await supabase
     .from('beneficios_super')
