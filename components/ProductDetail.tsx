@@ -412,11 +412,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
               <h1 className="text-xl md:text-2xl font-black text-black dark:text-[#e9edef] leading-[1.1] mb-1 tracking-tighter uppercase break-words [hyphens:auto]" lang="es">
                 {product.nombre}
               </h1>
-              {!isAvailableForPurchase && (
-            <div className="mt-2 text-xs font-bold text-red-500 bg-red-500/10 p-2 rounded-md border border-red-500/20">
-                Este producto no está disponible para compra en este momento.
-            </div>
-          )}
+              
               {minPrice > 0 && minStore && (
                 <div className="flex items-center gap-1.5 mb-2">
                   <span className="text-[11px] font-black text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
@@ -669,17 +665,16 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
               )}
               <button 
               onClick={() => onFavoriteToggle(product.id)} 
-              disabled={!isAvailableForPurchase}
+              disabled={!product}
               className={`flex-1 rounded-lg font-black uppercase tracking-[0.1em] text-xs flex items-center justify-center gap-2 active:scale-95 transition-all ${
-              isAvailableForPurchase
-                  ? (isFavorite 
+               isFavorite 
                       ? 'bg-star-gold text-white shadow-lg shadow-star-gold/20' 
                       : 'bg-primary dark:bg-[#e9edef] text-white dark:text-black border dark:border-[#e9edef]')
                   : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-500 cursor-not-allowed'
               }`}
           >
               <i className="fa-solid fa-cart-shopping"></i>
-              {isAvailableForPurchase ? (isFavorite ? 'En el Chango' : 'Añadir al Chango') : 'No disponible'}
+              {isFavorite ? 'En el Chango' : 'Añadir al Chango' : 'No disponible'}
           </button>
             </div>
           </div>
