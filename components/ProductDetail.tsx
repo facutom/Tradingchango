@@ -663,19 +663,19 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                   </button>
                 </div>
               )}
+              
               <button 
-              onClick={() => onFavoriteToggle(product.id)} 
-              disabled={!product}
-              className={`flex-1 rounded-lg font-black uppercase tracking-[0.1em] text-xs flex items-center justify-center gap-2 active:scale-95 transition-all ${
-               isFavorite 
-                      ? 'bg-star-gold text-white shadow-lg shadow-star-gold/20' 
-                      : 'bg-primary dark:bg-[#e9edef] text-white dark:text-black border dark:border-[#e9edef]')
-                  : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-500 cursor-not-allowed'
-              }`}
-          >
-              <i className="fa-solid fa-cart-shopping"></i>
-              {isFavorite ? 'En el Chango' : 'Añadir al Chango' : 'No disponible'}
-          </button>
+                onClick={() => onFavoriteToggle(product.id)} 
+                disabled={!product}
+                className={`flex-1 rounded-lg font-black uppercase tracking-[0.1em] text-xs flex items-center justify-center gap-2 active:scale-95 transition-all ${
+                  isFavorite 
+                    ? 'bg-star-gold text-white shadow-lg shadow-star-gold/20' 
+                    : 'bg-primary dark:bg-[#e9edef] text-white dark:text-black border dark:border-[#e9edef]'
+                }`}
+              >
+                <i className="fa-solid fa-cart-shopping"></i>
+                {isFavorite ? 'En el Chango' : 'Añadir al Chango'}
+              </button>
             </div>
           </div>
         </div>
