@@ -11,6 +11,7 @@ import {
 } from 'recharts';
 import { getProductHistory, getProductHistoryByEan } from '../services/supabase';
 import { Product, PriceHistory } from '../types';
+import OptimizedImage from './OptimizedImage';
 import { supabase } from '../services/supabase';
 import { isPriceOutlier, detectOutliersByMedian } from '../utils/outlierDetection';
 
@@ -402,14 +403,14 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
           {/* Header Producto */}
           <div className="flex gap-4 items-start mb-4">
             <div className="w-32 h-32 md:w-40 md:h-40 bg-white rounded-xl border border-neutral-100 shadow-sm flex items-center justify-center p-2 shrink-0">
-              <img
-              src={product.imagen_url ? `${product.imagen_url}?width=160&quality=75&format=webp` : 'https://via.placeholder.com/160?text=N/A'}
-              alt={product.nombre}
-              className="w-full h-full object-contain"
-              width="160"
-              height="160"
-              fetchPriority="high"
-            />
+              <OptimizedImage
+                src={product.imagen_url ? `${product.imagen_url}?width=160&quality=75&format=webp` : 'https://via.placeholder.com/160?text=N/A'}
+                alt={product.nombre}
+                className="w-full h-full object-contain"
+                width={160}
+                height={160}
+                priority
+              />
             </div>
             <div className="flex flex-col flex-1 pt-1 min-w-0">
               <h1 className="text-xl md:text-2xl font-black text-black dark:text-[#e9edef] leading-[1.1] mb-1 tracking-tighter uppercase break-words [hyphens:auto]" lang="es">

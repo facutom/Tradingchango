@@ -736,9 +736,8 @@ const App: React.FC = () => {
           const hasEanMatch = p.ean.includes(h.ean || '');
           if (hasEanMatch) return true;
         }
-        // Fallback: comparar nombres normalizados (minúsculas, sin acentos)
-        const normalize = (str: string) => str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        return normalize(h.nombre_producto) === normalize(p.nombre);
+        // Fallback: comparar nombres normalizados
+        return normalizeText(h.nombre_producto) === normalizeText(p.nombre);
       });
       let h7_price = 0;
 
