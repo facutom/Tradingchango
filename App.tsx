@@ -223,6 +223,14 @@ const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUp
     navigate(`/${slugify(nextProduct.categoria || 'general')}/${slugify(nextProduct.nombre)}`, { state: { from } });
   }, [categoryProducts, currentIndex, navigate, location.state]);
 
+  const handleProductSelect = (id: number) => {
+    const selectedProduct = products.find((p: any) => p.id === id);
+    if (selectedProduct) {
+      const from = location.state?.from || 'category';
+      navigate(`/${slugify(selectedProduct.categoria || 'general')}/${slugify(selectedProduct.nombre)}`, { state: { from } });
+    }
+  };
+
   // Para navegación circular siempre hay anterior y siguiente
   const hasPrevious = categoryProducts.length > 1;
   const hasNext = categoryProducts.length > 1;
@@ -239,6 +247,7 @@ const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUp
         onUpdateQuantity={onUpdateQuantity}
         onPreviousProduct={hasPrevious ? handlePreviousProduct : undefined}
         onNextProduct={hasNext ? handleNextProduct : undefined}
+        onProductSelect={handleProductSelect}
       />
   );
 };

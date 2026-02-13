@@ -33,6 +33,7 @@ interface ProductDetailProps {
   onUpdateQuantity?: (id: number, delta: number) => void;
   onPreviousProduct?: () => void;
   onNextProduct?: () => void;
+  onProductSelect?: (id: number) => void;
 }
 
 // Alias para evitar conflictos de tipos con Recharts en TS
@@ -64,15 +65,28 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   quantities,
   onUpdateQuantity,
   onPreviousProduct,
-  onNextProduct
+  onNextProduct,
+  onProductSelect
 }) => {
   const [history, setHistory] = useState<PriceHistory[]>([]);
   const [days, setDays] = useState(7);
+  const [activeTab, setActiveTab] = useState<'details' | 'related'>('details');
   const modalRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
 
   const product = useMemo(() => products.find(p => p.id === productId), [products, productId]);
+
+  useEffect(() => {
+    setActiveTab('details');
+  }, [productId]);
+
+  const relatedProducts = useMemo(() => {
+    if (!product || !products) return [];
+    return products
+      .filter(p => p.categoria === product.categoria && p.id !== product.id)
+      .slice(0, 12);
+  }, [product, products]);
 
   const isAvailableForPurchase = useMemo(() => {
     if (!product) return false;
@@ -430,7 +444,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                         <span className="text-[11px] font-black text-black dark:text-[#e9edef] font-mono">${formatCurrency(Math.round(avgPrice))}</span>
                       </div>
 
-                      {unitPrice > 0 && product?.categoria !== 'Carnes' && product?.categoria !== 'Verdu' && (
+                      {unitPrice > 0 && product?.categoria?.toLowerCase() !== 'carnes' && product?.categoria?.toLowerCase() !== 'verdu' && (
                         <div className="flex items-center gap-2 bg-neutral-100 dark:bg-[#1f2c34] border border-neutral-200 dark:border-[#233138] px-2.5 py-1 rounded-md">
                           <span className="text-[10px] font-black text-neutral-500 dark:text-neutral-400 uppercase">POR {unitMeasure || 'Unid'}</span>
                           <span className="text-[11px] font-black text-black dark:text-[#e9edef] font-mono">${formatCurrency(unitPrice)}</span>
@@ -447,145 +461,189 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
             </div>
           </div>
 
-          {/* Descripción SEO */}
-          {product.seo_description && (
-            <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed font-medium mb-3 text-justify">
-              {product.seo_description}
-            </p>
+          {/* Pestañas */}
+          <div className="flex border-b border-neutral-100 dark:border-[#233138] mb-3">
+            <button 
+              onClick={() => setActiveTab('details')}
+              className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider ${activeTab === 'details' ? 'text-black dark:text-white border-b-2 border-black dark:border-white' : 'text-neutral-500 dark:text-neutral-400'}`}
+            >
+              Detalles
+            </button>
+            <button 
+              onClick={() => setActiveTab('related')}
+              className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider ${activeTab === 'related' ? 'text-black dark:text-white border-b-2 border-black dark:border-white' : 'text-neutral-500 dark:text-neutral-400'}`}
+            >
+              Relacionados ({relatedProducts.length})
+            </button>
+          </div>
+
+          {activeTab === 'details' && (
+            <>
+              {/* Descripción SEO */}
+              {product.seo_description && (
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed font-medium mb-3 text-justify">
+                  {product.seo_description}
+                </p>
+              )}
+
+              <hr className="w-full border-neutral-100 dark:border-[#233138] mb-3" />
+
+              {/* Filtros días */}
+              <div className="w-full flex justify-center gap-1 mb-2 overflow-x-auto no-scrollbar pb-1">
+                {[7, 15, 30, 90, 180, 365].map((d) => (
+                  <button 
+                    key={d} 
+                    onClick={() => setDays(d)}
+                    className={`min-w-[48px] py-2 px-2 text-[10px] font-black rounded-md transition-all ${
+                      days === d
+                        ? 'bg-primary text-white dark:bg-white dark:text-black border border-black dark:border-white'
+                        : 'bg-neutral-50 dark:bg-[#1f2c34] text-neutral-500 dark:text-[#8696a0]'
+                    }`}
+                  >
+                    {d < 30 ? `${d}D` : d < 365 ? `${Math.floor(d / 30)}M` : '1Y'}
+                  </button>
+                ))}
+              </div>
+
+              {/* Gráfico */}
+              <div className="mb-1 w-full">
+                <div className="flex flex-col items-center text-center mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className={`text-xs font-black px-1.5 py-0.5 rounded-md ${isTrendUp ? 'bg-red-500/10 text-red-500' : 'bg-green-500/10 text-green-500'}`}>
+                        {isTrendUp ? '▲' : '▼'} {Math.abs(percentageChange).toFixed(1)}%
+                    </span>
+                    <span className="text-[10px] font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-widest">
+                      Variación en {days} días</span>
+                  </div>
+                </div>
+                
+                <div className="h-44 md:h-52 w-full relative min-h-[176px]">
+                  {chartData.length > 1 ? (
+                    <ResponsiveContainerComponent width="100%" height="100%">
+                      <AreaChartComponent data={chartData} margin={{ top: 5, right: 0, left: 12, bottom: 20 }}>
+                        <defs>
+                          <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor={trendColor} stopOpacity={0.1}/>
+                            <stop offset="95%" stopColor={trendColor} stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGridComponent vertical={false} strokeDasharray="3 3" stroke={theme === 'dark' ? '#233138' : '#f0f0f0'} />
+                        <XAxisComponent dataKey="date" tickLine={false} axisLine={false} interval={0} tick={{ fontSize: 8, fill: theme === 'dark' ? '#8696a0' : '#737373' }} tickFormatter={(value: string, index: number) => { const total = chartData.length; if (total === 0) return ''; const middle = Math.floor(total / 2); if (index === 0 || index === middle || index === total - 1) { return value; } return ''; }} />
+                        <YAxisComponent orientation="right" width={36} axisLine={false} tickLine={false} tick={{ fontSize: 8, fill: theme === 'dark' ? '#8696a0' : '#737373' }} domain={['auto', 'auto']} tickFormatter={(val: number) => `$${formatCurrency(val)}`} />
+                        <TooltipComponent content={<CustomTooltip />} />
+                        <AreaComponent type="monotone" dataKey="price" stroke={trendColor} strokeWidth={2} fill="url(#colorPrice)" />
+                      </AreaChartComponent>
+                    </ResponsiveContainerComponent>
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-[10px] text-neutral-400 font-bold uppercase border border-dashed border-[#233138] rounded-xl">Sin datos suficientes</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Comparativa por Mercado */}
+              <div className="w-full border border-neutral-100 dark:border-[#233138] rounded-lg overflow-hidden mb-4">
+                <div className="w-full flex items-center justify-between p-2.5 bg-neutral-50 dark:bg-[#1f2c34]/50">
+                  <span className="text-[12px] font-black uppercase tracking-[0.1em] text-black dark:text-[#e9edef]">Comparativa por Mercado</span>
+                </div>
+                <div className="px-3 py-2 space-y-2 bg-white dark:bg-primary">
+                  {STORES.map((s) => {
+                    const price = (product as any)[s.key];
+                    const url = (product as any)[s.url];
+                    
+                    // Mapeo de nombres para coincidir con las llaves de tu JSONB
+                    const internalKeys: any = {
+                      'COTO': 'coto',
+                      'CARREFOUR': 'carrefour',
+                      'DIA': 'diaonline',
+                      'JUMBO': 'jumbo',
+                      'MAS ONLINE': 'masonline'
+                    };
+                    
+                    const storeKey = internalKeys[s.name];
+                    // Combinar outlier de BD con detección dinámica
+                    const isOutlierFromDB = outlierData[storeKey] === true;
+                    const isOutlierDynamic = isPriceOutlier(product, s.key);
+                    const isOutlier = isOutlierFromDB || isOutlierDynamic;
+                    const stockKey = `stock_${storeKey}`;
+                    const hasStock = (product as any)[stockKey] !== false;
+                    const hasUrl = url && url !== '#' && url.length > 5;
+
+                    // Filtros de visibilidad
+                    if (!price || price <= 0 || isOutlier || !hasUrl || !hasStock) {
+                      return null;
+                    }
+
+                    // Búsqueda de promo en el objeto JSONB (insensible a mayúsculas)
+                    const promo = product.oferta_gondola ? Object.entries(product.oferta_gondola).find(
+                      ([key]) => key.toLowerCase() === storeKey.toLowerCase()
+                    )?.[1] : null;
+
+                    const storeColors: any = { 
+                      COTO: 'bg-red-500', 
+                      CARREFOUR: 'bg-blue-500', 
+                      DIA: 'bg-red-500', 
+                      JUMBO: 'bg-green-500', 
+                      'MAS ONLINE': 'bg-green-500' 
+                    };
+
+                    return (
+                      <div key={s.name} className="flex items-center justify-between py-1.5 border-b border-neutral-50 dark:border-[#233138] last:border-0">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${storeColors[s.name] || 'bg-gray-400'}`}></span>
+                          
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[13px] font-black text-black dark:text-[#e9edef] uppercase">
+                              {s.displayName}
+                            </span>
+                            
+                            {/* DISEÑO IDÉNTICO A PRODUCTLIST */}
+                            {promo && (
+                              <span className="bg-green-600 text-white text-[8px] font-[900] px-1 py-0.5 rounded-[1px] uppercase leading-none font-sans">
+                                {String(promo)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <a 
+                          href={url || '#'} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className={`text-base font-mono font-black hover:underline cursor-pointer ${price === minPrice ? 'text-green-500' : 'text-black dark:text-[#e9edef]'}`}
+                        >
+                          ${formatCurrency(price)}
+                        </a>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
           )}
 
-          <hr className="w-full border-neutral-100 dark:border-[#233138] mb-3" />
-
-          {/* Filtros días */}
-          <div className="w-full flex justify-center gap-1 mb-2 overflow-x-auto no-scrollbar pb-1">
-            {[7, 15, 30, 90, 180, 365].map((d) => (
-              <button 
-                key={d} 
-                onClick={() => setDays(d)}
-                className={`min-w-[48px] py-2 px-2 text-[10px] font-black rounded-md transition-all ${
-                  days === d
-                    ? 'bg-primary text-white dark:bg-white dark:text-black border border-black dark:border-white'
-                    : 'bg-neutral-50 dark:bg-[#1f2c34] text-neutral-500 dark:text-[#8696a0]'
-                }`}
-              >
-                {d < 30 ? `${d}D` : d < 365 ? `${Math.floor(d / 30)}M` : '1Y'}
-              </button>
-            ))}
-          </div>
-
-          {/* Gráfico */}
-          <div className="mb-1 w-full">
-            <div className="flex flex-col items-center text-center mb-2">
-              <div className="flex items-center gap-1.5">
-                 <span className={`text-xs font-black px-1.5 py-0.5 rounded-md ${isTrendUp ? 'bg-red-500/10 text-red-500' : 'bg-green-500/10 text-green-500'}`}>
-                    {isTrendUp ? '▲' : '▼'} {Math.abs(percentageChange).toFixed(1)}%
-                 </span>
-                 <span className="text-[10px] font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-widest">
-                  Variación en {days} días</span>
-              </div>
+          {activeTab === 'related' && (
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-4">
+              {relatedProducts.map(related => (
+                <div 
+                  key={related.id} 
+                  onClick={() => onProductSelect?.(related.id)}
+                  className="cursor-pointer bg-neutral-50 dark:bg-[#1f2c34] rounded-lg p-2 flex flex-col items-center text-center transition-transform hover:scale-105"
+                >
+                  <img
+                    src={related.imagen_url ? `${related.imagen_url}?width=80&quality=75&format=webp` : 'https://via.placeholder.com/80?text=N/A'}
+                    alt={related.nombre}
+                    className="w-16 h-16 object-contain mb-2"
+                    width="80"
+                    height="80"
+                    loading="lazy"
+                  />
+                  <p className="text-[10px] font-bold text-black dark:text-white leading-tight break-words">
+                    {related.nombre}
+                  </p>
+                </div>
+              ))}
             </div>
-            
-            <div className="h-44 md:h-52 w-full relative min-h-[176px]">
-              {chartData.length > 1 ? (
-                <ResponsiveContainerComponent width="100%" height="100%">
-                  <AreaChartComponent data={chartData} margin={{ top: 5, right: 0, left: 12, bottom: 20 }}>
-                    <defs>
-                      <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={trendColor} stopOpacity={0.1}/>
-                        <stop offset="95%" stopColor={trendColor} stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGridComponent vertical={false} strokeDasharray="3 3" stroke={theme === 'dark' ? '#233138' : '#f0f0f0'} />
-                    <XAxisComponent dataKey="date" tickLine={false} axisLine={false} interval={0} tick={{ fontSize: 8, fill: theme === 'dark' ? '#8696a0' : '#737373' }} tickFormatter={(value: string, index: number) => { const total = chartData.length; if (total === 0) return ''; const middle = Math.floor(total / 2); if (index === 0 || index === middle || index === total - 1) { return value; } return ''; }} />
-                    <YAxisComponent orientation="right" width={36} axisLine={false} tickLine={false} tick={{ fontSize: 8, fill: theme === 'dark' ? '#8696a0' : '#737373' }} domain={['auto', 'auto']} tickFormatter={(val: number) => `$${formatCurrency(val)}`} />
-                    <TooltipComponent content={<CustomTooltip />} />
-                    <AreaComponent type="monotone" dataKey="price" stroke={trendColor} strokeWidth={2} fill="url(#colorPrice)" />
-                  </AreaChartComponent>
-                </ResponsiveContainerComponent>
-              ) : (
-                <div className="h-full flex items-center justify-center text-[10px] text-neutral-400 font-bold uppercase border border-dashed border-[#233138] rounded-xl">Sin datos suficientes</div>
-              )}
-            </div>
-          </div>
-
-          {/* Comparativa por Mercado */}
-          <div className="w-full border border-neutral-100 dark:border-[#233138] rounded-lg overflow-hidden mb-4">
-  <div className="w-full flex items-center justify-between p-2.5 bg-neutral-50 dark:bg-[#1f2c34]/50">
-    <span className="text-[12px] font-black uppercase tracking-[0.1em] text-black dark:text-[#e9edef]">Comparativa por Mercado</span>
-  </div>
-  <div className="px-3 py-2 space-y-2 bg-white dark:bg-primary">
-    {STORES.map((s) => {
-      const price = (product as any)[s.key];
-      const url = (product as any)[s.url];
-      
-      // Mapeo de nombres para coincidir con las llaves de tu JSONB
-      const internalKeys: any = {
-        'COTO': 'coto',
-        'CARREFOUR': 'carrefour',
-        'DIA': 'diaonline',
-        'JUMBO': 'jumbo',
-        'MAS ONLINE': 'masonline'
-      };
-      
-      const storeKey = internalKeys[s.name];
-      // Combinar outlier de BD con detección dinámica
-      const isOutlierFromDB = outlierData[storeKey] === true;
-      const isOutlierDynamic = isPriceOutlier(product, s.key);
-      const isOutlier = isOutlierFromDB || isOutlierDynamic;
-      const stockKey = `stock_${storeKey}`;
-      const hasStock = (product as any)[stockKey] !== false;
-      const hasUrl = url && url !== '#' && url.length > 5;
-
-      // Filtros de visibilidad
-      if (!price || price <= 0 || isOutlier || !hasUrl || !hasStock) {
-        return null;
-      }
-
-      // Búsqueda de promo en el objeto JSONB (insensible a mayúsculas)
-      const promo = product.oferta_gondola ? Object.entries(product.oferta_gondola).find(
-        ([key]) => key.toLowerCase() === storeKey.toLowerCase()
-      )?.[1] : null;
-
-      const storeColors: any = { 
-        COTO: 'bg-red-500', 
-        CARREFOUR: 'bg-blue-500', 
-        DIA: 'bg-red-500', 
-        JUMBO: 'bg-green-500', 
-        'MAS ONLINE': 'bg-green-500' 
-      };
-
-      return (
-        <div key={s.name} className="flex items-center justify-between py-1.5 border-b border-neutral-50 dark:border-[#233138] last:border-0">
-          <div className="flex items-center gap-2">
-            <span className={`w-2 h-2 rounded-full ${storeColors[s.name] || 'bg-gray-400'}`}></span>
-            
-            <div className="flex items-center gap-1.5">
-              <span className="text-[13px] font-black text-black dark:text-[#e9edef] uppercase">
-                {s.displayName}
-              </span>
-              
-              {/* DISEÑO IDÉNTICO A PRODUCTLIST */}
-              {promo && (
-                <span className="bg-green-600 text-white text-[8px] font-[900] px-1 py-0.5 rounded-[1px] uppercase leading-none font-sans">
-                  {String(promo)}
-                </span>
-              )}
-            </div>
-          </div>
-
-          <a 
-            href={url || '#'} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className={`text-base font-mono font-black hover:underline cursor-pointer ${price === minPrice ? 'text-green-500' : 'text-black dark:text-[#e9edef]'}`}
-          >
-            ${formatCurrency(price)}
-          </a>
-        </div>
-      );
-    })}
-  </div>
-</div>
+          )}
 
           {/* Footer Sticky con Acciones */}
           <div className="w-full sticky bottom-0 bg-white/95 dark:bg-primary/95 backdrop-blur-md pt-2 pb-6 md:pb-4 px-4">
