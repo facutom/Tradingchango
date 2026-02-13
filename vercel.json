@@ -141,6 +141,11 @@
     {
       "source": "/sw.js",
       "destination": "/sw.js"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/index.html",
+      "statusCode": 200
     }
   ],
   "trailingSlash": false
