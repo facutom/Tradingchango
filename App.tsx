@@ -735,8 +735,9 @@ const App: React.FC = () => {
 
 
 
-const toggleFavorite = useCallback(async (id: number) => {
+const toggleFavorite = useCallback((id: number) => {
     // Optimización: Actualizar estado LOCAL inmediatamente para feedback instantáneo
+    // Sin llamadas a Supabase que puedan retrasar la UI
     setFavorites(prev => {
       const next = { ...prev };
       const isAdding = !next[id];
@@ -753,31 +754,7 @@ const toggleFavorite = useCallback(async (id: number) => {
       }
       return next;
     });
-
-    // Validar sesión en background (sin await para no bloquear UI)
-    supabase.auth.getUser().then(({ data: { user: currentUser } }) => {
-      if (!currentUser) {
-        setIsAuthOpen(true);
-        setFavorites(prev => {
-          const next = { ...prev };
-          delete next[id];
-          return next;
-        });
-      } else {
-        // Verificar límite de favoritos sin bloquear
-        setFavorites(prev => {
-          const favoritesCount = Object.keys(prev).length;
-          if (!isPro && favoritesCount > 5) {
-            // Usar setTimeout para no bloquear el click
-            setTimeout(() => alert('Los usuarios FREE solo pueden tener hasta 5 productos en favoritos.'), 10);
-          }
-          return prev;
-        });
-      }
-    }).catch(e => {
-      console.error('Error en toggleFavorite:', e);
-    });
-  }, [isPro]);
+  }, []);
 
 
   const handleFavoriteChangeInCart = useCallback((id: number, delta: number) => {
