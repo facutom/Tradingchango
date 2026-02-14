@@ -19,7 +19,7 @@ interface ProductListProps {
   products: ProductWithStats[];
   onProductClick: (product: Product) => void;
   onFavoriteToggle?: (id: number) => void;
-  isFavorite: (id: number) => boolean;
+  favorites?: Record<number, number>; // Cambiamos de isFavorite (callback) a favorites (objeto)
   isCartView?: boolean;
   quantities?: Record<number, number>;
   onUpdateQuantity?: (id: number, delta: number) => void;
@@ -33,7 +33,7 @@ const ProductList: React.FC<ProductListProps> = ({
   products, 
   onProductClick, 
   onFavoriteToggle, 
-  isFavorite,
+  favorites, // Ahora recibe el objeto favorites
   isCartView,
   quantities,
   onUpdateQuantity,
@@ -41,6 +41,9 @@ const ProductList: React.FC<ProductListProps> = ({
   purchasedItems,
   onTogglePurchased
 }) => {
+
+  // Función helper para determinar si un producto es favorito
+  const isFavorite = React.useCallback((id: number) => !!favorites?.[id], [favorites]);
 
   const visibleProducts = React.useMemo(() => {
     return products.filter(p => p.visible_web !== false);
@@ -130,8 +133,10 @@ const ProductList: React.FC<ProductListProps> = ({
 
 export default memo(ProductList, (prevProps, nextProps) => {
   // Comparación rápida para evitar re-renders innecesarios
+  // IMPORTANTE: Comparar favorites directamente para detectar cambios en favoritos
   return prevProps.products === nextProps.products &&
          prevProps.searchTerm === nextProps.searchTerm &&
          prevProps.isCartView === nextProps.isCartView &&
-         prevProps.purchasedItems?.size === nextProps.purchasedItems?.size;
+         prevProps.purchasedItems?.size === nextProps.purchasedItems?.size &&
+         JSON.stringify(prevProps.favorites) === JSON.stringify(nextProps.favorites);
 });

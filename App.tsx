@@ -31,20 +31,35 @@ const processProducts = (
       outlierData = typeof p.outliers === 'string' ? JSON.parse(p.outliers) : (p.outliers || {});
     } catch (e) { outlierData = {}; }
 
-    const prices = STORES.map(s => {
+    // NUEVO: Contar productos que tienen tanto p_ (precio promo) como pr_ (precio regular)
+    // Un producto válido debe tener ambos precios en al menos un supermercado
+    let validPriceCount = 0;
+    const priceData = STORES.map(s => {
       const storeKey = s.name.toLowerCase().replace(' ', '');
-      const price = (p as any)[s.key] || 0;
+      const promoPrice = (p as any)[s.key] || 0; // p_coto, p_jumbo, etc.
+      const regularPrice = (p as any)[`pr_${storeKey}`] || 0; // pr_coto, pr_jumbo, etc.
       const url = (p as any)[s.url];
       const stockKey = `stock_${storeKey}`;
       const hasStock = (p as any)[stockKey] !== false;
       const isOutlier = outlierData[storeKey] === true;
       const hasUrl = url && url !== '#' && url.length > 5;
 
-      if (price > 0 && hasUrl && !isOutlier && hasStock) {
-        return price;
+      // Un precio es válido solo si tiene tanto promo como regular Y tiene url Y tiene stock Y no es outlier
+      const isValid = promoPrice > 0 && regularPrice > 0 && hasUrl && !isOutlier && hasStock;
+      
+      if (isValid) {
+        validPriceCount++;
       }
-      return 0;
+
+      return {
+        promoPrice: isValid ? promoPrice : 0,
+        regularPrice: isValid ? regularPrice : 0,
+        isValid
+      };
     });
+
+    // Obtener el precio mínimo de los precios válidos
+    const prices = priceData.filter(d => d.isValid).map(d => d.promoPrice);
 
     const productHistory = history.filter(h => {
       if (p.ean && Array.isArray(p.ean) && p.ean.length > 0) {
@@ -157,11 +172,21 @@ const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUp
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Buscamos el producto por categoría y por el nombre transformado a slug
-  const product = products.find((p: any) => 
-    slugify(p.categoria || 'general') === category && 
-    slugify(p.nombre) === slug
-  );
+  // Buscamos el producto por categoría, nombre+EAN, o nombre+ID
+  // El slug puede contener: nombre, nombre-EAN, o nombre-id123
+  const product = products.find((p: any) => {
+    const categoryMatch = slugify(p.categoria || 'general') === category;
+    const nameSlug = slugify(p.nombre);
+    const eanArray = p.ean && Array.isArray(p.ean) ? p.ean : [];
+    const eanValue = eanArray[0] || null;
+    
+    // Opciones de búsqueda: nombre solo, nombre-EAN, nombre-id123
+    const matchByName = nameSlug === slug;
+    const matchByEan = eanValue && (nameSlug + '-' + eanValue) === slug;
+    const matchById = (nameSlug + '-id' + p.id) === slug;
+    
+    return categoryMatch && (matchByName || matchByEan || matchById);
+  });
 
   // Si no hay productos cargados todavía, esperamos
   if (products.length === 0) return null;
@@ -185,9 +210,12 @@ const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUp
 
   // Determinar si el usuario vino del chango
   const isFromChango = location.state?.from === 'chango' || location.pathname === '/chango';
+  // Determinar si el usuario vino de la home (ruta raíz)
+  const isFromHome = location.state?.from === 'home' || location.pathname === '/';
   
   // Encontrar productos para navegación
   // Si vino del chango, filtrar solo productos del chango (favorites)
+  // Si vino de la home, mostrar todos los productos
   // Si vino de una categoría, filtrar productos de esa categoría
   const categoryProducts = useMemo(() => {
     if (isFromChango) {
@@ -197,6 +225,9 @@ const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUp
         favoriteIds.includes(p.id) && 
         p.visible_web !== false
       );
+    } else if (isFromHome) {
+      // Navegación desde home - todos los productos visibles
+      return products.filter((p: any) => p.visible_web !== false);
     } else {
       // Navegación dentro de una categoría
       return products.filter((p: any) => 
@@ -204,7 +235,7 @@ const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUp
         p.visible_web !== false
       );
     }
-  }, [products, product.categoria, isFromChango, favorites]);
+  }, [products, product.categoria, isFromChango, isFromHome, favorites]);
   
   const currentIndex = useMemo(() => {
     return categoryProducts.findIndex((p: any) => p.id === product.id);
@@ -225,7 +256,9 @@ const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUp
     const prevProduct = categoryProducts[newIndex];
     // Mantener el state original (de dónde vino inicialmente)
     const from = location.state?.from || 'category';
-    navigate(`/${slugify(prevProduct.categoria || 'general')}/${slugify(prevProduct.nombre)}`, { state: { from } });
+    const prevEan = prevProduct.ean && Array.isArray(prevProduct.ean) && prevProduct.ean[0] ? prevProduct.ean[0] : null;
+    const prevUnique = prevEan ? `-${prevEan}` : `-id${prevProduct.id}`;
+    navigate(`/${slugify(prevProduct.categoria || 'general')}/${slugify(prevProduct.nombre) + prevUnique}`, { state: { from } });
   }, [categoryProducts, currentIndex, navigate, location.state]);
   
   const handleNextProduct = useCallback(() => {
@@ -242,14 +275,18 @@ const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUp
     const nextProduct = categoryProducts[newIndex];
     // Mantener el state original (de dónde vino inicialmente)
     const from = location.state?.from || 'category';
-    navigate(`/${slugify(nextProduct.categoria || 'general')}/${slugify(nextProduct.nombre)}`, { state: { from } });
+    const nextEan = nextProduct.ean && Array.isArray(nextProduct.ean) && nextProduct.ean[0] ? nextProduct.ean[0] : null;
+    const nextUnique = nextEan ? `-${nextEan}` : `-id${nextProduct.id}`;
+    navigate(`/${slugify(nextProduct.categoria || 'general')}/${slugify(nextProduct.nombre) + nextUnique}`, { state: { from } });
   }, [categoryProducts, currentIndex, navigate, location.state]);
 
   const handleProductSelect = (id: number) => {
     const selectedProduct = products.find((p: any) => p.id === id);
     if (selectedProduct) {
       const from = location.state?.from || 'category';
-      navigate(`/${slugify(selectedProduct.categoria || 'general')}/${slugify(selectedProduct.nombre)}`, { state: { from } });
+      const selectedEan = selectedProduct.ean && Array.isArray(selectedProduct.ean) && selectedProduct.ean[0] ? selectedProduct.ean[0] : null;
+      const selectedUnique = selectedEan ? `-${selectedEan}` : `-id${selectedProduct.id}`;
+      navigate(`/${slugify(selectedProduct.categoria || 'general')}/${slugify(selectedProduct.nombre) + selectedUnique}`, { state: { from } });
     }
   };
 
@@ -815,7 +852,14 @@ const toggleFavorite = useCallback((id: number) => {
   const handleProductClick = useCallback((product: Product) => {
     scrollPositionRef.current = window.scrollY;
     const categorySlug = slugify(product.categoria || 'general');
-    const productSlug = slugify(product.nombre);
+    
+    // INCLUIR EAN EN SLUG para distinguir productos con mismo nombre pero diferente peso (ej: 1.5kg vs 15kg)
+    // Si el EAN no está disponible o está vacío, usar el ID del producto como respaldo
+    const eanArray = product.ean && Array.isArray(product.ean) ? product.ean : [];
+    const eanValue = eanArray.length > 0 && eanArray[0] ? eanArray[0] : null;
+    const uniquePart = eanValue ? `-${eanValue}` : `-id${product.id}`;
+    const productSlug = slugify(product.nombre) + uniquePart;
+    
     // Usar location.pathname directamente pero sin incluirlo en dependencias
     const from = window.location.pathname === '/' ? 'home' : window.location.pathname === '/chango' ? 'chango' : 'category';
     navigate(`/${categorySlug}/${productSlug}`, { state: { from } });
@@ -890,7 +934,7 @@ const toggleFavorite = useCallback((id: number) => {
       products={visibleProducts as any}
       onProductClick={handleProductClick}
       onFavoriteToggle={toggleFavorite}
-      isFavorite={isFavorite}
+      favorites={favorites}
       isCartView={false}
       quantities={favorites}
       onUpdateQuantity={handleFavoriteChangeInCart}
@@ -978,7 +1022,9 @@ const toggleFavorite = useCallback((id: number) => {
         onEANFound={(ean: string) => {
           const found = products.find(p => p.ean && Array.isArray(p.ean) && p.ean.includes(ean));
           if (found) {
-            navigate(`/${slugify(found.categoria || 'general')}/${slugify(found.nombre)}`);
+            const foundEan = found.ean && Array.isArray(found.ean) && found.ean[0] ? found.ean[0] : null;
+            const foundUnique = foundEan ? `-${foundEan}` : `-id${found.id}`;
+            navigate(`/${slugify(found.categoria || 'general')}/${slugify(found.nombre) + foundUnique}`);
           } else {
             alert(`Producto con EAN ${ean} no encontrado`);
           }
@@ -1024,7 +1070,7 @@ const toggleFavorite = useCallback((id: number) => {
                 products={filteredProducts as any}
                 onProductClick={handleProductClick}
                 onFavoriteToggle={toggleFavorite}
-                isFavorite={(id: number) => !!favorites[id]}
+                favorites={favorites}
                 isCartView={true}
                 quantities={favorites}
                 onUpdateQuantity={handleFavoriteChangeInCart}
@@ -1052,7 +1098,7 @@ const toggleFavorite = useCallback((id: number) => {
               products={filteredProducts as any}
               onProductClick={handleProductClick}
               onFavoriteToggle={toggleFavorite}
-              isFavorite={(id: number) => !!favorites[id]}
+              favorites={favorites}
               isCartView={false}
               quantities={favorites}
               onUpdateQuantity={handleFavoriteChangeInCart}
