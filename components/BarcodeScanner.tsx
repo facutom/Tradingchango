@@ -87,61 +87,76 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
   setError(null);
   setCameraStarted(true);
 
-  try {
-    // Forzamos la detención de cualquier rastro previo antes de pedir nuevo acceso
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-    }
+  // 1. Limpieza absoluta de streams previos
+  if (streamRef.current) {
+    streamRef.current.getTracks().forEach(track => track.stop());
+  }
 
-    const constraints = {
-      video: { facingMode: 'environment' }, // Sin medidas fijas para evitar OverconstrainedError
-      audio: false
-    };
+  // 2. Intentar primero con la cámara trasera (configuración flexible)
+  const constraints = [
+    { video: { facingMode: { ideal: 'environment' } }, audio: false }, // Intento 1: Trasera ideal
+    { video: true, audio: false } // Intento 2: Cualquier cámara (el "salvavidas")
+  ];
 
-    const stream = await navigator.mediaDevices.getUserMedia(constraints);
-    streamRef.current = stream;
+  let success = false;
 
-    if (videoRef.current) {
-      videoRef.current.srcObject = stream;
-      
-      // Usamos el evento onloadedmetadata para asegurar que el hardware respondió
-      videoRef.current.onloadedmetadata = async () => {
-        try {
-          await videoRef.current?.play();
-          
-          if (hasBarcodeDetector) {
-            // @ts-ignore
-            const detector = new BarcodeDetector({
-              formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39']
-            });
-            startScanLoop(detector);
-          } else {
-            // Si no hay API nativa, damos un tiempo para el modo manual
-            setTimeout(() => {
-              if (streamRef.current) {
-                setError('Tu navegador no soporta escaneo automático. Usa el modo manual.');
-              }
-            }, 3000);
-          }
-        } catch (playErr) {
-          console.error("Error al dar play al video:", playErr);
-          setError("Haz clic de nuevo en 'Activar Cámara'.");
-        }
-      };
-    }
-  } catch (err: any) {
-    console.error('Error detallado:', err);
-    setCameraStarted(false);
+  for (const constraint of constraints) {
+    if (success) break;
     
-    // Si persiste el NotAllowedError con HTTPS y permisos OK, 
-    // es que el navegador requiere una re-activación manual
-    if (err.name === 'NotAllowedError') {
-      setError('Acceso denegado. Prueba refrescando la página o revisando que no haya otra pestaña abierta con la cámara.');
-    } else {
-      setError(`Error de cámara: ${err.name}`);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia(constraint);
+      streamRef.current = stream;
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        
+        // Atributos necesarios para que el navegador no bloquee el video
+        videoRef.current.setAttribute('playsinline', 'true');
+        videoRef.current.setAttribute('muted', 'true');
+        
+        // Esperar la promesa del play()
+        await videoRef.current.play();
+        success = true;
+        
+        // Una vez que el video corre, activamos el detector
+        if (hasBarcodeDetector) {
+          // @ts-ignore
+          const detector = new BarcodeDetector({
+            formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39']
+          });
+          startScanLoop(detector);
+        } else {
+          // Fallback para cuando no hay API nativa (común en iOS)
+          setTimeout(() => {
+            if (streamRef.current) {
+              setError('Escaneo automático no soportado. Usa el modo manual.');
+            }
+          }, 3000);
+        }
+      }
+    } catch (err: any) {
+      console.warn(`Fallo con el constraint:`, constraint, err.name);
+      // Si llegamos al último intento y falla, mostramos el error
+      if (constraint === constraints[constraints.length - 1]) {
+        setCameraStarted(false);
+        handleCameraError(err);
+      }
     }
   }
-}, [startScanLoop, stopStream]);
+}, [startScanLoop]);
+
+// Función auxiliar para diagnosticar el error real
+const handleCameraError = (err: any) => {
+  if (err.name === 'NotAllowedError') {
+    setError('Acceso denegado. Revisa que no tengas la cámara abierta en otra pestaña o app.');
+  } else if (err.name === 'OverconstrainedError') {
+    setError('La cámara no es compatible con la configuración solicitada.');
+  } else if (err.name === 'NotReadableError') {
+    setError('Error de hardware: La cámara parece estar bloqueada o dañada.');
+  } else {
+    setError(`Error: ${err.name}. Intenta recargar la página.`);
+  }
+};
 
   const handleManualSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
@@ -183,10 +198,11 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
         ) : (
           <video
             ref={videoRef}
-            className="w-full h-48 object-cover"
-            playsInline
-            muted
+            className="w-full h-48 object-cover bg-black"
             autoPlay
+            muted
+            playsInline
+            controls={false}
           />
         )}
         
