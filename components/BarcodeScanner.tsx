@@ -84,30 +84,30 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
   }, []);
 
   const startCamera = useCallback(async () => {
-    setError(null);
-    setCameraStarted(true);
-    
-    // Verificar permisos primero
-    const permission = await checkPermission();
-    console.log('Estado de permiso:', permission);
-    
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { 
-          facingMode: 'environment',
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        },
-        audio: false
-      });
+  setError(null);
+  setCameraStarted(true);
+
+  try {
+    // Forzamos la detención de cualquier rastro previo antes de pedir nuevo acceso
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+    }
+
+    const constraints = {
+      video: { facingMode: 'environment' }, // Sin medidas fijas para evitar OverconstrainedError
+      audio: false
+    };
+
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    streamRef.current = stream;
+
+    if (videoRef.current) {
+      videoRef.current.srcObject = stream;
       
-      streamRef.current = stream;
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current?.play();
+      // Usamos el evento onloadedmetadata para asegurar que el hardware respondió
+      videoRef.current.onloadedmetadata = async () => {
+        try {
+          await videoRef.current?.play();
           
           if (hasBarcodeDetector) {
             // @ts-ignore
@@ -116,40 +116,32 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
             });
             startScanLoop(detector);
           } else {
+            // Si no hay API nativa, damos un tiempo para el modo manual
             setTimeout(() => {
               if (streamRef.current) {
-                stopStream();
-                setError('Tu navegador no soporta escaneo de códigos. Usa el modo manual.');
+                setError('Tu navegador no soporta escaneo automático. Usa el modo manual.');
               }
-            }, 2000);
+            }, 3000);
           }
-        };
-      }
-    } catch (err: any) {
-      console.error('Error completo:', err);
-      setCameraStarted(false);
-      
-      if (err.name === 'NotAllowedError') {
-        setError(
-          '🚫 Permiso bloqueado. Solución:\n\n' +
-          '1. Haz clic en el icono 🔒 en la barra de direcciones\n' +
-          '2. Busca "Cámara" y selecciona "Permitir"\n' +
-          '3. Recarga la página\n\n' +
-          'O usa el modo manual abajo.'
-        );
-      } else if (err.name === 'NotFoundError') {
-        setError('❌ No se encontró cámara en este dispositivo. Usa el modo manual.');
-      } else if (err.name === 'NotReadableError') {
-        setError('⚠️ La cámara está en uso por otra aplicación. Ciérrala e intenta de nuevo.');
-      } else if (err.name === 'OverconstrainedError') {
-        setError('⚠️ La cámara no cumple con los requisitos. Usa el modo manual.');
-      } else if (err.name === 'NotSupportedError' || err.name === 'TypeError') {
-        setError('⚠️ Tu navegador no soporta acceso a cámara o estás en HTTP (necesitas HTTPS).');
-      } else {
-        setError(`❌ Error: ${err.name}. Usa el modo manual.`);
-      }
+        } catch (playErr) {
+          console.error("Error al dar play al video:", playErr);
+          setError("Haz clic de nuevo en 'Activar Cámara'.");
+        }
+      };
     }
-  }, [startScanLoop, stopStream, checkPermission]);
+  } catch (err: any) {
+    console.error('Error detallado:', err);
+    setCameraStarted(false);
+    
+    // Si persiste el NotAllowedError con HTTPS y permisos OK, 
+    // es que el navegador requiere una re-activación manual
+    if (err.name === 'NotAllowedError') {
+      setError('Acceso denegado. Prueba refrescando la página o revisando que no haya otra pestaña abierta con la cámara.');
+    } else {
+      setError(`Error de cámara: ${err.name}`);
+    }
+  }
+}, [startScanLoop, stopStream]);
 
   const handleManualSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
