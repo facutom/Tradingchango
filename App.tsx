@@ -754,10 +754,8 @@ const toggleFavorite = useCallback(async (id: number) => {
       return next;
     });
 
-    // Validar sesión en background y sincronizar
-    try {
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      
+    // Validar sesión en background (sin await para no bloquear UI)
+    supabase.auth.getUser().then(({ data: { user: currentUser } }) => {
       if (!currentUser) {
         setIsAuthOpen(true);
         setFavorites(prev => {
@@ -765,18 +763,21 @@ const toggleFavorite = useCallback(async (id: number) => {
           delete next[id];
           return next;
         });
-        return;
+      } else {
+        // Verificar límite de favoritos sin bloquear
+        setFavorites(prev => {
+          const favoritesCount = Object.keys(prev).length;
+          if (!isPro && favoritesCount > 5) {
+            // Usar setTimeout para no bloquear el click
+            setTimeout(() => alert('Los usuarios FREE solo pueden tener hasta 5 productos en favoritos.'), 10);
+          }
+          return prev;
+        });
       }
-      
-      const favoritesCount = Object.keys(favorites).length + 1;
-      if (!isPro && favoritesCount > 5 && !favorites[id]) {
-        alert('Los usuarios FREE solo pueden tener hasta 5 productos en favoritos.');
-      }
-      
-    } catch (e) {
+    }).catch(e => {
       console.error('Error en toggleFavorite:', e);
-    }
-  }, [isPro, favorites]);
+    });
+  }, [isPro]);
 
 
   const handleFavoriteChangeInCart = useCallback((id: number, delta: number) => {
@@ -828,29 +829,14 @@ const toggleFavorite = useCallback(async (id: number) => {
 
   const scrollPositionRef = useRef(0);
 
-  // Precargar ProductDetail en hover para reducir delay
-  const preloadProductDetail = useCallback(() => {
-    // Precargar el chunk de ProductDetail
-    const link = document.createElement('link');
-    link.rel = 'prefetch';
-    link.as = 'script';
-    // El chunk se llama ProductDetail-*.js
-    const script = document.createElement('script');
-    script.src = '/assets/js/ProductDetail-DNn5t_7E.js'; // Este nombre puede cambiar con el build
-    script.async = true;
-    document.body.appendChild(script);
-  }, []);
-
   const handleProductClick = useCallback((product: Product) => {
     scrollPositionRef.current = window.scrollY;
     const categorySlug = slugify(product.categoria || 'general');
     const productSlug = slugify(product.nombre);
-    // Pasar state para saber si vino del home, chango o de una categoría
-    let from: 'home' | 'chango' | 'category' = 'category';
-    if (location.pathname === '/') from = 'home';
-    else if (location.pathname === '/chango') from = 'chango';
+    // Usar location.pathname directamente pero sin incluirlo en dependencias
+    const from = window.location.pathname === '/' ? 'home' : window.location.pathname === '/chango' ? 'chango' : 'category';
     navigate(`/${categorySlug}/${productSlug}`, { state: { from } });
-  }, [navigate, location.pathname]);
+  }, [navigate]);
 
   useEffect(() => {
     const listPaths = ['/', '/chango', '/carnes', '/verdu', '/bebidas', '/almacen', '/lacteos', '/limpieza', '/perfumeria', '/mascotas'];
