@@ -96,10 +96,11 @@ const processProducts = (
         isUp, 
         isDown,
         variation: diff 
-      }, 
-      prices 
+      },
+      prices,
+      validPriceCount: v.length
     };
-  }).filter(p => p.prices.filter((price: number) => price > 0).length >= 1);
+  });
 };
 
 const LoadingSpinner = () => (
@@ -643,20 +644,25 @@ const App: React.FC = () => {
     // Usar función optimizada para procesar productos - calcula prices y stats una sola vez
     let result = processProducts(products, history, STORES);
 
-    if (currentPath === '/carnes') result = result.filter(p => normalizeText(p.categoria || '').includes('carne'));
-    else if (currentPath === '/verdu') result = result.filter(p => normalizeText(p.categoria || '').includes('verdu') || normalizeText(p.categoria || '').includes('fruta'));
-    else if (currentPath === '/bebidas') result = result.filter(p => normalizeText(p.categoria || '').includes('bebida'));
-    else if (currentPath === '/lacteos') result = result.filter(p => normalizeText(p.categoria || '').includes('lacteo'));
-    else if (currentPath === '/almacen') result = result.filter(p => normalizeText(p.categoria || '').includes('almacen'));
-    else if (currentPath === '/limpieza') result = result.filter(p => normalizeText(p.categoria || '').includes('limpieza'));
-    else if (currentPath === '/perfumeria') result = result.filter(p => normalizeText(p.categoria || '').includes('perfumeria'));
-    else if (currentPath === '/mascotas') result = result.filter(p => normalizeText(p.categoria || '').includes('mascota'));
+    // Filtro por categoría para listado general (solo productos con >= 2 precios válidos)
+    if (currentPath === '/carnes') result = result.filter(p => normalizeText(p.categoria || '').includes('carne') && p.validPriceCount >= 2);
+    else if (currentPath === '/verdu') result = result.filter(p => (normalizeText(p.categoria || '').includes('verdu') || normalizeText(p.categoria || '').includes('fruta')) && p.validPriceCount >= 2);
+    else if (currentPath === '/bebidas') result = result.filter(p => normalizeText(p.categoria || '').includes('bebida') && p.validPriceCount >= 2);
+    else if (currentPath === '/lacteos') result = result.filter(p => normalizeText(p.categoria || '').includes('lacteo') && p.validPriceCount >= 2);
+    else if (currentPath === '/almacen') result = result.filter(p => normalizeText(p.categoria || '').includes('almacen') && p.validPriceCount >= 2);
+    else if (currentPath === '/limpieza') result = result.filter(p => normalizeText(p.categoria || '').includes('limpieza') && p.validPriceCount >= 2);
+    else if (currentPath === '/perfumeria') result = result.filter(p => normalizeText(p.categoria || '').includes('perfumeria') && p.validPriceCount >= 2);
+    else if (currentPath === '/mascotas') result = result.filter(p => normalizeText(p.categoria || '').includes('mascota') && p.validPriceCount >= 2);
 
     // --- FILTRO DE BÚSQUEDA OPTIMIZADO ---
     if (debouncedSearchTerm) {
       const t = debouncedSearchTerm.toLowerCase().trim(); // Quitamos espacios locos
       if (t.length > 0) { // Solo filtramos si realmente hay texto
         result = result.filter(p => {
+          // Solo mostrar productos con >= 2 precios válidos en el listado
+          const validPrices = p.prices.filter((price: number) => price > 0).length;
+          if (validPrices < 2) return false;
+          
           // Buscamos en nombre y ticker (si existe)
           const nameMatch = p.nombre.toLowerCase().includes(t);
           const tickerMatch = p.ticker && p.ticker.toLowerCase().includes(t);
@@ -667,6 +673,8 @@ const App: React.FC = () => {
 
     // --- FILTRO DE TENDENCIAS ---
     if (trendFilter && currentPath !== '/chango') {
+      // Primero filtramos por >= 2 precios válidos
+      result = result.filter(p => p.prices.filter((price: number) => price > 0).length >= 2);
       result = result.filter(p => trendFilter === 'up' ? p.stats.isUp : p.stats.isDown);
       
       // Ordenamos por la magnitud de la variación.

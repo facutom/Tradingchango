@@ -269,7 +269,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
     };
   }, [onClose, onPreviousProduct, onNextProduct]);
 
-  const { minPrice, minStore, avgPrice, minStoreUrl, unitPrice, unitMeasure, outliersDetected } = useMemo(() => {
+  const { minPrice, minStore, avgPrice, minStoreUrl, unitPrice, unitMeasure, outliersDetected, validPriceCount = 0 } = useMemo(() => {
     if (!product) return { minPrice: 0, minStore: '', avgPrice: 0, minStoreUrl: '#', unitPrice: 0, unitMeasure: '', outliersDetected: [] };
     
     const prices = STORES
@@ -301,7 +301,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       })
       .filter(Boolean) as string[];
 
-    if (prices.length === 0) return { minPrice: 0, minStore: '', avgPrice: 0, minStoreUrl: '#', unitPrice: 0, unitMeasure: '', outliersDetected };
+    if (prices.length === 0) return { minPrice: 0, minStore: '', avgPrice: 0, minStoreUrl: '#', unitPrice: 0, unitMeasure: '', outliersDetected, validPriceCount: 0 };
     
     const min = Math.min(...prices.map(p => p.val));
     const winner = prices.find(p => p.val === min);
@@ -314,7 +314,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       minStoreUrl: winner?.url || '#',
       unitPrice: (min > 0 && contNum > 0) ? Math.round(min / contNum) : 0,
       unitMeasure: (product as any)?.unidad_medida || '',
-      outliersDetected
+      outliersDetected,
+      validPriceCount: prices.length
     };
   }, [product, outlierData]);
 
@@ -393,7 +394,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
             <button onClick={handleShare} className="text-black dark:text-[#e9edef] p-2">
               <i className="fa-solid fa-share-nodes text-lg"></i>
             </button>
-            <button onClick={() => onFavoriteToggle(product.id)} className={`text-xl ${isFavorite ? 'text-star-gold' : 'text-black dark:text-[#e9edef]'}`}>
+            <button onClick={() => validPriceCount >= 2 && onFavoriteToggle(product.id)} className={`text-xl ${isFavorite ? 'text-star-gold' : validPriceCount >= 2 ? 'text-black dark:text-[#e9edef]' : 'text-neutral-400 dark:text-neutral-600'}`} disabled={validPriceCount < 2}>
               <i className="fa-solid fa-cart-shopping"></i>
             </button>
           </div>
@@ -419,12 +420,20 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
               
               {minPrice > 0 && minStore && (
                 <div className="flex items-center gap-1.5 mb-2">
-                  <span className="text-[11px] font-black text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                    Mejor precio hoy en {minStore}
-                  </span>
-                  <a href={minStoreUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:scale-110 transition-transform">
-                    <i className="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-                  </a>
+                  {validPriceCount >= 2 ? (
+                    <>
+                      <span className="text-[11px] font-black text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                        Mejor precio hoy en {minStore}
+                      </span>
+                      <a href={minStoreUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:scale-110 transition-transform">
+                        <i className="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                      </a>
+                    </>
+                  ) : (
+                    <span className="text-[11px] font-black text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+                      Solo 1 precio disponible
+                    </span>
+                  )}
                 </div>
               )}
 
@@ -669,16 +678,16 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
               )}
               
               <button 
-                onClick={() => onFavoriteToggle(product.id)} 
-                disabled={!product}
+                onClick={() => validPriceCount >= 2 && onFavoriteToggle(product.id)} 
+                disabled={!product || validPriceCount < 2}
                 className={`flex-1 rounded-lg font-black uppercase tracking-[0.1em] text-xs flex items-center justify-center gap-2 active:scale-95 transition-all ${
                   isFavorite 
                     ? 'bg-star-gold text-white shadow-lg shadow-star-gold/20' 
-                    : 'bg-primary dark:bg-[#e9edef] text-white dark:text-black border dark:border-[#e9edef]'
+                    : validPriceCount >= 2 ? 'bg-primary dark:bg-[#e9edef] text-white dark:text-black border dark:border-[#e9edef]' : 'bg-neutral-300 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400 cursor-not-allowed'
                 }`}
               >
                 <i className="fa-solid fa-cart-shopping"></i>
-                {isFavorite ? 'En el Chango' : 'Añadir al Chango'}
+                {isFavorite ? 'En el Chango' : validPriceCount >= 2 ? 'Añadir al Chango' : 'Solo 1 precio'}
               </button>
             </div>
           </div>

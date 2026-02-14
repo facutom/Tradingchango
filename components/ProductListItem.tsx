@@ -13,6 +13,7 @@ interface ProductWithStats extends Product {
     isUp: boolean;
     isDown: boolean;
   };
+  validPriceCount?: number;
 }
 
 const STORES = [
@@ -69,7 +70,7 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
 }) => {
 
   // Memoizar cálculos para evitar recálculos
-  const { displayMinPrice, badges } = React.useMemo(() => {
+  const { displayMinPrice, badges, validPriceCount } = React.useMemo(() => {
     try {
       const outlierData = typeof p.outliers === 'string' 
         ? JSON.parse(p.outliers) 
@@ -112,12 +113,14 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
 
       return {
         displayMinPrice: minPrice,
-        badges: getPromoBadges(filteredOferta)
+        badges: getPromoBadges(filteredOferta),
+        validPriceCount: validPrices.length
       };
     } catch (e) {
       return {
         displayMinPrice: p.stats.min,
-        badges: getPromoBadges(p.oferta_gondola)
+        badges: getPromoBadges(p.oferta_gondola),
+        validPriceCount: 0
       };
     }
   }, [p]);
@@ -168,12 +171,20 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
         </div>
 
         <div className="text-right flex flex-col items-end min-w-[80px]">
-          <span className="font-mono font-[800] text-black dark:text-white text-[15px] leading-none">
-            ${format(displayMinPrice)}
-          </span>
-          <span className={`font-mono text-[12px] font-bold mt-0.5 ${p.stats.trendClass} leading-none`}>
-            {p.stats.icon} {p.stats.spread}%
-          </span>
+          {validPriceCount >= 2 ? (
+            <>
+              <span className="font-mono font-[800] text-black dark:text-white text-[15px] leading-none">
+                ${format(displayMinPrice)}
+              </span>
+              <span className={`font-mono text-[12px] font-bold mt-0.5 ${p.stats.trendClass} leading-none`}>
+                {p.stats.icon} {p.stats.spread}%
+              </span>
+            </>
+          ) : (
+            <span className="font-mono text-[11px] text-neutral-400 dark:text-neutral-600">
+              1 precio
+            </span>
+          )}
         </div>
       </div>
 
@@ -193,10 +204,13 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
           <button 
             onClick={(e) => {
               e.stopPropagation();
-              onFavoriteToggle(p.id);
+              if (validPriceCount >= 2) {
+                onFavoriteToggle(p.id);
+              }
             }}
-            aria-label="Agregar al carrito"
-            className={`transition-all p-1.5 active:scale-90 ${isFavorite ? 'text-star-gold' : 'text-neutral-600 dark:text-neutral-800'}`}
+            aria-label={validPriceCount >= 2 ? "Agregar al carrito" : "Solo 1 precio disponible"}
+            className={`transition-all p-1.5 active:scale-90 ${isFavorite ? 'text-star-gold' : validPriceCount >= 2 ? 'text-neutral-600 dark:text-neutral-800' : 'text-neutral-300 dark:text-neutral-700 cursor-not-allowed'}`}
+            disabled={validPriceCount < 2}
           >
             <i className="fa-solid fa-cart-shopping text-[20px]"></i>
           </button>
