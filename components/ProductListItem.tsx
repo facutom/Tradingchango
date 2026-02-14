@@ -182,7 +182,7 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
             </>
           ) : (
             <span className="font-mono text-[11px] text-neutral-400 dark:text-neutral-600">
-              1 precio
+              No disponible
             </span>
           )}
         </div>

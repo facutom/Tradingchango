@@ -653,6 +653,7 @@ const App: React.FC = () => {
     else if (currentPath === '/limpieza') result = result.filter(p => normalizeText(p.categoria || '').includes('limpieza') && p.validPriceCount >= 2);
     else if (currentPath === '/perfumeria') result = result.filter(p => normalizeText(p.categoria || '').includes('perfumeria') && p.validPriceCount >= 2);
     else if (currentPath === '/mascotas') result = result.filter(p => normalizeText(p.categoria || '').includes('mascota') && p.validPriceCount >= 2);
+    else if (currentPath === '/' || currentPath === '/chango') result = result.filter(p => p.validPriceCount >= 2);
 
     // --- FILTRO DE BÚSQUEDA OPTIMIZADO ---
     if (debouncedSearchTerm) {
