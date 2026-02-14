@@ -192,6 +192,8 @@ const normalizeText = (text: string) => {
   return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 };
 
+import useDebounce from './hooks/useDebounce';
+
 const App: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [history, setHistory] = useState<PriceHistory[]>([]);
@@ -202,6 +204,7 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [currentTab, setCurrentTab] = useState<TabType>('home');
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [trendFilter, setTrendFilter] = useState<'up' | 'down' | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -612,8 +615,8 @@ const App: React.FC = () => {
     else if (currentPath === '/mascotas') result = result.filter(p => normalizeText(p.categoria || '').includes('mascota'));
 
     // --- FILTRO DE BÚSQUEDA OPTIMIZADO ---
-    if (searchTerm) {
-      const t = searchTerm.toLowerCase().trim(); // Quitamos espacios locos
+    if (debouncedSearchTerm) {
+      const t = debouncedSearchTerm.toLowerCase().trim(); // Quitamos espacios locos
       if (t.length > 0) { // Solo filtramos si realmente hay texto
         result = result.filter(p => {
           // Buscamos en nombre y ticker (si existe)
@@ -639,7 +642,7 @@ const App: React.FC = () => {
     }
 
     return result;
-  }, [products, history, location.pathname, searchTerm, trendFilter]); // useMemo protege el rendimiento
+  }, [products, history, location.pathname, debouncedSearchTerm, trendFilter]); // useMemo protege el rendimiento
 
   // Productos de la categoría original (sin filtros de búsqueda/tendencia) para métricas de CategorySEO
   const categoryProducts = useMemo(() => {

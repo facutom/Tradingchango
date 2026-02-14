@@ -2,6 +2,7 @@ import React from 'react';
 import { Product } from '../types';
 import ProductListItem from './ProductListItem';
 import { memo } from 'react';
+import { FixedSizeList } from 'react-window';
 
 interface ProductWithStats extends Product {
   stats: {
@@ -68,12 +69,10 @@ const ProductList: React.FC<ProductListProps> = ({
     );
   }
 
-  return (
-    <div 
-      className="divide-neutral-100 dark:divide-neutral-900"
-      style={{ contentVisibility: 'auto', containIntrinsicSize: '1px 1000px' }}
-    >
-      {visibleProducts.map((p, index) => (
+  const Row = ({ index, style }: { index: number, style: React.CSSProperties }) => {
+    const p = visibleProducts[index];
+    return (
+      <div style={style}>
         <ProductListItem
           key={p.id}
           product={p}
@@ -88,7 +87,42 @@ const ProductList: React.FC<ProductListProps> = ({
           onTogglePurchased={onTogglePurchased}
           onUpdateQuantity={onUpdateQuantity}
         />
-      ))}
+      </div>
+    );
+  };
+
+  return (
+    <div 
+      className="divide-neutral-100 dark:divide-neutral-900"
+      style={{ contentVisibility: 'auto', containIntrinsicSize: '1px 1000px' }}
+    >
+      {visibleProducts.length > 100 ? (
+                <FixedSizeList
+                  height={window.innerHeight}
+                  itemCount={visibleProducts.length}
+                  itemSize={100}
+                  width="100%"
+                >
+                  {Row}
+                </FixedSizeList>
+              ) : (
+        visibleProducts.map((p, index) => (
+          <ProductListItem
+            key={p.id}
+            product={p}
+            isFirst={index === 0}
+            index={index}
+            isFavorite={isFavorite(p.id)}
+            isPurchased={purchasedItems?.has(p.id) || false}
+            quantity={quantities ? (quantities[p.id] || 1) : 1}
+            isCartView={isCartView}
+            onProductClick={onProductClick}
+            onFavoriteToggle={onFavoriteToggle || (() => {})}
+            onTogglePurchased={onTogglePurchased}
+            onUpdateQuantity={onUpdateQuantity}
+          />
+        ))
+      )}
     </div>
   );
 };
