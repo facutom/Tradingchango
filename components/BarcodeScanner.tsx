@@ -11,6 +11,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
   const [error, setError] = useState<string | null>(null);
   const [manualInput, setManualInput] = useState('');
   const [cameraStarted, setCameraStarted] = useState(false);
+  const [permissionState, setPermissionState] = useState<string>('');
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const animationRef = useRef<number | null>(null);
@@ -68,9 +69,27 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
     animationRef.current = requestAnimationFrame(scan);
   }, [detectBarcodes]);
 
+  const checkPermission = useCallback(async () => {
+    try {
+      // Verificar si la API de permisos está disponible
+      if ('permissions' in navigator) {
+        const result = await navigator.permissions.query({ name: 'camera' as PermissionName });
+        setPermissionState(result.state);
+        return result.state;
+      }
+    } catch (e) {
+      console.log('No se pudo verificar permisos:', e);
+    }
+    return 'unknown';
+  }, []);
+
   const startCamera = useCallback(async () => {
     setError(null);
     setCameraStarted(true);
+    
+    // Verificar permisos primero
+    const permission = await checkPermission();
+    console.log('Estado de permiso:', permission);
     
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -107,21 +126,30 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
         };
       }
     } catch (err: any) {
-      console.error('Error de cámara:', err);
+      console.error('Error completo:', err);
+      setCameraStarted(false);
       
       if (err.name === 'NotAllowedError') {
-        setError('Permiso de cámara denegado. Por favor, permite el acceso a la cámara en tu navegador.');
+        setError(
+          '🚫 Permiso bloqueado. Solución:\n\n' +
+          '1. Haz clic en el icono 🔒 en la barra de direcciones\n' +
+          '2. Busca "Cámara" y selecciona "Permitir"\n' +
+          '3. Recarga la página\n\n' +
+          'O usa el modo manual abajo.'
+        );
       } else if (err.name === 'NotFoundError') {
-        setError('No se encontró cámara en este dispositivo.');
+        setError('❌ No se encontró cámara en este dispositivo. Usa el modo manual.');
       } else if (err.name === 'NotReadableError') {
-        setError('La cámara está en uso por otra aplicación.');
+        setError('⚠️ La cámara está en uso por otra aplicación. Ciérrala e intenta de nuevo.');
       } else if (err.name === 'OverconstrainedError') {
-        setError('La cámara no cumple con los requisitos.');
+        setError('⚠️ La cámara no cumple con los requisitos. Usa el modo manual.');
+      } else if (err.name === 'NotSupportedError' || err.name === 'TypeError') {
+        setError('⚠️ Tu navegador no soporta acceso a cámara o estás en HTTP (necesitas HTTPS).');
       } else {
-        setError('Error al acceder a la cámara.');
+        setError(`❌ Error: ${err.name}. Usa el modo manual.`);
       }
     }
-  }, [startScanLoop, stopStream]);
+  }, [startScanLoop, stopStream, checkPermission]);
 
   const handleManualSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
@@ -133,26 +161,32 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
   }, [manualInput, onScan]);
 
   useEffect(() => {
-    // NO iniciar la cámara automáticamente
+    checkPermission();
     
     return () => {
       stopStream();
     };
-  }, [stopStream]);
+  }, [stopStream, checkPermission]);
 
   return (
-    <div className="absolute top-full left-0 right-0 mt-2 bg-black rounded-lg overflow-hidden z-50">
+    <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1f2c34] rounded-lg overflow-hidden shadow-lg z-50">
       {/* Video container */}
-      <div className="relative">
+      <div className="relative bg-black">
         {!cameraStarted ? (
-          // Botón para iniciar la cámara
-          <div className="w-full h-48 bg-neutral-800 flex items-center justify-center">
+          <div className="w-full h-48 flex flex-col items-center justify-center gap-3 p-4">
             <button
               onClick={startCamera}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
             >
               📷 Activar Cámara
             </button>
+            {permissionState && (
+              <p className="text-xs text-neutral-400">
+                Estado: {permissionState === 'granted' ? '✅ Permitido' : 
+                         permissionState === 'denied' ? '🚫 Bloqueado' : 
+                         '⚠️ No verificado'}
+              </p>
+            )}
           </div>
         ) : (
           <video
@@ -166,8 +200,10 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
         
         {/* Overlay de error */}
         {error && (
-          <div className="absolute inset-0 bg-black/80 flex items-center justify-center p-4">
-            <p className="text-white text-sm text-center">{error}</p>
+          <div className="absolute inset-0 bg-black/95 flex items-center justify-center p-4">
+            <p className="text-white text-xs text-left whitespace-pre-line leading-relaxed">
+              {error}
+            </p>
           </div>
         )}
         
@@ -180,37 +216,38 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
       </div>
       
       {/* Modo manual */}
-      <form onSubmit={handleManualSubmit} className="bg-white dark:bg-[#1f2c34] p-3">
+      <form onSubmit={handleManualSubmit} className="bg-white dark:bg-[#1f2c34] p-3 border-t border-neutral-200 dark:border-[#233138]">
         <div className="flex gap-2">
           <input
             type="text"
             value={manualInput}
             onChange={(e) => setManualInput(e.target.value)}
-            placeholder="Escribe el código EAN..."
+            placeholder="Código EAN manual..."
             className="flex-1 px-3 py-2 text-sm border border-neutral-300 dark:border-[#233138] rounded-lg bg-neutral-50 dark:bg-[#0d1418] text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             inputMode="numeric"
+            autoFocus
           />
           <button
             type="submit"
             disabled={manualInput.length < 8}
-            className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
           >
-            Buscar
+            ✓
           </button>
         </div>
         <p className="text-xs text-neutral-500 mt-2 text-center">
-          {cameraStarted ? 'O apunta la cámara al código de barras' : 'O activa la cámara para escanear'}
+          Escribe el código o {cameraStarted ? 'escanea con la cámara' : 'activa la cámara'}
         </p>
       </form>
       
       {/* Botón cerrar */}
-      <div className="bg-neutral-100 dark:bg-[#0d1418] p-2 flex justify-end">
+      <div className="bg-neutral-100 dark:bg-[#0d1418] p-2 flex justify-end border-t border-neutral-200 dark:border-[#233138]">
         <button
           onClick={() => {
             stopStream();
             onClose();
           }}
-          className="px-4 py-1.5 bg-neutral-200 dark:bg-neutral-700 text-sm rounded-lg"
+          className="px-4 py-1.5 bg-neutral-200 dark:bg-neutral-700 text-sm rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors"
         >
           Cancelar
         </button>
