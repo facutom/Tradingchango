@@ -34,7 +34,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
     try {
       console.log("Solicitando acceso a la cámara...");
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' },
+        video: true,
         audio: false
       });
 
