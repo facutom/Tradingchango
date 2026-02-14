@@ -87,60 +87,53 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
   setError(null);
   setCameraStarted(true);
 
-  // 1. Limpieza absoluta de streams previos
-  if (streamRef.current) {
-    streamRef.current.getTracks().forEach(track => track.stop());
-  }
+  try {
+    // Parámetros ultra-compatibles para Chrome Android
+    const constraints = {
+      video: {
+        // En lugar de un objeto ideal, pasamos el string directo
+        // para que Chrome elija la cámara trasera por defecto
+        facingMode: "environment" 
+      },
+      audio: false
+    };
 
-  // 2. Intentar primero con la cámara trasera (configuración flexible)
-  const constraints = [
-    { video: { facingMode: { ideal: 'environment' } }, audio: false }, // Intento 1: Trasera ideal
-    { video: true, audio: false } // Intento 2: Cualquier cámara (el "salvavidas")
-  ];
-
-  let success = false;
-
-  for (const constraint of constraints) {
-    if (success) break;
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
     
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia(constraint);
+    if (videoRef.current) {
+      videoRef.current.srcObject = stream;
+      
+      // En Android, necesitamos asegurar que el video NO intente 
+      // ponerse en pantalla completa automáticamente
+      videoRef.current.setAttribute('playsinline', 'true');
+      
+      // Pequeño delay para asegurar que el stream está asignado
+      setTimeout(() => {
+        videoRef.current?.play().catch(e => {
+          console.error("Error al reproducir:", e);
+          setError("Toca el video para iniciar la cámara");
+        });
+      }, 100);
+
       streamRef.current = stream;
 
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        
-        // Atributos necesarios para que el navegador no bloquee el video
-        videoRef.current.setAttribute('playsinline', 'true');
-        videoRef.current.setAttribute('muted', 'true');
-        
-        // Esperar la promesa del play()
-        await videoRef.current.play();
-        success = true;
-        
-        // Una vez que el video corre, activamos el detector
-        if (hasBarcodeDetector) {
-          // @ts-ignore
-          const detector = new BarcodeDetector({
-            formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39']
-          });
-          startScanLoop(detector);
-        } else {
-          // Fallback para cuando no hay API nativa (común en iOS)
-          setTimeout(() => {
-            if (streamRef.current) {
-              setError('Escaneo automático no soportado. Usa el modo manual.');
-            }
-          }, 3000);
-        }
+      // Iniciar detección
+      if (hasBarcodeDetector) {
+        // @ts-ignore
+        const detector = new BarcodeDetector({
+          formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39']
+        });
+        startScanLoop(detector);
       }
-    } catch (err: any) {
-      console.warn(`Fallo con el constraint:`, constraint, err.name);
-      // Si llegamos al último intento y falla, mostramos el error
-      if (constraint === constraints[constraints.length - 1]) {
-        setCameraStarted(false);
-        handleCameraError(err);
-      }
+    }
+  } catch (err: any) {
+    console.error("Error capturado:", err.name);
+    setCameraStarted(false);
+    
+    if (err.name === 'NotAllowedError') {
+      setError("Permiso denegado. Ve a Ajustes > Apps > Chrome > Permisos y activa la Cámara.");
+    } else {
+      setError(`No se pudo conectar: ${err.name}`);
     }
   }
 }, [startScanLoop]);
