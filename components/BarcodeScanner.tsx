@@ -1,5 +1,8 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 
+// Throttle para el escaneo (ms) - reduce carga de CPU
+const SCAN_THROTTLE_MS = 250;
+
 interface BarcodeScannerProps {
   onScan: (ean: string) => void;
   onClose: () => void;
@@ -11,6 +14,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const animationRef = useRef<number | null>(null);
+  const lastScanTimeRef = useRef<number>(0);
 
   const stopStream = useCallback(() => {
     if (streamRef.current) {
@@ -59,11 +63,21 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
         const scan = async () => {
           if (!videoRef.current || !isScanning) return;
 
+          // Throttle: solo escanear cada SCAN_THROTTLE_MS
+          const now = Date.now();
+          if (now - lastScanTimeRef.current < SCAN_THROTTLE_MS) {
+            if (isScanning) {
+              animationRef.current = requestAnimationFrame(scan);
+            }
+            return;
+          }
+
           try {
             const barcodes = await barcodeDetector.detect(videoRef.current);
 
             if (barcodes.length > 0) {
               const ean = barcodes[0].rawValue;
+              lastScanTimeRef.current = now;
               stopStream();
               onScan(ean);
               return;
@@ -72,7 +86,8 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
             console.error('Error escaneando:', e);
           }
 
-          // Continuar escaneando
+          // Actualizar tiempo y continuar escaneando
+          lastScanTimeRef.current = now;
           if (isScanning) {
             animationRef.current = requestAnimationFrame(scan);
           }

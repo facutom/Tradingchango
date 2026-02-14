@@ -19,6 +19,89 @@ const ContactView = lazy(() => import('./components/InfoViews').then(module => (
 import { Routes, Route, useNavigate, useLocation, useParams, Navigate } from 'react-router-dom';
 import MetaTags from './components/MetaTags';
 
+// Utilidad para procesar productos una sola vez - evita cálculos duplicados
+const processProducts = (
+  products: Product[], 
+  history: PriceHistory[],
+  STORES: readonly { name: string; key: string; url: string }[]
+) => {
+  return products.map(p => {
+    let outlierData: any = {};
+    try {
+      outlierData = typeof p.outliers === 'string' ? JSON.parse(p.outliers) : (p.outliers || {});
+    } catch (e) { outlierData = {}; }
+
+    const prices = STORES.map(s => {
+      const storeKey = s.name.toLowerCase().replace(' ', '');
+      const price = (p as any)[s.key] || 0;
+      const url = (p as any)[s.url];
+      const stockKey = `stock_${storeKey}`;
+      const hasStock = (p as any)[stockKey] !== false;
+      const isOutlier = outlierData[storeKey] === true;
+      const hasUrl = url && url !== '#' && url.length > 5;
+
+      if (price > 0 && hasUrl && !isOutlier && hasStock) {
+        return price;
+      }
+      return 0;
+    });
+
+    const productHistory = history.filter(h => {
+      if (p.ean && Array.isArray(p.ean) && p.ean.length > 0) {
+        return p.ean.includes(h.ean || '');
+      }
+      return h.nombre_producto === p.nombre;
+    });
+    let h7_price = 0;
+
+    if (productHistory.length > 0) {
+      productHistory.sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
+      h7_price = productHistory[0].precio_minimo || 0;
+    }
+    
+    if (h7_price === 0) {
+      const currentPrices = prices.filter(x => x > 0);
+      if (currentPrices.length > 0) {
+        h7_price = Math.min(...currentPrices);
+      }
+    }
+    
+    // Calcular stats
+    const v = prices.filter(x => x > 0);
+    let min = 0, diff = 0, tc = 'text-neutral-500', icon = '-', isUp = false, isDown = false;
+    
+    if (v.length > 0) {
+      min = Math.min(...v);
+      if (h7_price > 0) {
+        diff = ((min - h7_price) / h7_price) * 100;
+        if (diff > 0.1) { 
+          tc = 'text-red-600'; 
+          icon = '▲'; 
+          isUp = true; 
+        } else if (diff < -0.1) { 
+          tc = 'text-green-700'; 
+          icon = '▼'; 
+          isDown = true; 
+        }
+      }
+    }
+    
+    return { 
+      ...p, 
+      stats: { 
+        min, 
+        spread: Math.abs(diff).toFixed(1),
+        trendClass: tc, 
+        icon, 
+        isUp, 
+        isDown,
+        variation: diff 
+      }, 
+      prices 
+    };
+  }).filter(p => p.prices.filter((price: number) => price > 0).length >= 1);
+};
+
 const LoadingSpinner = () => (
   <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm">
     <div className="w-12 h-12 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
@@ -277,8 +360,9 @@ const App: React.FC = () => {
       script.src = "https://platform.twitter.com/widgets.js";
       script.async = true;
       script.charset = "utf-8";
+      script.defer = true; // No bloquear renderizado
       document.body.appendChild(script);
-    }, 3000); // Retraso de 3 segundos
+    }, 10000); // Retraso de 10 segundos para no afectar rendimiento inicial
 
     return () => clearTimeout(timer);
   }, []);
@@ -554,56 +638,8 @@ const App: React.FC = () => {
 
   const baseFilteredProducts = useMemo(() => {
     const currentPath = location.pathname;
-    let result = products.map(p => {
-      let outlierData: any = {};
-      try {
-        outlierData = typeof p.outliers === 'string' ? JSON.parse(p.outliers) : (p.outliers || {});
-      } catch (e) { outlierData = {}; }
-
-      const prices = STORES.map(s => {
-        const storeKey = s.name.toLowerCase().replace(' ', '');
-        const price = (p as any)[s.key] || 0;
-        const url = (p as any)[s.url];
-        const stockKey = `stock_${storeKey}`;
-        const hasStock = (p as any)[stockKey] !== false;
-        const isOutlier = outlierData[storeKey] === true;
-        const hasUrl = url && url !== '#' && url.length > 5;
-
-        if (price > 0 && hasUrl && !isOutlier && hasStock) {
-          return price;
-        }
-        return 0;
-      });
-
-      const productHistory = history.filter(h => {
-        if (p.ean && Array.isArray(p.ean) && p.ean.length > 0) {
-          return p.ean.includes(h.ean || '');
-        }
-        return h.nombre_producto === p.nombre;
-      });
-      let h7_price = 0;
-
-      // Si hay historial con al menos 2 registros en fechas diferentes, usamos el precio más antiguo
-      if (productHistory.length > 0) {
-        // Ordenamos por fecha para encontrar el más antiguo
-        productHistory.sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
-        
-        const oldestRecord = productHistory[0];
-        // Usamos el precio más antiguo como base
-        h7_price = oldestRecord.precio_minimo || 0;
-      }
-      
-      // Si no hay historial, usamos el precio actual como base (mostrará 0.0%)
-      if (h7_price === 0) {
-        const currentPrices = prices.filter(x => x > 0);
-        if (currentPrices.length > 0) {
-          h7_price = Math.min(...currentPrices);
-        }
-      }
-      
-      return { ...p, stats: getStats(prices, h7_price), prices };
-    })
-    .filter(p => p.prices.filter((price: number) => price > 0).length >= 1);
+    // Usar función optimizada para procesar productos - calcula prices y stats una sola vez
+    let result = processProducts(products, history, STORES);
 
     if (currentPath === '/carnes') result = result.filter(p => normalizeText(p.categoria || '').includes('carne'));
     else if (currentPath === '/verdu') result = result.filter(p => normalizeText(p.categoria || '').includes('verdu') || normalizeText(p.categoria || '').includes('fruta'));
@@ -645,59 +681,15 @@ const App: React.FC = () => {
   }, [products, history, location.pathname, debouncedSearchTerm, trendFilter]); // useMemo protege el rendimiento
 
   // Productos de la categoría original (sin filtros de búsqueda/tendencia) para métricas de CategorySEO
+  // Optimización: reuse los productos ya procesados de baseFilteredProducts
   const categoryProducts = useMemo(() => {
     if (location.pathname === '/chango') return [];
     
+    // Usar los productos ya procesados - solo aplicar filtro de categoría
     const currentPath = location.pathname;
-    let result = products.map(p => {
-      let outlierData: any = {};
-      try {
-        outlierData = typeof p.outliers === 'string' ? JSON.parse(p.outliers) : (p.outliers || {});
-      } catch (e) { outlierData = {}; }
+    let result = [...baseFilteredProducts]; // Copia para no mutar
 
-      const prices = STORES.map(s => {
-        const storeKey = s.name.toLowerCase().replace(' ', '');
-        const price = (p as any)[s.key] || 0;
-        const url = (p as any)[s.url];
-        const stockKey = `stock_${storeKey}`;
-        const hasStock = (p as any)[stockKey] !== false;
-        const isOutlier = outlierData[storeKey] === true;
-        const hasUrl = url && url !== '#' && url.length > 5;
-
-        if (price > 0 && hasUrl && !isOutlier && hasStock) {
-          return price;
-        }
-        return 0;
-      });
-
-      const productHistory = history.filter(h => {
-        // Buscar por EAN primero
-        if (p.ean && Array.isArray(p.ean) && p.ean.length > 0) {
-          const hasEanMatch = p.ean.includes(h.ean || '');
-          if (hasEanMatch) return true;
-        }
-        // Fallback: comparar nombres normalizados
-        return normalizeText(h.nombre_producto) === normalizeText(p.nombre);
-      });
-      let h7_price = 0;
-
-      if (productHistory.length > 0) {
-        productHistory.sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
-        h7_price = productHistory[0].precio_minimo || 0;
-      }
-      
-      if (h7_price === 0) {
-        const currentPrices = prices.filter(x => x > 0);
-        if (currentPrices.length > 0) {
-          h7_price = Math.min(...currentPrices);
-        }
-      }
-      
-      return { ...p, stats: getStats(prices, h7_price), prices };
-    })
-    .filter(p => p.prices.filter((price: number) => price > 0).length >= 1);
-
-    // Solo filtrar por categoría, sin búsqueda ni tendencia
+    // Solo filtrar por categoría (ya tienen prices y stats calculados)
     if (currentPath === '/carnes') result = result.filter(p => normalizeText(p.categoria || '').includes('carne'));
     else if (currentPath === '/verdu') result = result.filter(p => normalizeText(p.categoria || '').includes('verdu') || normalizeText(p.categoria || '').includes('fruta'));
     else if (currentPath === '/bebidas') result = result.filter(p => normalizeText(p.categoria || '').includes('bebida'));
@@ -708,7 +700,7 @@ const App: React.FC = () => {
     else if (currentPath === '/mascotas') result = result.filter(p => normalizeText(p.categoria || '').includes('mascota'));
 
     return result;
-  }, [products, history, location.pathname]); // Sin searchTerm ni trendFilter
+  }, [baseFilteredProducts, location.pathname]); // Optimizado: usa productos ya procesados
 
   const cartItems = useMemo(() => {
     return baseFilteredProducts
