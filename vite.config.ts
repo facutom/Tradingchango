@@ -11,12 +11,16 @@ export default defineConfig({
     outDir: 'dist',
     // Optimizaciones de build
     minify: 'terser',
+    target: 'es2015',
     terserOptions: {
       compress: {
         drop_console: true,
         drop_debugger: true,
         pure_funcs: ['console.log', 'console.info', 'console.debug'],
         passes: 2,
+        // Eliminación de código muerto
+        dead_code: true,
+        unused: true,
       },
       mangle: {
         safari10: true,
@@ -25,13 +29,26 @@ export default defineConfig({
         comments: false,
       },
     },
+    // CSS code splitting
+    cssCodeSplit: true,
+    //生成gzip和brotli压缩文件
+    reportCompressedSize: true,
     rollupOptions: {
       output: {
-        manualChunks: {
+        manualChunks: (id) => {
           // Separar vendor chunks para mejor caché
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-supabase': ['@supabase/supabase-js'],
-          'vendor-charts': ['recharts'],
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'vendor-react';
+            }
+            if (id.includes('@supabase') || id.includes('supabase-js')) {
+              return 'vendor-supabase';
+            }
+            if (id.includes('recharts') || id.includes('d3')) {
+              return 'vendor-charts';
+            }
+            return 'vendor';
+          }
         },
         // Configurar chunking óptimo
         chunkFileNames: 'assets/js/[name]-[hash].js',
@@ -59,5 +76,9 @@ export default defineConfig({
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', '@supabase/supabase-js', 'recharts'],
     exclude: [],
+  },
+  // Compresión
+  esbuild: {
+    drop: ['console', 'debugger'],
   },
 });
