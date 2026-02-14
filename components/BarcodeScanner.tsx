@@ -5,12 +5,12 @@ interface BarcodeScannerProps {
   onClose: () => void;
 }
 
-// Verificar si BarcodeDetector está disponible
 const hasBarcodeDetector = 'BarcodeDetector' in window;
 
 const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
   const [error, setError] = useState<string | null>(null);
   const [manualInput, setManualInput] = useState('');
+  const [cameraStarted, setCameraStarted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const animationRef = useRef<number | null>(null);
@@ -28,13 +28,11 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
     }
   }, []);
 
-  // Función para procesar el video frame
   const detectBarcodes = useCallback(async (detector: any) => {
     if (!videoRef.current || !detector) return;
     
     const video = videoRef.current;
     
-    // Solo procesar si el video está listo
     if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
     
     try {
@@ -44,7 +42,6 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
         const ean = barcodes[0].rawValue;
         const now = Date.now();
         
-        // Evitar escaneos duplicados en 2 segundos
         if (ean !== lastEanRef.current || now - lastScanTimeRef.current > 2000) {
           lastEanRef.current = ean;
           lastScanTimeRef.current = now;
@@ -57,7 +54,6 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
     }
   }, [onScan, stopStream]);
 
-  // Loop de escaneo usando requestAnimationFrame
   const startScanLoop = useCallback((detector: any) => {
     const scan = async () => {
       if (!streamRef.current) return;
@@ -74,9 +70,9 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
 
   const startCamera = useCallback(async () => {
     setError(null);
+    setCameraStarted(true);
     
     try {
-      // Intentar obtener stream de cámara
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { 
           facingMode: 'environment',
@@ -91,11 +87,9 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         
-        // Esperar a que el video esté listo
         videoRef.current.onloadedmetadata = () => {
           videoRef.current?.play();
           
-          // Si BarcodeDetector está disponible, usarlo
           if (hasBarcodeDetector) {
             // @ts-ignore
             const detector = new BarcodeDetector({
@@ -103,7 +97,6 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
             });
             startScanLoop(detector);
           } else {
-            // Si no hay BarcodeDetector, mostrar modo manual después de 2 segundos
             setTimeout(() => {
               if (streamRef.current) {
                 stopStream();
@@ -117,7 +110,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
       console.error('Error de cámara:', err);
       
       if (err.name === 'NotAllowedError') {
-        setError('Permiso de cámara denegado. Usa el modo manual.');
+        setError('Permiso de cámara denegado. Por favor, permite el acceso a la cámara en tu navegador.');
       } else if (err.name === 'NotFoundError') {
         setError('No se encontró cámara en este dispositivo.');
       } else if (err.name === 'NotReadableError') {
@@ -140,24 +133,36 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
   }, [manualInput, onScan]);
 
   useEffect(() => {
-    startCamera();
+    // NO iniciar la cámara automáticamente
     
     return () => {
       stopStream();
     };
-  }, [startCamera, stopStream]);
+  }, [stopStream]);
 
   return (
     <div className="absolute top-full left-0 right-0 mt-2 bg-black rounded-lg overflow-hidden z-50">
       {/* Video container */}
       <div className="relative">
-        <video
-          ref={videoRef}
-          className="w-full h-48 object-cover"
-          playsInline
-          muted
-          autoPlay
-        />
+        {!cameraStarted ? (
+          // Botón para iniciar la cámara
+          <div className="w-full h-48 bg-neutral-800 flex items-center justify-center">
+            <button
+              onClick={startCamera}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              📷 Activar Cámara
+            </button>
+          </div>
+        ) : (
+          <video
+            ref={videoRef}
+            className="w-full h-48 object-cover"
+            playsInline
+            muted
+            autoPlay
+          />
+        )}
         
         {/* Overlay de error */}
         {error && (
@@ -167,7 +172,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
         )}
         
         {/* Loading indicator */}
-        {!error && (
+        {!error && cameraStarted && (
           <div className="absolute top-2 right-2">
             <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
           </div>
@@ -194,7 +199,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
           </button>
         </div>
         <p className="text-xs text-neutral-500 mt-2 text-center">
-          O presiona el código de barras en la cámara
+          {cameraStarted ? 'O apunta la cámara al código de barras' : 'O activa la cámara para escanear'}
         </p>
       </form>
       
