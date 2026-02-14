@@ -1,7 +1,7 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 
-// Throttle para el escaneo (ms) - reduce carga de CPU
-const SCAN_THROTTLE_MS = 250;
+// Throttle para el escaneo (ms) - usa setInterval que es más eficiente que requestAnimationFrame
+const SCAN_INTERVAL_MS = 300;
 
 interface BarcodeScannerProps {
   onScan: (ean: string) => void;
@@ -10,48 +10,65 @@ interface BarcodeScannerProps {
 
 const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
   const [scanError, setScanError] = useState<string | null>(null);
-  const [isScanning, setIsScanning] = useState(true);
+  const [manualMode, setManualMode] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const animationRef = useRef<number | null>(null);
-  const lastScanTimeRef = useRef<number>(0);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const detectorRef = useRef<any>(null);
+  const lastEanRef = useRef<string>('');
+  const isActiveRef = useRef(true);
 
   const stopStream = useCallback(() => {
+    isActiveRef.current = false;
+    
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
-    if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
-      animationRef.current = null;
-    }
-    setIsScanning(false);
   }, []);
+
+  const startManualScan = useCallback(() => {
+    const ean = prompt('Ingresa el código EAN del producto:');
+    if (ean && ean.length >= 8) {
+      onScan(ean);
+      stopStream();
+      onClose();
+    } else if (ean) {
+      alert('EAN inválido. Debe tener al menos 8 dígitos.');
+      // Permitir intentar de nuevo
+      setTimeout(() => startManualScan(), 100);
+    }
+  }, [onScan, onClose, stopStream]);
 
   const startScan = useCallback(async () => {
     setScanError(null);
-    setIsScanning(true);
+    isActiveRef.current = true;
+    lastEanRef.current = '';
 
     try {
       // Verificar si Barcode Detection API está disponible
       if (!('BarcodeDetector' in window)) {
-        // API no disponible, pedir EAN manualmente
-        const ean = prompt('Ingresa el codigo EAN del producto:');
-        if (ean) {
-          onScan(ean);
-        }
-        stopStream();
-        onClose();
+        // API no disponible, ir directamente a modo manual
+        setManualMode(true);
         return;
       }
 
       // @ts-ignore - BarcodeDetector es experimental
-      const barcodeDetector = new BarcodeDetector({
+      detectorRef.current = new BarcodeDetector({
         formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39']
       });
 
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' }
+        video: { 
+          facingMode: 'environment',
+          width: { ideal: 640 },
+          height: { ideal: 480 }
+        }
       });
 
       streamRef.current = stream;
@@ -59,57 +76,50 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.play();
-
-        const scan = async () => {
-          if (!videoRef.current || !isScanning) return;
-
-          // Throttle: solo escanear cada SCAN_THROTTLE_MS
-          const now = Date.now();
-          if (now - lastScanTimeRef.current < SCAN_THROTTLE_MS) {
-            if (isScanning) {
-              animationRef.current = requestAnimationFrame(scan);
-            }
-            return;
-          }
+        
+        // Usar setInterval que es más eficiente que requestAnimationFrame para este caso
+        intervalRef.current = setInterval(async () => {
+          if (!isActiveRef.current || !videoRef.current || !detectorRef.current) return;
 
           try {
-            const barcodes = await barcodeDetector.detect(videoRef.current);
+            // Solo detectar si el video está listo
+            if (videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
+              const barcodes = await detectorRef.current.detect(videoRef.current);
 
-            if (barcodes.length > 0) {
-              const ean = barcodes[0].rawValue;
-              lastScanTimeRef.current = now;
-              stopStream();
-              onScan(ean);
-              return;
+              if (barcodes.length > 0) {
+                const ean = barcodes[0].rawValue;
+                
+                // Evitar escaneos duplicados del mismo código
+                if (ean !== lastEanRef.current) {
+                  lastEanRef.current = ean;
+                  stopStream();
+                  onScan(ean);
+                }
+              }
             }
           } catch (e) {
-            console.error('Error escaneando:', e);
+            // Silenciar errores de detección para evitar spam en consola
           }
-
-          // Actualizar tiempo y continuar escaneando
-          lastScanTimeRef.current = now;
-          if (isScanning) {
-            animationRef.current = requestAnimationFrame(scan);
-          }
-        };
-
-        animationRef.current = requestAnimationFrame(scan);
+        }, SCAN_INTERVAL_MS);
       }
     } catch (error: any) {
-      console.error('Error accediendo a la camara:', error);
-      setScanError('No se pudo acceder a la camara');
-      setIsScanning(false);
-
-      // Si el usuario denegó el permiso, pedir EAN manualmente
+      console.error('Error accediendo a la cámara:', error.name);
+      
+      // Determinar el mensaje de error apropiado
       if (error.name === 'NotAllowedError') {
-        const ean = prompt('Permiso de camara denegado. Ingresa el codigo EAN del producto:');
-        if (ean) {
-          onScan(ean);
-        }
-        onClose();
+        setScanError('Permiso denegado. Usa el modo manual.');
+      } else if (error.name === 'NotFoundError') {
+        setScanError('No se encontró cámara.');
+      } else if (error.name === 'NotReadableError') {
+        setScanError('Cámara en uso por otra app.');
+      } else {
+        setScanError('Error de cámara. Usa el modo manual.');
       }
+      
+      // Cambiar a modo manual después de un error
+      setManualMode(true);
     }
-  }, [isScanning, onScan, onClose, stopStream]);
+  }, [onScan, onClose, stopStream]);
 
   useEffect(() => {
     startScan();
@@ -119,29 +129,98 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
     };
   }, [startScan, stopStream]);
 
+  // Si está en modo manual, mostrar input
+  if (manualMode) {
+    return (
+      <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1f2c34] rounded-lg overflow-hidden z-50 shadow-xl">
+        <div className="p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <i className="fa-solid fa-barcode text-xl text-neutral-500"></i>
+            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
+              Escanear código de barras
+            </span>
+          </div>
+          
+          <input
+            type="text"
+            placeholder="Ingresa el código EAN..."
+            autoFocus
+            className="w-full px-3 py-2 border border-neutral-300 dark:border-[#233138] rounded-lg bg-neutral-50 dark:bg-[#0d1418] text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-black dark:text-white"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                const value = (e.target as HTMLInputElement).value;
+                if (value && value.length >= 8) {
+                  onScan(value);
+                  stopStream();
+                  onClose();
+                }
+              }
+            }}
+          />
+          
+          <p className="text-xs text-neutral-500 mt-2">
+            O intenta{' '}
+            <button 
+              onClick={startScan}
+              className="text-blue-500 hover:underline"
+            >
+              usar la cámara
+            </button>
+          </p>
+        </div>
+        
+        <div className="bg-neutral-100 dark:bg-[#0d1418] p-2 flex justify-end">
+          <button
+            onClick={() => {
+              stopStream();
+              onClose();
+            }}
+            className="px-4 py-2 bg-neutral-200 dark:bg-neutral-700 text-sm rounded-lg"
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="absolute top-full left-0 right-0 mt-2 bg-black rounded-lg overflow-hidden z-50">
       <video
         ref={videoRef}
         className="w-full h-48 object-cover"
         playsInline
+        muted
       />
       {scanError && (
-        <div className="bg-red-500 text-white text-xs p-2">
+        <div className="bg-amber-600 text-white text-xs p-2 flex items-center gap-2">
+          <i className="fa-solid fa-triangle-exclamation"></i>
           {scanError}
         </div>
       )}
       <div className="bg-white dark:bg-[#1f2c34] p-2 flex justify-between items-center">
-        <p className="text-xs text-neutral-500">Apunta el codigo de barras a la camara</p>
-        <button
-          onClick={() => {
-            stopStream();
-            onClose();
-          }}
-          className="px-3 py-1 bg-neutral-200 dark:bg-neutral-700 text-xs rounded"
-        >
-          Cancelar
-        </button>
+        <p className="text-xs text-neutral-500">Apunta el código de barras</p>
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              stopStream();
+              setManualMode(true);
+            }}
+            className="px-3 py-1 bg-neutral-100 dark:bg-neutral-700 text-xs rounded flex items-center gap-1"
+          >
+            <i className="fa-solid fa-keyboard"></i>
+            Manual
+          </button>
+          <button
+            onClick={() => {
+              stopStream();
+              onClose();
+            }}
+            className="px-3 py-1 bg-neutral-200 dark:bg-neutral-700 text-xs rounded"
+          >
+            Cancelar
+          </button>
+        </div>
       </div>
     </div>
   );
