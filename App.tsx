@@ -713,11 +713,17 @@ const App: React.FC = () => {
     return result;
   }, [baseFilteredProducts, location.pathname]); // Optimizado: usa productos ya procesados
 
+  // Cache de productos procesados para el carrito
+  const processedProductsCache = useMemo(() => {
+    return processProducts(products, history, STORES);
+  }, [products, history]);
+
   const cartItems = useMemo(() => {
-    return baseFilteredProducts
+    // El carrito debe incluir productos aunque tengan solo 1 precio válido
+    return processedProductsCache
       .filter(p => favorites[p.id])
       .map(p => ({ ...p, quantity: favorites[p.id] || 1 } as CartItem));
-  }, [baseFilteredProducts, favorites]);
+  }, [processedProductsCache, favorites]);
 
 
 
