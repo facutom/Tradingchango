@@ -1,259 +1,369 @@
-import React, { useRef, useState, useCallback, useEffect } from 'react';
+import React, { useRef, useState, useCallback, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 
 interface BarcodeScannerProps {
   onScan: (ean: string) => void;
   onClose: () => void;
 }
 
-const hasBarcodeDetector = 'BarcodeDetector' in window;
+// ============================================
+// Web Worker para procesamiento de códigos
+// ============================================
+const workerCode = `
+  self.onmessage = async function(e) {
+    const { videoData, formats } = e.data;
+    
+    try {
+      if (!('BarcodeDetector' in self)) {
+        self.postMessage({ error: 'BarcodeDetector not supported' });
+        return;
+      }
+      
+      const detector = new BarcodeDetector({ formats: formats || ['ean_13', 'ean_8'] });
+      const barcodes = await detector.detect(videoData);
+      
+      if (barcodes.length > 0) {
+        self.postMessage({ barcode: barcodes[0].rawValue });
+      } else {
+        self.postMessage({ barcode: null });
+      }
+    } catch (error) {
+      self.postMessage({ error: error.message });
+    }
+  };
+`;
 
+// ============================================
+// Throttle configurado a 10fps (100ms)
+// ============================================
+const SCAN_THROTTLE_MS = 100;
+
+// Crear el worker desde un blob
+const createBarcodeWorker = (): Worker | null => {
+  try {
+    const blob = new Blob([workerCode], { type: 'application/javascript' });
+    const workerUrl = URL.createObjectURL(blob);
+    const worker = new Worker(workerUrl);
+    URL.revokeObjectURL(workerUrl);
+    return worker;
+  } catch (e) {
+    console.warn('Web Worker not supported');
+    return null;
+  }
+};
+
+// ============================================
+// Componente optimizado del Scanner
+// ============================================
 const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
   const [error, setError] = useState<string | null>(null);
   const [manualInput, setManualInput] = useState('');
-  const [cameraStarted, setCameraStarted] = useState(false);
-  const [permissionState, setPermissionState] = useState<string>('');
+  const [isActive, setIsActive] = useState(true);
+  
+  // Refs para el control del scanner
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const workerRef = useRef<Worker | null>(null);
   const animationRef = useRef<number | null>(null);
-  const lastEanRef = useRef<string>('');
   const lastScanTimeRef = useRef<number>(0);
+  const lastEanRef = useRef<string>('');
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const stopStream = useCallback(() => {
+  // Memoizar el worker para evitar recrearlo
+  const worker = useMemo(() => createBarcodeWorker(), []);
+
+  // Cleanup function - garbage collection efectivo
+  const cleanup = useCallback(() => {
+    setIsActive(false);
+    
+    // Cancelar animation frame
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
       animationRef.current = null;
     }
+    
+    // Detener todos los tracks del stream
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current.getTracks().forEach(track => {
+        track.stop();
+        track.enabled = false;
+      });
       streamRef.current = null;
     }
+    
+    // Terminar el worker
+    if (workerRef.current) {
+      workerRef.current.terminate();
+      workerRef.current = null;
+    }
+    
+    // Limpiar referencias
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
   }, []);
 
-  const detectBarcodes = useCallback(async (detector: any) => {
-    if (!videoRef.current || !detector) return;
+  // Manejar cuando se detecta un código
+  const handleDetection = useCallback((ean: string) => {
+    const now = Date.now();
+    
+    // Evitar duplicados en 1.5 segundos
+    if (ean === lastEanRef.current && now - lastScanTimeRef.current < 1500) {
+      return;
+    }
+    
+    lastEanRef.current = ean;
+    lastScanTimeRef.current = now;
+    
+    cleanup();
+    onScan(ean);
+  }, [onScan, cleanup]);
+
+  // Throttled scan function
+  const scanFrame = useCallback(async () => {
+    if (!isActive || !videoRef.current || !canvasRef.current) return;
+    
+    const now = Date.now();
+    if (now - lastScanTimeRef.current < SCAN_THROTTLE_MS) {
+      animationRef.current = requestAnimationFrame(scanFrame);
+      return;
+    }
     
     const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
     
-    if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
+    if (!ctx || video.readyState !== video.HAVE_ENOUGH_DATA) {
+      animationRef.current = requestAnimationFrame(scanFrame);
+      return;
+    }
     
-    try {
-      const barcodes = await detector.detect(video);
-      
-      if (barcodes.length > 0) {
-        const ean = barcodes[0].rawValue;
-        const now = Date.now();
+    // Usar Offscreen Canvas si está disponible
+    if ('OffscreenCanvas' in window && workerRef.current) {
+      try {
+        const offscreen = new OffscreenCanvas(video.videoWidth, video.videoHeight);
+        const offCtx = offscreen.getContext('2d');
+        if (offCtx) {
+          offCtx.drawImage(video, 0, 0);
+          const imageData = offscreen.transferToImageBitmap();
+          workerRef.current.postMessage({ 
+            imageData,
+            formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e']
+          }, [imageData]);
+        }
+      } catch (e) {
+        // Fallback a canvas normal
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0);
         
-        if (ean !== lastEanRef.current || now - lastScanTimeRef.current > 2000) {
-          lastEanRef.current = ean;
-          lastScanTimeRef.current = now;
-          stopStream();
-          onScan(ean);
+        try {
+          // @ts-ignore
+          const detector = new BarcodeDetector({
+            formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39']
+          });
+          const barcodes = await detector.detect(canvas);
+          
+          if (barcodes.length > 0) {
+            handleDetection(barcodes[0].rawValue);
+          }
+        } catch (detectorErr) {
+          // Silenciar errores de detección
         }
       }
-    } catch (e) {
-      // Silenciar errores de detección
-    }
-  }, [onScan, stopStream]);
-
-  const startScanLoop = useCallback((detector: any) => {
-    const scan = async () => {
-      if (!streamRef.current) return;
-      
-      await detectBarcodes(detector);
-      
-      if (streamRef.current) {
-        animationRef.current = requestAnimationFrame(scan);
+    } else {
+      // Fallback: procesamiento directo sin worker
+      try {
+        // @ts-ignore
+        const detector = new BarcodeDetector({
+          formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39']
+        });
+        const barcodes = await detector.detect(video);
+        
+        if (barcodes.length > 0) {
+          handleDetection(barcodes[0].rawValue);
+        }
+      } catch (detectorErr) {
+        // Silenciar errores de detección
       }
-    };
+    }
     
-    animationRef.current = requestAnimationFrame(scan);
-  }, [detectBarcodes]);
-
-  const checkPermission = useCallback(async () => {
-    try {
-      // Verificar si la API de permisos está disponible
-      if ('permissions' in navigator) {
-        const result = await navigator.permissions.query({ name: 'camera' as PermissionName });
-        setPermissionState(result.state);
-        return result.state;
-      }
-    } catch (e) {
-      console.log('No se pudo verificar permisos:', e);
+    lastScanTimeRef.current = now;
+    
+    if (isActive) {
+      animationRef.current = requestAnimationFrame(scanFrame);
     }
-    return 'unknown';
-  }, []);
+  }, [isActive, handleDetection]);
 
-  const startCamera = useCallback(async () => {
+  // Inicializar el scanner
+  const initScanner = useCallback(async () => {
     setError(null);
-    setCameraStarted(true);
-    
-    // Verificar permisos primero
-    const permission = await checkPermission();
-    console.log('Estado de permiso:', permission);
-    
+    setIsActive(true);
+    lastScanTimeRef.current = 0;
+    lastEanRef.current = '';
+
+    // Configurar worker si está disponible
+    if (worker) {
+      workerRef.current = worker;
+      
+      worker.onmessage = (e) => {
+        if (e.data.barcode) {
+          handleDetection(e.data.barcode);
+        }
+      };
+      
+      worker.onerror = (e) => {
+        console.warn('Worker error:', e);
+      };
+    }
+
     try {
+      // Solicitar permisos de cámara
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { 
+        video: {
           facingMode: 'environment',
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
+          width: { ideal: 640, max: 1280 },
+          height: { ideal: 480, max: 720 }
         },
         audio: false
       });
-      
+
       streamRef.current = stream;
-      
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         
         videoRef.current.onloadedmetadata = () => {
           videoRef.current?.play();
           
-          if (hasBarcodeDetector) {
-            // @ts-ignore
-            const detector = new BarcodeDetector({
-              formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39']
-            });
-            startScanLoop(detector);
-          } else {
-            setTimeout(() => {
-              if (streamRef.current) {
-                stopStream();
-                setError('Tu navegador no soporta escaneo de códigos. Usa el modo manual.');
-              }
-            }, 2000);
+          // Iniciar loop de escaneo
+          if (animationRef.current) {
+            cancelAnimationFrame(animationRef.current);
           }
+          animationRef.current = requestAnimationFrame(scanFrame);
         };
       }
     } catch (err: any) {
-      console.error('Error completo:', err);
-      setCameraStarted(false);
+      console.error('Camera error:', err);
       
       if (err.name === 'NotAllowedError') {
-        setError(
-          '🚫 Permiso bloqueado. Solución:\n\n' +
-          '1. Haz clic en el icono 🔒 en la barra de direcciones\n' +
-          '2. Busca "Cámara" y selecciona "Permitir"\n' +
-          '3. Recarga la página\n\n' +
-          'O usa el modo manual abajo.'
-        );
+        setError('Permiso de cámara denegado');
       } else if (err.name === 'NotFoundError') {
-        setError('❌ No se encontró cámara en este dispositivo. Usa el modo manual.');
+        setError('No se encontró cámara');
       } else if (err.name === 'NotReadableError') {
-        setError('⚠️ La cámara está en uso por otra aplicación. Ciérrala e intenta de nuevo.');
-      } else if (err.name === 'OverconstrainedError') {
-        setError('⚠️ La cámara no cumple con los requisitos. Usa el modo manual.');
-      } else if (err.name === 'NotSupportedError' || err.name === 'TypeError') {
-        setError('⚠️ Tu navegador no soporta acceso a cámara o estás en HTTP (necesitas HTTPS).');
+        setError('Cámara en uso por otra app');
       } else {
-        setError(`❌ Error: ${err.name}. Usa el modo manual.`);
+        setError('Error al acceder a la cámara');
       }
     }
-  }, [startScanLoop, stopStream, checkPermission]);
+  }, [worker, scanFrame, handleDetection]);
 
+  // Cleanup al desmontar
+  useEffect(() => {
+    initScanner();
+
+    return () => {
+      cleanup();
+    };
+  }, [initScanner, cleanup]);
+
+  // Manejar cierre
+  const handleClose = useCallback(() => {
+    cleanup();
+    onClose();
+  }, [cleanup, onClose]);
+
+  // Submit manual
   const handleManualSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     const ean = manualInput.trim();
     if (ean.length >= 8) {
       onScan(ean);
       setManualInput('');
+      handleClose();
     }
-  }, [manualInput, onScan]);
+  }, [manualInput, onScan, handleClose]);
 
-  useEffect(() => {
-    checkPermission();
-    
-    return () => {
-      stopStream();
-    };
-  }, [stopStream, checkPermission]);
-
-  return (
-    <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1f2c34] rounded-lg overflow-hidden shadow-lg z-50">
-      {/* Video container */}
-      <div className="relative bg-black">
-        {!cameraStarted ? (
-          <div className="w-full h-48 flex flex-col items-center justify-center gap-3 p-4">
-            <button
-              onClick={startCamera}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-            >
-              📷 Activar Cámara
-            </button>
-            {permissionState && (
-              <p className="text-xs text-neutral-400">
-                Estado: {permissionState === 'granted' ? '✅ Permitido' : 
-                         permissionState === 'denied' ? '🚫 Bloqueado' : 
-                         '⚠️ No verificado'}
-              </p>
-            )}
-          </div>
-        ) : (
+  // Usar portal para evitar CLS
+  const scannerContent = (
+    <div 
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) handleClose();
+      }}
+    >
+      <div 
+        ref={containerRef}
+        className="w-full max-w-md mx-4 bg-white dark:bg-[#1f2c34] rounded-xl overflow-hidden shadow-2xl"
+        // Dimensiones fijas para evitar CLS
+        style={{ width: '100%', maxWidth: '360px' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Video container con dimensiones fijas */}
+        <div className="relative bg-black" style={{ aspectRatio: '4/3' }}>
           <video
             ref={videoRef}
-            className="w-full h-48 object-cover"
+            className="w-full h-full object-cover"
             playsInline
             muted
             autoPlay
           />
-        )}
+          
+          {/* Canvas oculto para procesamiento */}
+          <canvas ref={canvasRef} className="hidden" />
+          
+          {/* Loading indicator */}
+          {isActive && !error && (
+            <div className="absolute top-3 right-3">
+              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
+            </div>
+          )}
+          
+          {/* Error overlay */}
+          {error && (
+            <div className="absolute inset-0 bg-black/70 flex items-center justify-center p-4">
+              <p className="text-white text-sm text-center">{error}</p>
+            </div>
+          )}
+        </div>
         
-        {/* Overlay de error */}
-        {error && (
-          <div className="absolute inset-0 bg-black/95 flex items-center justify-center p-4">
-            <p className="text-white text-xs text-left whitespace-pre-line leading-relaxed">
-              {error}
-            </p>
+        {/* Manual input */}
+        <form onSubmit={handleManualSubmit} className="p-4">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={manualInput}
+              onChange={(e) => setManualInput(e.target.value)}
+              placeholder="Escribe el código EAN..."
+              className="flex-1 px-3 py-2 text-sm border border-neutral-300 dark:border-[#233138] rounded-lg bg-neutral-50 dark:bg-[#0d1418] text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              inputMode="numeric"
+            />
+            <button
+              type="submit"
+              disabled={manualInput.length < 8}
+              className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Buscar
+            </button>
           </div>
-        )}
+        </form>
         
-        {/* Loading indicator */}
-        {!error && cameraStarted && (
-          <div className="absolute top-2 right-2">
-            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-          </div>
-        )}
-      </div>
-      
-      {/* Modo manual */}
-      <form onSubmit={handleManualSubmit} className="bg-white dark:bg-[#1f2c34] p-3 border-t border-neutral-200 dark:border-[#233138]">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={manualInput}
-            onChange={(e) => setManualInput(e.target.value)}
-            placeholder="Código EAN manual..."
-            className="flex-1 px-3 py-2 text-sm border border-neutral-300 dark:border-[#233138] rounded-lg bg-neutral-50 dark:bg-[#0d1418] text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            inputMode="numeric"
-            autoFocus
-          />
+        {/* Close button */}
+        <div className="bg-neutral-100 dark:bg-[#0d1418] p-3 flex justify-end">
           <button
-            type="submit"
-            disabled={manualInput.length < 8}
-            className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
+            onClick={handleClose}
+            className="px-4 py-2 bg-neutral-200 dark:bg-neutral-700 text-sm rounded-lg"
           >
-            ✓
+            Cerrar
           </button>
         </div>
-        <p className="text-xs text-neutral-500 mt-2 text-center">
-          Escribe el código o {cameraStarted ? 'escanea con la cámara' : 'activa la cámara'}
-        </p>
-      </form>
-      
-      {/* Botón cerrar */}
-      <div className="bg-neutral-100 dark:bg-[#0d1418] p-2 flex justify-end border-t border-neutral-200 dark:border-[#233138]">
-        <button
-          onClick={() => {
-            stopStream();
-            onClose();
-          }}
-          className="px-4 py-1.5 bg-neutral-200 dark:bg-neutral-700 text-sm rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors"
-        >
-          Cancelar
-        </button>
       </div>
     </div>
   );
+
+  // Usar portal para renderizar fuera del DOM tree principal
+  return createPortal(scannerContent, document.body);
 };
 
 export default React.memo(BarcodeScanner);
