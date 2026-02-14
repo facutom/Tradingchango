@@ -26,6 +26,7 @@ interface ProductListProps {
   searchTerm?: string;
   purchasedItems?: Set<number>;
   onTogglePurchased?: (id: number) => void;
+  onProductHover?: () => void;
 }
 
 const ProductList: React.FC<ProductListProps> = ({ 

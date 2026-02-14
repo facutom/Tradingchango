@@ -108,7 +108,9 @@ const LoadingSpinner = () => (
   </div>
 );
 
-const ProductDetail = lazy(() => import('./components/ProductDetail'));
+const ProductDetail = lazy(() => 
+  import('./components/ProductDetail').then(module => ({ default: module.default }))
+);
 const MemoizedHeader = memo(Header); 
 const MemoizedBottomNav = memo(BottomNav); 
 const MemoizedFooter = memo(Footer);
@@ -816,6 +818,19 @@ const toggleFavorite = useCallback(async (id: number) => {
   };
 
   const scrollPositionRef = useRef(0);
+
+  // Precargar ProductDetail en hover para reducir delay
+  const preloadProductDetail = useCallback(() => {
+    // Precargar el chunk de ProductDetail
+    const link = document.createElement('link');
+    link.rel = 'prefetch';
+    link.as = 'script';
+    // El chunk se llama ProductDetail-*.js
+    const script = document.createElement('script');
+    script.src = '/assets/js/ProductDetail-DNn5t_7E.js'; // Este nombre puede cambiar con el build
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
 
   const handleProductClick = useCallback((product: Product) => {
     scrollPositionRef.current = window.scrollY;

@@ -90,6 +90,16 @@
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
     <script>
+      // Precargar ProductDetail después de 2 segundos para que esté listo cuando el usuario haga clic
+      setTimeout(function() {
+        var link = document.createElement('link');
+        link.rel = 'prefetch';
+        link.as = 'script';
+        link.href = '/assets/js/ProductDetail-Bt-KC0oz.js';
+        document.head.appendChild(link);
+      }, 2000);
+    </script>
+    <script>
       // Diferir service worker hasta que la página sea interactiva
       if ('serviceWorker' in navigator) {
         window.addEventListener('idle', () => {
