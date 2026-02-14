@@ -24,6 +24,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://idghvkvkfdklvkvkdvkv.supabase.co">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
   <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
   
   <!-- SEO Básico -->
@@ -64,29 +65,13 @@
   <link rel="apple-touch-icon" href="/logo192.png" />
   <link rel="manifest" href="/manifest.json" />
 
-  <!-- Font Awesome: Cargar de forma asíncrona con delay para no bloquear render -->
-  <script>
-    // Cargar Font Awesome después de que el DOM esté listo, no bloquea el render
-    function loadFontAwesome() {
-      var link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
-      link.media = 'print';
-      link.onload = function() { this.media = 'all' };
-      document.head.appendChild(link);
-    }
-    // Retrasar carga de Font Awesome 3 segundos para priorizar contenido visible
-    setTimeout(loadFontAwesome, 3000);
-  </script>
-  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+  <!-- Font Awesome: Cargar inmediatamente con preconnect -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- Google Fonts: Cargar de forma asíncrona con font-display swap -->
+  <!-- Google Fonts: Cargar inmediatamente -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
-  <!-- Cargar fonts después de 3 segundos para mejorar Time to Interactive -->
-  <script>setTimeout(function(){document.querySelector('link[href*="fonts.googleapis.com"]').media='all'}, 3000);</script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 
   <script type="importmap">
   {
