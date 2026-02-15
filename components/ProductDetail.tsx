@@ -234,12 +234,14 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       }
     };
     
-    // Manejo de gestos táctiles
-    const handleTouchStart = (e: TouchEvent) => {
-      touchStartX.current = e.changedTouches[0].screenX;
-    };
+    // Manejo de gestos táctiles - solo en desktop
+    const isMobile = window.innerWidth < 768;
     
-    const handleTouchEnd = (e: TouchEvent) => {
+    const handleTouchStart = !isMobile ? ((e: TouchEvent) => {
+      touchStartX.current = e.changedTouches[0].screenX;
+    }) : undefined;
+    
+    const handleTouchEnd = !isMobile ? ((e: TouchEvent) => {
       touchEndX.current = e.changedTouches[0].screenX;
       const diff = touchStartX.current - touchEndX.current;
       const swipeThreshold = 50;
@@ -253,19 +255,19 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
           onPreviousProduct?.();
         }
       }
-    };
+    }) : undefined;
     
     // Usar capture phase para tener prioridad sobre otros listeners
     document.addEventListener('keydown', handleKeyDown, { passive: false, capture: true });
     document.addEventListener('click', handleBackdropClick, { capture: true });
-    document.addEventListener('touchstart', handleTouchStart);
-    document.addEventListener('touchend', handleTouchEnd);
+    if (handleTouchStart) document.addEventListener('touchstart', handleTouchStart);
+    if (handleTouchEnd) document.addEventListener('touchend', handleTouchEnd);
     
     return () => {
       document.removeEventListener('keydown', handleKeyDown, { capture: true });
       document.removeEventListener('click', handleBackdropClick, { capture: true });
-      document.removeEventListener('touchstart', handleTouchStart);
-      document.removeEventListener('touchend', handleTouchEnd);
+      if (handleTouchStart) document.removeEventListener('touchstart', handleTouchStart);
+      if (handleTouchEnd) document.removeEventListener('touchend', handleTouchEnd);
     };
   }, [onClose, onPreviousProduct, onNextProduct]);
 
