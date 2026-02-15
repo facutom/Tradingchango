@@ -12,7 +12,7 @@ const Footer: React.FC = () => {
               Creado por @facutom
             </a>
           </div>
-          <div className="flex justify-center gap-3 sm:gap-6 text-[12px] sm:text-[12px]">
+          <div className="flex justify-center gap-3 sm:gap-6 text-[10px] sm:text-[12px]">
             <Link to="/comparar-precios" className="text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white whitespace-nowrap">Comparar Precios</Link>
             <Link to="/como-ahorrar" className="text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white whitespace-nowrap">Cómo Ahorrar</Link>
             <Link to="/historial-precios" className="text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white whitespace-nowrap">Historial Precios</Link>
