@@ -171,7 +171,7 @@ const descriptions: { [key: string]: string } = {
   '/mascotas': 'Ahorrá en alimento y productos para tu Mascota. Compará precios y encontrá las mejores ofertas.'
 };
 
-const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUpdateQuantity }: any) => {
+const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUpdateQuantity, user, setIsAuthOpen }: any) => {
   const { category, slug } = useParams(); 
   const navigate = useNavigate();
   const location = useLocation();
@@ -279,12 +279,21 @@ const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUp
   const hasPrevious = categoryProducts.length > 1;
   const hasNext = categoryProducts.length > 1;
 
+  // Función wrapper para verificar autenticación antes de agregar al carrito
+  const handleFavoriteWithAuth = (id: number) => {
+    if (!user) {
+      setIsAuthOpen(true);
+      return;
+    }
+    toggleFavorite(id);
+  };
+
   return (
     <ProductDetail 
         productId={product.id}
         onClose={handleClose}
         isFavorite={!!favorites[product.id]}
-        onFavoriteToggle={toggleFavorite}
+        onFavoriteToggle={handleFavoriteWithAuth}
         products={products}
         theme={theme}
         quantities={favorites}
@@ -696,6 +705,17 @@ const App: React.FC = () => {
     });
   }, []);
 
+  // Función wrapper para verificar autenticación antes de agregar al carrito
+  const handleToggleFavoriteWithAuth = useCallback((id: number) => {
+    if (!user) {
+      // Usuario no autenticado - abrir modal de autenticación
+      setIsAuthOpen(true);
+      return;
+    }
+    // Usuario autenticado - proceder con agregar al carrito
+    toggleFavorite(id);
+  }, [user]);
+
   const togglePurchased = useCallback((id: number) => {
     setPurchasedItems(prev => {
       const newPurchased = new Set(prev);
@@ -772,7 +792,7 @@ const App: React.FC = () => {
     <MemoizedProductList
       products={visibleProducts as any}
       onProductClick={handleProductClick}
-      onFavoriteToggle={toggleFavorite}
+      onFavoriteToggle={handleToggleFavoriteWithAuth}
       favorites={favorites}
       isCartView={false}
       quantities={favorites}
@@ -880,10 +900,10 @@ const App: React.FC = () => {
               {cartItems.length > 0 && (
                   <CartSummary items={favoriteItems} benefits={benefits} userMemberships={profile?.membresias} onSaveCart={handleSaveCurrentCart} canSave={!!user} savedCarts={savedCarts} onLoadCart={handleLoadSavedCart} onDeleteCart={handleDeleteSavedCart} />
               )}
-              <MemoizedProductList products={filteredProducts as any} onProductClick={handleProductClick} onFavoriteToggle={toggleFavorite} favorites={favorites} isCartView={true} quantities={favorites} onUpdateQuantity={handleFavoriteChangeInCart} searchTerm={searchTerm} purchasedItems={purchasedItems} onTogglePurchased={togglePurchased} />
+              <MemoizedProductList products={filteredProducts as any} onProductClick={handleProductClick} onFavoriteToggle={handleToggleFavoriteWithAuth} favorites={favorites} isCartView={true} quantities={favorites} onUpdateQuantity={handleFavoriteChangeInCart} searchTerm={searchTerm} purchasedItems={purchasedItems} onTogglePurchased={togglePurchased} />
             </>
           } />
-          <Route path="/:category/:slug" element={ <ProductDetailWrapper products={products} favorites={favorites} toggleFavorite={toggleFavorite} theme={theme} onUpdateQuantity={handleFavoriteChangeInCart} /> } />
+          <Route path="/:category/:slug" element={ <ProductDetailWrapper products={products} favorites={favorites} toggleFavorite={toggleFavorite} theme={theme} onUpdateQuantity={handleFavoriteChangeInCart} user={user} setIsAuthOpen={setIsAuthOpen} /> } />
           <Route path="/acerca-de" element={<AboutView onClose={() => navigate('/')} content={config.acerca_de} />} />
           <Route path="/terminos" element={<TermsView onClose={() => navigate('/')} content={config.terminos} />} />
           <Route path="/contacto" element={<ContactView onClose={() => navigate('/')} content={config.contacto} email={profile?.email} />} />
@@ -892,7 +912,7 @@ const App: React.FC = () => {
           <Route path="/historial-precios" element={ <> <SEOTags title="Historial de Precios | TradingChango" description="Conocé la importancia de la trazabilidad de precios para detectar ofertas falsas y ahorrar en tus compras semanales." keywords="historial precios, ofertas falsas, trazabilidad" /> <PriceHistoryView onClose={() => navigate('/')} /> </> } />
           <Route path="/ofertas-semana" element={ <> <SEOTags title="Ofertas de la Semana | TradingChango" description="Las mejores ofertas de la semana en los principales supermercados de Argentina. Precios actualizados dinámicamente." keywords="ofertas semana, promociones supermercados, descuentos" /> <WeeklyOffersView onClose={() => navigate('/')} products={products} /> </> } />
           <Route path="/privacidad" element={ <> <SEOTags title="Política de Privacidad | TradingChango" description="Política de privacidad de TradingChango. Cómo protegemos tus datos y privacidad." keywords="privacidad, protección datos, tradingchango" /> <TermsView onClose={() => navigate('/')} content={config.privacidad} /> </> } />
-          <Route path="/update-password" element={ <MemoizedProductList products={filteredProducts as any} onProductClick={handleProductClick} onFavoriteToggle={toggleFavorite} favorites={favorites} isCartView={false} quantities={favorites} onUpdateQuantity={handleFavoriteChangeInCart} searchTerm={searchTerm} purchasedItems={purchasedItems} onTogglePurchased={togglePurchased} /> } />
+          <Route path="/update-password" element={ <MemoizedProductList products={filteredProducts as any} onProductClick={handleProductClick} onFavoriteToggle={handleToggleFavoriteWithAuth} favorites={favorites} isCartView={false} quantities={favorites} onUpdateQuantity={handleFavoriteChangeInCart} searchTerm={searchTerm} purchasedItems={purchasedItems} onTogglePurchased={togglePurchased} /> } />
           <Route path="/varios" element={<Navigate to="/" replace />} />
           <Route path="/buscar" element={<Navigate to="/" replace />} />
         </Routes>
