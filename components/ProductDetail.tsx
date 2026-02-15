@@ -695,21 +695,47 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
           </div>
         </div>
 
-        {/* Navegación móvil con botones flotantes - solo visible en móvil */}
-        <div className="md:hidden">
+        {/* Navegación Móvil */}
+        <div className="sticky bottom-0 z-20 bg-white/95 dark:bg-primary/95 backdrop-blur-md p-2 flex md:hidden items-center justify-between border-t border-neutral-100 dark:border-[#233138]">
+          {onPreviousProduct && (
+            <button 
+              onClick={onPreviousProduct} 
+              className="flex-1 bg-neutral-200 dark:bg-neutral-700 text-black dark:text-white font-bold py-3 px-4 rounded-lg text-sm uppercase tracking-wider"
+            >
+              Anterior
+            </button>
+          )}
+          <div className="w-2"></div>
+          {onNextProduct && (
+            <button 
+              onClick={onNextProduct} 
+              className="flex-1 bg-neutral-200 dark:bg-neutral-700 text-black dark:text-white font-bold py-3 px-4 rounded-lg text-sm uppercase tracking-wider"
+            >
+              Siguiente
+            </button>
+          )}
+        </div>
+
+        {/* Navegación Desktop */}
+        {onPreviousProduct && (
           <button 
             onClick={onPreviousProduct} 
-            className="fixed left-2 top-1/2 -translate-y-1/2 w-12 h-12 bg-white dark:bg-primary rounded-full text-black dark:text-white flex items-center justify-center shadow-xl active:scale-90 transition-all z-50"
+            className="hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-[70] bg-white/80 dark:bg-black/80 backdrop-blur-sm rounded-full w-12 h-12 items-center justify-center shadow-lg hover:scale-110 transition-transform"
+            aria-label="Anterior producto"
           >
-            <i className="fa-solid fa-chevron-left"></i>
+            <i className="fa-solid fa-chevron-left text-black dark:text-white"></i>
           </button>
+        )}
+        
+        {onNextProduct && (
           <button 
             onClick={onNextProduct} 
-            className="fixed right-2 top-1/2 -translate-y-1/2 w-12 h-12 bg-white dark:bg-primary rounded-full text-black dark:text-white flex items-center justify-center shadow-xl active:scale-90 transition-all z-50"
+            className="hidden md:flex fixed right-4 top-1/2 -translate-y-1/2 z-[70] bg-white/80 dark:bg-black/80 backdrop-blur-sm rounded-full w-12 h-12 items-center justify-center shadow-lg hover:scale-110 transition-transform"
+            aria-label="Siguiente producto"
           >
-            <i className="fa-solid fa-chevron-right"></i>
+            <i className="fa-solid fa-chevron-right text-black dark:text-white"></i>
           </button>
-        </div>
+        )}
       </div>
     </div>
   );
