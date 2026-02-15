@@ -5,9 +5,10 @@ import { Link, useLocation } from 'react-router-dom';
 
 interface BottomNavProps {
   cartCount: number;
+  onCategoryChange?: () => void;
 }
 
-const BottomNav: React.FC<BottomNavProps> = ({ cartCount }) => {
+const BottomNav: React.FC<BottomNavProps> = ({ cartCount, onCategoryChange }) => {
   const location = useLocation();
   const currentPath = location.pathname;
   const [isVariosOpen, setIsVariosOpen] = useState(false);
@@ -51,7 +52,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ cartCount }) => {
         <div key={tab.id} className="relative w-1/5" ref={tab.id === 'varios' ? variosRef : null}>
           <Link
             to={tab.path}
-            onClick={tab.id === 'varios' ? handleVariosClick : undefined}
+            onClick={tab.id === 'varios' ? handleVariosClick : () => onCategoryChange?.()}
             className={`relative flex flex-col items-center gap-1.5 transition-all ${currentPath === tab.path || (tab.id === 'varios' && isVariosOpen) ? 'text-black dark:text-white scale-110' : 'text-neutral-400'}`}
             aria-label={`Ir a ${tab.label}`}
           >
@@ -70,7 +71,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ cartCount }) => {
                 <Link
                   key={category.path}
                   to={category.path}
-                  onClick={() => setIsVariosOpen(false)}
+                  onClick={() => { setIsVariosOpen(false); onCategoryChange?.(); }}
                   className="block w-full text-left px-4 py-3 text-[11px] font-bold dark:text-[#e9edef] hover:bg-neutral-50 dark:hover:bg-[#233138] rounded-lg"
                 >
                   {category.label}

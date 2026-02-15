@@ -106,8 +106,7 @@ def generar():
         ("Carnes", 0.9),
         ("Verdu", 0.9),
         ("Lacteos", 0.85),
-        ("Mascotas", 0.8),
-        ("Varios", 0.75)
+        ("Mascotas", 0.8)
     ]
     
     for cat, priority in categorias:
@@ -163,7 +162,6 @@ def generar():
         ("/ofertas-semana", 0.8, "weekly"),
         ("/historial-precios", 0.7, "weekly"),
         ("/contacto", 0.4, "monthly"),
-        ("/privacidad", 0.3, "monthly"),
         ("/terminos", 0.3, "monthly")
     ]
     

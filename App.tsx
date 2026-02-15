@@ -16,6 +16,10 @@ import Footer from './components/Footer';
 const AboutView = lazy(() => import('./components/InfoViews').then(module => ({ default: module.AboutView })));
 const TermsView = lazy(() => import('./components/InfoViews').then(module => ({ default: module.TermsView })));
 const ContactView = lazy(() => import('./components/InfoViews').then(module => ({ default: module.ContactView })));
+const ComparePricesView = lazy(() => import('./components/InfoViews').then(module => ({ default: module.ComparePricesView })));
+const HowToSaveView = lazy(() => import('./components/InfoViews').then(module => ({ default: module.HowToSaveView })));
+const PriceHistoryView = lazy(() => import('./components/InfoViews').then(module => ({ default: module.PriceHistoryView })));
+const WeeklyOffersView = lazy(() => import('./components/InfoViews').then(module => ({ default: module.WeeklyOffersView })));
 import { Routes, Route, useNavigate, useLocation, useParams, Navigate } from 'react-router-dom';
 import MetaTags from './components/MetaTags';
 
@@ -172,15 +176,12 @@ const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUp
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Buscamos el producto por categoría, nombre+EAN, o nombre+ID
-  // El slug puede contener: nombre, nombre-EAN, o nombre-id123
   const product = products.find((p: any) => {
     const categoryMatch = slugify(p.categoria || 'general') === category;
     const nameSlug = slugify(p.nombre);
     const eanArray = p.ean && Array.isArray(p.ean) ? p.ean : [];
     const eanValue = eanArray[0] || null;
     
-    // Opciones de búsqueda: nombre solo, nombre-EAN, nombre-id123
     const matchByName = nameSlug === slug;
     const matchByEan = eanValue && (nameSlug + '-' + eanValue) === slug;
     const matchById = (nameSlug + '-id' + p.id) === slug;
@@ -188,48 +189,38 @@ const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUp
     return categoryMatch && (matchByName || matchByEan || matchById);
   });
 
-  // Si no hay productos cargados todavía, esperamos
   if (products.length === 0) return null;
-  // Si terminó de cargar y no encontró el producto, volvemos al inicio
   if (!product) return <Navigate to="/" replace />;
 
   const handleClose = () => {
-    // Si el usuario vino del chango (/chango), volver al chango
     if (location.state?.from === 'chango' || location.pathname === '/chango') {
       navigate('/chango', { replace: true });
     }
-    // Si el usuario vino del home (/), volver al home
     else if (location.state?.from === 'home' || location.pathname === '/') {
-      navigate('/', { replace: true });
+      const queryString = location.search;
+      navigate('/' + queryString, { replace: true });
     }
-    // Sino, volver a la categoría del producto actual
+    else if (location.state?.from === 'ofertas' || location.pathname === '/ofertas-semana') {
+      navigate('/ofertas-semana', { replace: true });
+    }
     else {
       navigate(`/${slugify(product.categoria || 'general')}`, { replace: true });
     }
   };
 
-  // Determinar si el usuario vino del chango
   const isFromChango = location.state?.from === 'chango' || location.pathname === '/chango';
-  // Determinar si el usuario vino de la home (ruta raíz)
   const isFromHome = location.state?.from === 'home' || location.pathname === '/';
   
-  // Encontrar productos para navegación
-  // Si vino del chango, filtrar solo productos del chango (favorites)
-  // Si vino de la home, mostrar todos los productos
-  // Si vino de una categoría, filtrar productos de esa categoría
   const categoryProducts = useMemo(() => {
     if (isFromChango) {
-      // Navegación dentro del chango - solo productos favoritos
       const favoriteIds = Object.keys(favorites).map(id => parseInt(id));
       return products.filter((p: any) => 
         favoriteIds.includes(p.id) && 
         p.visible_web !== false
       );
     } else if (isFromHome) {
-      // Navegación desde home - todos los productos visibles
       return products.filter((p: any) => p.visible_web !== false);
     } else {
-      // Navegación dentro de una categoría
       return products.filter((p: any) => 
         p.categoria === product.categoria && 
         p.visible_web !== false
@@ -241,20 +232,17 @@ const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUp
     return categoryProducts.findIndex((p: any) => p.id === product.id);
   }, [categoryProducts, product.id]);
   
-  // Navegación circular: al llegar al final vuelve al inicio
   const handlePreviousProduct = useCallback(() => {
     if (categoryProducts.length === 0) return;
     
     let newIndex: number;
     if (currentIndex <= 0) {
-      // Ir al último producto (circular)
       newIndex = categoryProducts.length - 1;
     } else {
       newIndex = currentIndex - 1;
     }
     
     const prevProduct = categoryProducts[newIndex];
-    // Mantener el state original (de dónde vino inicialmente)
     const from = location.state?.from || 'category';
     const prevEan = prevProduct.ean && Array.isArray(prevProduct.ean) && prevProduct.ean[0] ? prevProduct.ean[0] : null;
     const prevUnique = prevEan ? `-${prevEan}` : `-id${prevProduct.id}`;
@@ -266,14 +254,12 @@ const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUp
     
     let newIndex: number;
     if (currentIndex >= categoryProducts.length - 1) {
-      // Ir al primer producto (circular)
       newIndex = 0;
     } else {
       newIndex = currentIndex + 1;
     }
     
     const nextProduct = categoryProducts[newIndex];
-    // Mantener el state original (de dónde vino inicialmente)
     const from = location.state?.from || 'category';
     const nextEan = nextProduct.ean && Array.isArray(nextProduct.ean) && nextProduct.ean[0] ? nextProduct.ean[0] : null;
     const nextUnique = nextEan ? `-${nextEan}` : `-id${nextProduct.id}`;
@@ -290,7 +276,6 @@ const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUp
     }
   };
 
-  // Para navegación circular siempre hay anterior y siguiente
   const hasPrevious = categoryProducts.length > 1;
   const hasNext = categoryProducts.length > 1;
 
@@ -349,13 +334,40 @@ const App: React.FC = () => {
     (localStorage.getItem('theme') as 'light' | 'dark') || 'light'
   );
 
+  const scrollPositionRef = useRef(0);
   const isInitialMount = useRef(true);
   const navigate = useNavigate();
   const location = useLocation();
   const lastListPageRef = useRef(location.pathname);
+  const searchTermRef = useRef('');
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const q = params.get('q');
+    if (q && q !== searchTermRef.current) {
+      setSearchTerm(q);
+      searchTermRef.current = q;
+    }
+  }, [location.search]);
 
-  
+  useEffect(() => {
+    if (searchTerm === searchTermRef.current) return; 
+    
+    const currentParams = new URLSearchParams(location.search);
+    const currentQ = currentParams.get('q') || '';
+    
+    if (searchTerm && searchTerm.trim() !== currentQ) {
+      const newUrl = searchTerm.trim() 
+        ? `${location.pathname}?q=${encodeURIComponent(searchTerm.trim())}` 
+        : location.pathname;
+      window.history.replaceState({}, '', newUrl);
+      searchTermRef.current = searchTerm;
+    } else if (!searchTerm && currentQ) {
+      window.history.replaceState({}, '', location.pathname);
+      searchTermRef.current = '';
+    }
+  }, [searchTerm, location.pathname]);
+
   const navigateTo = (path: string) => navigate(path === 'home' ? '/' : '/' + path.replace('/', ''));
 
   useEffect(() => {
@@ -370,28 +382,19 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-  const handleBeforeInstallPrompt = (e: any) => {
-    console.log("Evento de instalación capturado");
-    // 1. Prevenimos el cartel por defecto de Chrome
-    e.preventDefault();
-    // 2. Guardamos el evento para usarlo luego
-    setDeferredPrompt(e);
-    
-    // 3. Verificamos si ya está instalada
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches 
-                         || (navigator as any).standalone === true;
-
-    if (!isStandalone) {
-      // Forzamos la aparición del botón después de 1 segundo
-      setTimeout(() => {
-        setShowPwaPill(true);
-      }, 1000);
-    }
-  };
-
-  window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-  return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches 
+                           || (navigator as any).standalone === true;
+      if (!isStandalone) {
+        setTimeout(() => {
+          setShowPwaPill(true);
+        }, 1000);
+      }
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
 
   useEffect(() => {
@@ -400,10 +403,9 @@ const App: React.FC = () => {
       script.src = "https://platform.twitter.com/widgets.js";
       script.async = true;
       script.charset = "utf-8";
-      script.defer = true; // No bloquear renderizado
+      script.defer = true;
       document.body.appendChild(script);
-    }, 10000); // Retraso de 10 segundos para no afectar rendimiento inicial
-
+    }, 10000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -435,48 +437,37 @@ const App: React.FC = () => {
 
   const [error, setError] = useState<string | null>(null);
 
-    const loadData = useCallback(async (sessionUser: User | null, attempt = 1) => {
+  const loadData = useCallback(async (sessionUser: User | null, attempt = 1) => {
     setLoading(true);
     setError(null);
-
     try {
-      // Intenta cargar desde el caché primero para una carga inicial rápida
       if (attempt === 1) {
         const cachedProds = localStorage.getItem('tc_cache_products');
         if (cachedProds) {
           setProducts(JSON.parse(cachedProds));
-          setLoading(false); // Muestra el caché y sigue actualizando en segundo plano
+          setLoading(false);
         }
-        // También cargar historial desde caché para cálculo inmediato de variaciones
         const cachedHistory = localStorage.getItem('tc_cache_history');
         if (cachedHistory) {
           setHistory(JSON.parse(cachedHistory));
         }
       }
 
-      // Promise con Timeout para evitar esperas infinitas
       const fetchDataWithTimeout = (promise: Promise<any>, timeout: number) => {
         return new Promise((resolve, reject) => {
           const timer = setTimeout(() => {
             reject(new Error('La solicitud tardó demasiado. Verificá tu conexión.'));
           }, timeout);
-
           promise.then(
-            res => {
-              clearTimeout(timer);
-              resolve(res);
-            },
-            err => {
-              clearTimeout(timer);
-              reject(err);
-            }
+            res => { clearTimeout(timer); resolve(res); },
+            err => { clearTimeout(timer); reject(err); }
           );
         });
       };
 
       const [prodData, configData] = await (fetchDataWithTimeout(
         Promise.all([getProducts(), getConfig()]), 
-        8000 // 8 segundos de timeout
+        8000
       ) as Promise<[Product[], Record<string, string>]>);
 
       const productsWithOutliers = await calculateOutliers(prodData || []);
@@ -486,40 +477,28 @@ const App: React.FC = () => {
       localStorage.setItem('tc_cache_products', JSON.stringify(productsWithOutliers));
       localStorage.setItem('tc_cache_config', JSON.stringify(configData || {}));
 
-      // Carga de datos secundarios que no son críticos para el render inicial
       getPriceHistory(7).then(hist => {
         const histData = hist || [];
-        setHistory(histData); // Guardar en estado para que los useMemo lo usen
-        localStorage.setItem('tc_cache_history', JSON.stringify(histData)); // Persistir en caché
+        setHistory(histData);
+        localStorage.setItem('tc_cache_history', JSON.stringify(histData));
       });
       getBenefits(new Date().getDay()).then(setBenefits);
-
-      if (sessionUser) {
-        // Lógica de perfil de usuario...
-      }
-      
       setLoading(false);
 
     } catch (err: any) {
-      console.error(`Error en intento ${attempt}:`, err);
-      
-      if (attempt < 2) { // Si es el primer intento, reintentamos una vez más
-        setTimeout(() => loadData(sessionUser, 2), 3000); // Espera 3s y reintenta
-      } else { // Si el segundo intento también falla
+      if (attempt < 2) { 
+        setTimeout(() => loadData(sessionUser, 2), 3000);
+      } else {
         setLoading(false);
         setError("No se pudo conectar con el mercado. Por favor, revisá tu conexión a internet y volvé a intentarlo.");
-        // Si hay datos viejos en caché, los dejamos, si no, la página mostrará el error.
         const cachedProds = localStorage.getItem('tc_cache_products');
-        if (!cachedProds) {
-          setProducts([]);
-        }
+        if (!cachedProds) setProducts([]);
       }
     }
   }, []);
 
   useEffect(() => {
     const auth = supabase.auth as any;
-
     const fetchProfileAndData = async (sessionUser: User | null) => {
       if (sessionUser) {
         let prof = await getProfile(sessionUser.id);
@@ -531,7 +510,6 @@ const App: React.FC = () => {
           }
         }
         setProfile(prof);
-        
         const cartData = await getSavedCartData(sessionUser.id);
         if (cartData) {
           setFavorites(cartData.active || {});
@@ -553,83 +531,49 @@ const App: React.FC = () => {
       setUser(sessionUser);
       fetchProfileAndData(sessionUser);
     };
-
     initializeSession();
 
     const { data: { subscription } } = auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
       const sessionUser = session?.user ?? null;
       setUser(sessionUser);
-
-      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
-        fetchProfileAndData(sessionUser);
-      }
-      
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') fetchProfileAndData(sessionUser);
       if (event === 'PASSWORD_RECOVERY') {
         setIsAuthOpen(true);
         localStorage.setItem('active_auth_view', 'update_password');
       }
-
       if (event === 'SIGNED_OUT') {
-        setProfile(null);
-        setFavorites({});
-        setSavedCarts([]);
-        setPurchasedItems(new Set());
-        localStorage.removeItem('tc_favs');
-        localStorage.removeItem('tc_saved_lists');
+        setProfile(null); setFavorites({}); setSavedCarts([]); setPurchasedItems(new Set());
+        localStorage.removeItem('tc_favs'); localStorage.removeItem('tc_saved_lists');
       }
     });
-
-    return () => {
-      subscription?.unsubscribe();
-    };
+    return () => { subscription?.unsubscribe(); };
   }, [loadData]);
 
-// --- PERSISTENCIA MEJORADA (LOCAL + NUBE + MINIMIZADO) ---
   useEffect(() => {
-  // 1. Guardado INSTANTÁNEO en LocalStorage (esto es infalible)
-  localStorage.setItem('tc_favs', JSON.stringify(favorites));
-  localStorage.setItem('tc_saved_lists', JSON.stringify(savedCarts));
-
-  const sincronizarConNube = async () => {
-    // CONDICIÓN: Solo guardar si el perfil está cargado.
-    if (user && profile && !loading) {
-      try {
-        const dataToSave = { active: favorites, saved: savedCarts };
-        await saveCartData(user.id, dataToSave);
-      } catch (e) {
-        console.error("Error sincronizando:", e);
+    localStorage.setItem('tc_favs', JSON.stringify(favorites));
+    localStorage.setItem('tc_saved_lists', JSON.stringify(savedCarts));
+    const sincronizarConNube = async () => {
+      if (user && profile && !loading) {
+        try {
+          const dataToSave = { active: favorites, saved: savedCarts };
+          await saveCartData(user.id, dataToSave);
+        } catch (e) { console.error("Error sincronizando:", e); }
       }
-    }
-  };
-
-  // 2. Detectar cuando el usuario minimiza o cambia de pestaña
-  const handleVisibilityChange = () => {
-    if (document.visibilityState === 'hidden') {
-      sincronizarConNube(); // Guarda inmediatamente sin esperar al timer
-    }
-  };
-
-  // 3. Timer para uso normal (bajado a 800ms para más rapidez)
-  const timer = setTimeout(sincronizarConNube, 800);
-
-  document.addEventListener("visibilitychange", handleVisibilityChange);
-  
-  return () => {
-    clearTimeout(timer);
-    document.removeEventListener("visibilitychange", handleVisibilityChange);
-  };
-}, [favorites, savedCarts, user, loading]);
+    };
+    const handleVisibilityChange = () => { if (document.visibilityState === 'hidden') sincronizarConNube(); };
+    const timer = setTimeout(sincronizarConNube, 800);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => { clearTimeout(timer); document.removeEventListener("visibilitychange", handleVisibilityChange); };
+  }, [favorites, savedCarts, user, loading]);
 
   useEffect(() => {
     if (products.length > 0) {
       const firstProductImage = products[0].imagen_url;
       if (firstProductImage) {
-        // Evita duplicar el preload si el componente se re-renderiza
         const existingLink = document.querySelector(`link[rel="preload"][href^="${firstProductImage}"]`);
         if (!existingLink) {
           const link = document.createElement('link');
-          link.rel = 'preload';
-          link.as = 'image';
+          link.rel = 'preload'; link.as = 'image';
           link.href = `${firstProductImage}?width=120&quality=75&format=webp`;
           document.head.appendChild(link);
         }
@@ -642,33 +586,14 @@ const App: React.FC = () => {
   const getStats = (p: number[], h: number): ProductStats => {
     const v = p.filter(x => x > 0);
     if (v.length === 0) return { min: 0, spread: '0.0', trendClass: '', icon: '-', isUp: false, isDown: false, variation: 0 };
-    
     const min = Math.min(...v);
     let diff = 0, tc = 'text-neutral-500', icon = '-', isUp = false, isDown = false;
-    
     if (h > 0) {
       diff = ((min - h) / h) * 100;
-      
-      if (diff > 0.1) { 
-        tc = 'text-red-600'; 
-        icon = '▲'; 
-        isUp = true; 
-      } else if (diff < -0.1) { 
-        tc = 'text-green-700'; 
-        icon = '▼'; 
-        isDown = true; 
-      }
+      if (diff > 0.1) { tc = 'text-red-600'; icon = '▲'; isUp = true; }
+      else if (diff < -0.1) { tc = 'text-green-700'; icon = '▼'; isDown = true; }
     }
-    
-    return { 
-      min, 
-      spread: Math.abs(diff).toFixed(1),
-      trendClass: tc, 
-      icon, 
-      isUp, 
-      isDown,
-      variation: diff // <-- Devolvemos la variación real
-    };
+    return { min, spread: Math.abs(diff).toFixed(1), trendClass: tc, icon, isUp, isDown, variation: diff };
   };
 
   const isPro = useMemo(() => {
@@ -678,10 +603,8 @@ const App: React.FC = () => {
 
   const baseFilteredProducts = useMemo(() => {
     const currentPath = location.pathname;
-    // Usar función optimizada para procesar productos - calcula prices y stats una sola vez
     let result = processProducts(products, history, STORES);
 
-    // Filtro por categoría para listado general (solo productos con >= 2 precios válidos)
     if (currentPath === '/carnes') result = result.filter(p => normalizeText(p.categoria || '').includes('carne') && p.validPriceCount >= 2);
     else if (currentPath === '/verdu') result = result.filter(p => (normalizeText(p.categoria || '').includes('verdu') || normalizeText(p.categoria || '').includes('fruta')) && p.validPriceCount >= 2);
     else if (currentPath === '/bebidas') result = result.filter(p => normalizeText(p.categoria || '').includes('bebida') && p.validPriceCount >= 2);
@@ -692,62 +615,37 @@ const App: React.FC = () => {
     else if (currentPath === '/mascotas') result = result.filter(p => normalizeText(p.categoria || '').includes('mascota') && p.validPriceCount >= 2);
     else if (currentPath === '/' || currentPath === '/chango') result = result.filter(p => p.validPriceCount >= 2);
 
-    // --- FILTRO DE BÚSQUEDA OPTIMIZADO ---
     if (debouncedSearchTerm) {
-      const t = debouncedSearchTerm.toLowerCase().trim(); // Quitamos espacios locos
-      if (t.length > 0) { // Solo filtramos si realmente hay texto
+      const t = debouncedSearchTerm.toLowerCase().trim();
+      if (t.length > 0) {
         result = result.filter(p => {
-          // Solo mostrar productos con >= 2 precios válidos en el listado
           const validPrices = p.prices.filter((price: number) => price > 0).length;
           if (validPrices < 2) return false;
-          
-          // Buscamos en nombre, ticker y EAN
           const nameMatch = p.nombre.toLowerCase().includes(t);
           const tickerMatch = p.ticker && p.ticker.toLowerCase().includes(t);
-          // Buscar en EAN (puede ser array o string)
           let eanMatch = false;
           const eanValue = p.ean as any;
           if (eanValue) {
-            if (Array.isArray(eanValue)) {
-              eanMatch = eanValue.some((e: string) => e && e.toString().toLowerCase().includes(t));
-            } else {
-              eanMatch = eanValue.toString().toLowerCase().includes(t);
-            }
+            if (Array.isArray(eanValue)) eanMatch = eanValue.some((e: string) => e && e.toString().toLowerCase().includes(t));
+            else eanMatch = eanValue.toString().toLowerCase().includes(t);
           }
           return nameMatch || tickerMatch || eanMatch;
         });
       }
     }
 
-    // --- FILTRO DE TENDENCIAS ---
     if (trendFilter && currentPath !== '/chango') {
-      // Primero filtramos por >= 2 precios válidos
       result = result.filter(p => p.prices.filter((price: number) => price > 0).length >= 2);
       result = result.filter(p => trendFilter === 'up' ? p.stats.isUp : p.stats.isDown);
-      
-      // Ordenamos por la magnitud de la variación.
-      result.sort((a, b) => {
-        // Para 'down', queremos el más negativo primero (ej: -25% antes que -10%).
-        // Para 'up', queremos el más positivo primero (ej: 30% antes que 15%).
-        return trendFilter === 'down' 
-          ? a.stats.variation - b.stats.variation  // Orden ascendente (más negativo primero)
-          : b.stats.variation - a.stats.variation; // Orden descendente (más positivo primero)
-      });
+      result.sort((a, b) => trendFilter === 'down' ? a.stats.variation - b.stats.variation : b.stats.variation - a.stats.variation);
     }
-
     return result;
-  }, [products, history, location.pathname, debouncedSearchTerm, trendFilter]); // useMemo protege el rendimiento
+  }, [products, history, location.pathname, debouncedSearchTerm, trendFilter]);
 
-  // Productos de la categoría original (sin filtros de búsqueda/tendencia) para métricas de CategorySEO
-  // Optimización: reuse los productos ya procesados de baseFilteredProducts
   const categoryProducts = useMemo(() => {
     if (location.pathname === '/chango') return [];
-    
-    // Usar los productos ya procesados - solo aplicar filtro de categoría
     const currentPath = location.pathname;
-    let result = [...baseFilteredProducts]; // Copia para no mutar
-
-    // Solo filtrar por categoría (ya tienen prices y stats calculados)
+    let result = [...baseFilteredProducts];
     if (currentPath === '/carnes') result = result.filter(p => normalizeText(p.categoria || '').includes('carne'));
     else if (currentPath === '/verdu') result = result.filter(p => normalizeText(p.categoria || '').includes('verdu') || normalizeText(p.categoria || '').includes('fruta'));
     else if (currentPath === '/bebidas') result = result.filter(p => normalizeText(p.categoria || '').includes('bebida'));
@@ -756,48 +654,29 @@ const App: React.FC = () => {
     else if (currentPath === '/limpieza') result = result.filter(p => normalizeText(p.categoria || '').includes('limpieza'));
     else if (currentPath === '/perfumeria') result = result.filter(p => normalizeText(p.categoria || '').includes('perfumeria'));
     else if (currentPath === '/mascotas') result = result.filter(p => normalizeText(p.categoria || '').includes('mascota'));
-
     return result;
-  }, [baseFilteredProducts, location.pathname]); // Optimizado: usa productos ya procesados
+  }, [baseFilteredProducts, location.pathname]);
 
-  // Cache de productos procesados para el carrito
   const processedProductsCache = useMemo(() => {
     return processProducts(products, history, STORES);
   }, [products, history]);
 
   const cartItems = useMemo(() => {
-    // El carrito debe incluir productos aunque tengan solo 1 precio válido
-    return processedProductsCache
-      .filter(p => favorites[p.id])
-      .map(p => ({ ...p, quantity: favorites[p.id] || 1 } as CartItem));
+    return processedProductsCache.filter(p => favorites[p.id]).map(p => ({ ...p, quantity: favorites[p.id] || 1 } as CartItem));
   }, [processedProductsCache, favorites]);
 
-
-
   const filteredProducts = useMemo(() => {
-    if (location.pathname === '/chango') {
-      return cartItems;
-    }
+    if (location.pathname === '/chango') return cartItems;
     return baseFilteredProducts;
   }, [baseFilteredProducts, location.pathname, cartItems]);
 
-  const visibleProducts = useMemo(() => {
-    return filteredProducts.slice(0, displayLimit);
-  }, [filteredProducts, displayLimit]);
+  const visibleProducts = useMemo(() => filteredProducts.slice(0, displayLimit), [filteredProducts, displayLimit]);
 
-
-
-
-const toggleFavorite = useCallback((id: number) => {
-    // Optimización: Actualizar estado LOCAL inmediatamente para feedback instantáneo
-    // Sin llamadas a Supabase que puedan retrasar la UI
+  const toggleFavorite = useCallback((id: number) => {
     setFavorites(prev => {
       const next = { ...prev };
-      const isAdding = !next[id];
-      
-      if (isAdding) {
-        next[id] = 1;
-      } else {
+      if (!next[id]) next[id] = 1;
+      else {
         delete next[id];
         setPurchasedItems(prevPurchased => {
           const newPurchased = new Set(prevPurchased);
@@ -809,15 +688,10 @@ const toggleFavorite = useCallback((id: number) => {
     });
   }, []);
 
-
   const handleFavoriteChangeInCart = useCallback((id: number, delta: number) => {
     setFavorites(prev => {
       const newQty = (prev[id] || 1) + delta;
-      if (newQty <= 0) {
-        const next = { ...prev };
-        delete next[id];
-        return next;
-      }
+      if (newQty <= 0) { const next = { ...prev }; delete next[id]; return next; }
       return { ...prev, [id]: newQty };
     });
   }, []);
@@ -825,30 +699,20 @@ const toggleFavorite = useCallback((id: number) => {
   const togglePurchased = useCallback((id: number) => {
     setPurchasedItems(prev => {
       const newPurchased = new Set(prev);
-      if (newPurchased.has(id)) {
-        newPurchased.delete(id);
-      } else {
-        newPurchased.add(id);
-      }
+      if (newPurchased.has(id)) newPurchased.delete(id);
+      else newPurchased.add(id);
       return newPurchased;
     });
   }, []);
 
   const handleSaveCurrentCart = (name: string) => {
     const limit = isPro ? 10 : 2;
-    if (savedCarts.length >= limit) {
-      alert(`Límite de listas alcanzado (${limit}).`);
-      return;
-    }
+    if (savedCarts.length >= limit) { alert(`Límite de listas alcanzado (${limit}).`); return; }
     setSavedCarts(prev => [...prev, { name, items: { ...favorites }, date: new Date().toISOString() }]);
   };
 
   const handleDeleteSavedCart = (index: number) => {
-    setSavedCarts(prev => {
-      const next = [...prev];
-      next.splice(index, 1);
-      return next;
-    });
+    setSavedCarts(prev => { const next = [...prev]; next.splice(index, 1); return next; });
   };
 
   const handleLoadSavedCart = (index: number) => {
@@ -857,20 +721,13 @@ const toggleFavorite = useCallback((id: number) => {
     navigate('/chango');
   };
 
-  const scrollPositionRef = useRef(0);
-
   const handleProductClick = useCallback((product: Product) => {
     scrollPositionRef.current = window.scrollY;
     const categorySlug = slugify(product.categoria || 'general');
-    
-    // INCLUIR EAN EN SLUG para distinguir productos con mismo nombre pero diferente peso (ej: 1.5kg vs 15kg)
-    // Si el EAN no está disponible o está vacío, usar el ID del producto como respaldo
     const eanArray = product.ean && Array.isArray(product.ean) ? product.ean : [];
     const eanValue = eanArray.length > 0 && eanArray[0] ? eanArray[0] : null;
     const uniquePart = eanValue ? `-${eanValue}` : `-id${product.id}`;
     const productSlug = slugify(product.nombre) + uniquePart;
-    
-    // Usar location.pathname directamente pero sin incluirlo en dependencias
     const from = window.location.pathname === '/' ? 'home' : window.location.pathname === '/chango' ? 'chango' : 'category';
     navigate(`/${categorySlug}/${productSlug}`, { state: { from } });
   }, [navigate]);
@@ -878,58 +735,30 @@ const toggleFavorite = useCallback((id: number) => {
   useEffect(() => {
     const listPaths = ['/', '/chango', '/carnes', '/verdu', '/bebidas', '/almacen', '/lacteos', '/limpieza', '/perfumeria', '/mascotas'];
     const currentPath = location.pathname;
-    const isCurrentPathList = listPaths.includes(currentPath);
-
-    // Si la ruta actual es una página de lista
-    if (isCurrentPathList) {
-      // Y es diferente a la última página de lista guardada (cambio de categoría)
+    if (listPaths.includes(currentPath)) {
       if (currentPath !== lastListPageRef.current) {
         window.scrollTo(0, 0);
-        setSearchTerm('');
         setTrendFilter(null);
         setDisplayLimit(20);
+      } else if (scrollPositionRef.current > 0) {
+        setTimeout(() => { window.scrollTo(0, scrollPositionRef.current); scrollPositionRef.current = 0; }, 10);
       }
-      // Si es la misma (ej. volviendo de un producto), restauramos el scroll
-      else if (scrollPositionRef.current > 0) {
-        setTimeout(() => {
-          window.scrollTo(0, scrollPositionRef.current);
-          scrollPositionRef.current = 0;
-        }, 0);
-      }
-      
-      // Actualizamos la última página de lista visitada
       lastListPageRef.current = currentPath;
     }
-    // Si no es una página de lista (ej. detalle de producto), no hacemos nada.
-    // `lastListPageRef` mantiene su valor, listo para la comparación cuando volvamos.
-
   }, [location.pathname]);
 
   const handleSignOut = async () => {
-  setLoading(true);
-  
-  // 1. Forzar borrado local INMEDIATO de tokens de Supabase
-  // Esto evita que el F5 encuentre la sesión vieja
-  const keysToRemove = Object.keys(localStorage).filter(key => key.startsWith('sb-'));
-  keysToRemove.forEach(key => localStorage.removeItem(key));
-  
-  localStorage.removeItem('tc_favs');
-  localStorage.removeItem('tc_saved_lists');
+    setLoading(true);
+    const keysToRemove = Object.keys(localStorage).filter(key => key.startsWith('sb-'));
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    localStorage.removeItem('tc_favs');
+    localStorage.removeItem('tc_saved_lists');
+    await supabase.auth.signOut();
+    setUser(null); setProfile(null); setFavorites({}); setSavedCarts([]); setPurchasedItems(new Set());
+    setIsAuthOpen(false); setLoading(false);
+    navigate('/', { replace: true });
+  };
 
-  // 2. Ejecutar el cierre de sesión en el servidor
-  await supabase.auth.signOut();
-  // 3. Limpiar estado de la App
-  setUser(null);
-  setProfile(null);
-  setFavorites({});
-  setSavedCarts([]);
-  setPurchasedItems(new Set());
-  setIsAuthOpen(false);
-  setLoading(false);
-  
-  navigate('/', { replace: true });
-};
-  // Calculamos la cantidad de productos en el carrito que realmente son visibles
   const visibleCartCount = useMemo(() => {
     return products.filter(p => favorites[p.id] && (p as any).visible_web !== false).length;
   }, [favorites, products]);
@@ -953,7 +782,7 @@ const toggleFavorite = useCallback((id: number) => {
       onTogglePurchased={togglePurchased}
     />
   </> 
-);
+  );
  
   if (loading && products.length === 0) return <div className="min-h-screen flex items-center justify-center dark:bg-primary dark:text-white font-mono text-[11px] uppercase tracking-[0.2em]">Conectando a Mercado...</div>;
  
@@ -979,50 +808,35 @@ const toggleFavorite = useCallback((id: number) => {
     )}
     
     {showPwaPill && (
-  /* El md:hidden asegura que en PC/Escritorio no se vea */
-  <div className="fixed bottom-[75px] left-1/2 -translate-x-1/2 z-[9999] w-[85%] max-w-[320px] md:hidden animate-in slide-in-from-bottom-5 duration-500">
-    <div className="bg-neutral-900 dark:bg-white text-white dark:text-black p-3.5 rounded-2xl shadow-[0_15px_45px_rgba(0,0,0,0.4)] flex items-center justify-between relative border border-neutral-800 dark:border-neutral-100">
-      
-      {/* BOTÓN X - Más pequeño */}
-      <button 
-        onClick={(e) => {
-          e.stopPropagation();
-          setShowPwaPill(false);
-        }}
-        className="absolute -top-1.5 -right-1.5 bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-lg border-2 border-white dark:border-neutral-900 active:scale-90 transition-transform"
-        aria-label="Cerrar aviso de instalación"
-      >
-        <i className="fa-solid fa-xmark text-[10px]"></i>
-      </button>
-
-      <div className="flex items-center gap-3">
-        {/* Icono reducido */}
-        <div className="w-9 h-9 bg-green-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-green-500/30">
-          <i className="fa-solid fa-cart-arrow-down text-base"></i>
-        </div>
-        
-        <div className="flex flex-col">
-          <span className="text-[11px] font-black uppercase tracking-tight leading-none mb-0.5">
-            TradingChango
-          </span>
-          <span className="text-[8px] font-bold opacity-70 uppercase tracking-widest leading-none">
-            Compará antes de comprar
-          </span>
+      <div className="fixed bottom-[75px] left-1/2 -translate-x-1/2 z-[9999] w-[85%] max-w-[320px] md:hidden animate-in slide-in-from-bottom-5 duration-500">
+        <div className="bg-neutral-900 dark:bg-white text-white dark:text-black p-3.5 rounded-2xl shadow-[0_15px_45px_rgba(0,0,0,0.4)] flex items-center justify-between relative border border-neutral-800 dark:border-neutral-100">
+          <button 
+            onClick={(e) => { e.stopPropagation(); setShowPwaPill(false); }}
+            className="absolute -top-1.5 -right-1.5 bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-lg border-2 border-white dark:border-neutral-900 active:scale-90 transition-transform"
+            aria-label="Cerrar aviso de instalación"
+          >
+            <i className="fa-solid fa-xmark text-[10px]"></i>
+          </button>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-green-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-green-500/30">
+              <i className="fa-solid fa-cart-arrow-down text-base"></i>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[11px] font-black uppercase tracking-tight leading-none mb-0.5">TradingChango</span>
+              <span className="text-[8px] font-bold opacity-70 uppercase tracking-widest leading-none">Compará antes de comprar</span>
+            </div>
+          </div>
+          <button 
+            onClick={handleInstallClick}
+            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 shadow-lg shadow-green-500/20"
+            aria-label="Instalar la aplicación"
+          >
+            Instalar
+          </button>
         </div>
       </div>
+    )}
 
-      {/* Botón Instalar reducido */}
-      <button 
-        onClick={handleInstallClick}
-        className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 shadow-lg shadow-green-500/20"
-        aria-label="Instalar la aplicación"
-      >
-        Instalar
-      </button>
-
-    </div>
-  </div>
-)}
       <MemoizedHeader 
         searchTerm={searchTerm} setSearchTerm={setSearchTerm} 
         toggleTheme={toggleTheme} theme={theme}
@@ -1030,23 +844,18 @@ const toggleFavorite = useCallback((id: number) => {
         profile={profile}
         trendFilter={trendFilter} setTrendFilter={setTrendFilter}
         onEANFound={(ean: string) => {
-          // Buscar por EAN de forma robusta (puede ser array o string)
           const found = products.find(p => {
             const eanValue = p.ean as any;
             if (!eanValue) return false;
             const eanStr = ean.toString().trim();
-            if (Array.isArray(eanValue)) {
-              return eanValue.some((e: string) => e && e.toString().trim() === eanStr);
-            }
+            if (Array.isArray(eanValue)) return eanValue.some((e: string) => e && e.toString().trim() === eanStr);
             return eanValue.toString().trim() === eanStr;
           });
           if (found) {
             const foundEan = found.ean && Array.isArray(found.ean) && found.ean[0] ? found.ean[0] : null;
             const foundUnique = foundEan ? `-${foundEan}` : `-id${found.id}`;
             navigate(`/${slugify(found.categoria || 'general')}/${slugify(found.nombre) + foundUnique}`);
-          } else {
-            alert(`Producto con EAN ${ean} no encontrado`);
-          }
+          } else { alert(`Producto con EAN ${ean} no encontrado`); }
         }}
       />
     <main>
@@ -1054,11 +863,7 @@ const toggleFavorite = useCallback((id: number) => {
         <Routes>
           <Route path="/" element={
             <>
-              <SEOTags 
-                title="TradingChango | Compará Precios de Supermercados en Argentina"
-                description={descriptions['/']}
-                keywords="precios supermercado Argentina, comparar precios, ofertas Coto Carrefour Jumbo, ahorrar compra"
-              />
+              <SEOTags title="TradingChango | Compará Precios de Supermercados en Argentina" description={descriptions['/']} keywords="precios supermercado Argentina, comparar precios, ofertas Coto Carrefour Jumbo, ahorrar compra" />
               {listPageElement(descriptions['/'])}
             </>
           } />
@@ -1070,66 +875,29 @@ const toggleFavorite = useCallback((id: number) => {
           <Route path="/limpieza" element={listPageElement(descriptions['/limpieza'], 'limpieza')} />
           <Route path="/perfumeria" element={listPageElement(descriptions['/perfumeria'], 'perfumería')} />
           <Route path="/mascotas" element={listPageElement(descriptions['/mascotas'], 'mascotas')} />
-          <Route path="/varios" element={<Navigate to="/" replace />} />
           <Route path="/chango" element={
             <>
               {cartItems.length > 0 && (
-                  <CartSummary
-                    items={favoriteItems}
-                    benefits={benefits}
-                    userMemberships={profile?.membresias}
-                    onSaveCart={handleSaveCurrentCart}
-                    canSave={!!user}
-                    savedCarts={savedCarts}
-                    onLoadCart={handleLoadSavedCart}
-                    onDeleteCart={handleDeleteSavedCart}
-                  />
+                  <CartSummary items={favoriteItems} benefits={benefits} userMemberships={profile?.membresias} onSaveCart={handleSaveCurrentCart} canSave={!!user} savedCarts={savedCarts} onLoadCart={handleLoadSavedCart} onDeleteCart={handleDeleteSavedCart} />
               )}
-              <MemoizedProductList
-                products={filteredProducts as any}
-                onProductClick={handleProductClick}
-                onFavoriteToggle={toggleFavorite}
-                favorites={favorites}
-                isCartView={true}
-                quantities={favorites}
-                onUpdateQuantity={handleFavoriteChangeInCart}
-                searchTerm={searchTerm}
-                purchasedItems={purchasedItems}
-                onTogglePurchased={togglePurchased}
-              />
+              <MemoizedProductList products={filteredProducts as any} onProductClick={handleProductClick} onFavoriteToggle={toggleFavorite} favorites={favorites} isCartView={true} quantities={favorites} onUpdateQuantity={handleFavoriteChangeInCart} searchTerm={searchTerm} purchasedItems={purchasedItems} onTogglePurchased={togglePurchased} />
             </>
           } />
-          {/* Todas las rutas deben estar DENTRO de un solo <Routes> */}
-          <Route path="/:category/:slug" element={
-            <ProductDetailWrapper
-              products={products}
-              favorites={favorites}
-              toggleFavorite={toggleFavorite}
-              theme={theme}
-              onUpdateQuantity={handleFavoriteChangeInCart}
-            />
-          } />
+          <Route path="/:category/:slug" element={ <ProductDetailWrapper products={products} favorites={favorites} toggleFavorite={toggleFavorite} theme={theme} onUpdateQuantity={handleFavoriteChangeInCart} /> } />
           <Route path="/acerca-de" element={<AboutView onClose={() => navigate('/')} content={config.acerca_de} />} />
           <Route path="/terminos" element={<TermsView onClose={() => navigate('/')} content={config.terminos} />} />
           <Route path="/contacto" element={<ContactView onClose={() => navigate('/')} content={config.contacto} email={profile?.email} />} />
-          <Route path="/update-password" element={
-            <MemoizedProductList
-              products={filteredProducts as any}
-              onProductClick={handleProductClick}
-              onFavoriteToggle={toggleFavorite}
-              favorites={favorites}
-              isCartView={false}
-              quantities={favorites}
-              onUpdateQuantity={handleFavoriteChangeInCart}
-              searchTerm={searchTerm}
-              purchasedItems={purchasedItems}
-              onTogglePurchased={togglePurchased}
-            />
-          } />
+          <Route path="/comparar-precios" element={ <> <SEOTags title="Comparar Precios de Supermercados | TradingChango" description="Guía completa sobre dispersión de precios en Argentina. Aprendé a encontrar las mejores ofertas comparando precios entre supermercados." keywords="comparar precios, ofertas supermercados, dispersión precios Argentina" /> <ComparePricesView onClose={() => navigate('/')} /> </> } />
+          <Route path="/como-ahorrar" element={ <> <SEOTags title="Cómo Ahorrar en el Supermercado | TradingChango" description="5 consejos prácticos para ahorrar en tus compras del supermercado. Aprendé sobre marcas blancas, stockeo y comparación de precios." keywords="ahorrar dinero, compras inteligentes, tips supermercado" /> <HowToSaveView onClose={() => navigate('/')} /> </> } />
+          <Route path="/historial-precios" element={ <> <SEOTags title="Historial de Precios | TradingChango" description="Conocé la importancia de la trazabilidad de precios para detectar ofertas falsas y ahorrar en tus compras semanales." keywords="historial precios, ofertas falsas, trazabilidad" /> <PriceHistoryView onClose={() => navigate('/')} /> </> } />
+          <Route path="/ofertas-semana" element={ <> <SEOTags title="Ofertas de la Semana | TradingChango" description="Las mejores ofertas de la semana en los principales supermercados de Argentina. Precios actualizados dinámicamente." keywords="ofertas semana, promociones supermercados, descuentos" /> <WeeklyOffersView onClose={() => navigate('/')} products={products} /> </> } />
+          <Route path="/privacidad" element={ <> <SEOTags title="Política de Privacidad | TradingChango" description="Política de privacidad de TradingChango. Cómo protegemos tus datos y privacidad." keywords="privacidad, protección datos, tradingchango" /> <TermsView onClose={() => navigate('/')} content={config.privacidad} /> </> } />
+          <Route path="/update-password" element={ <MemoizedProductList products={filteredProducts as any} onProductClick={handleProductClick} onFavoriteToggle={toggleFavorite} favorites={favorites} isCartView={false} quantities={favorites} onUpdateQuantity={handleFavoriteChangeInCart} searchTerm={searchTerm} purchasedItems={purchasedItems} onTogglePurchased={togglePurchased} /> } />
+          <Route path="/varios" element={<Navigate to="/" replace />} />
+          <Route path="/buscar" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
 
-        {/* --- BOTON DE CARGA POR LOTES --- */}
         {['/', '/carnes', '/verdu', '/bebidas', '/lacteos', '/almacen', '/limpieza', '/perfumeria', '/mascotas'].includes(location.pathname) && filteredProducts.length > displayLimit && (
           <div className="flex justify-center py-6">
             <button 
@@ -1143,26 +911,13 @@ const toggleFavorite = useCallback((id: number) => {
         )}
       </main>
 
-      <MemoizedBottomNav cartCount={visibleCartCount} />
+      <MemoizedBottomNav cartCount={visibleCartCount} onCategoryChange={() => setSearchTerm('')} />
 
       {isAuthOpen && (
         <Suspense fallback={<LoadingSpinner />}>
-          <AuthModal 
-            isOpen={isAuthOpen} 
-            onClose={() => setIsAuthOpen(false)} 
-            user={user} 
-            profile={profile} 
-            onSignOut={handleSignOut} 
-            onProfileUpdate={() => loadData(user)}
-            savedCarts={savedCarts}
-            onSaveCart={handleSaveCurrentCart}
-            onDeleteCart={handleDeleteSavedCart}
-            onLoadCart={handleLoadSavedCart}
-            currentActiveCartSize={visibleCartCount}
-          />
+          <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} user={user} profile={profile} onSignOut={handleSignOut} onProfileUpdate={() => loadData(user)} savedCarts={savedCarts} onSaveCart={handleSaveCurrentCart} onDeleteCart={handleDeleteSavedCart} onLoadCart={handleLoadSavedCart} currentActiveCartSize={visibleCartCount} />
         </Suspense>
       )}
-      
       <MemoizedFooter />
     </div>
   );

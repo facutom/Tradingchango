@@ -37,7 +37,7 @@ const Header: React.FC<HeaderProps> = memo(({
   const location = useLocation();
 
   const showHero = location.pathname === '/' && !searchTerm && !trendFilter;
-  const hideSearch = ['/acerca-de', '/terminos', '/contacto'].includes(location.pathname);
+  const hideSearch = ['/acerca-de', '/terminos', '/contacto', '/comparar-precios', '/como-ahorrar', '/historial-precios', '/ofertas-semana'].includes(location.pathname);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -61,7 +61,7 @@ const Header: React.FC<HeaderProps> = memo(({
   return (
     <header className="sticky top-0 z-40 bg-white dark:bg-primary p-4 border-b border-neutral-100 dark:border-[#233138]">
       <div className="flex justify-between items-center mb-4">
-        <Link to="/" className="logo-link cursor-pointer ml-2">
+        <Link to="/" className="logo-link cursor-pointer ml-2" onClick={() => setSearchTerm('')}>
           <div className="logo">
             <div className="logo-icon-wrapper">
                <i className="fa-solid fa-cart-shopping"></i>
@@ -115,6 +115,7 @@ const Header: React.FC<HeaderProps> = memo(({
         placeholder="BUSCAR PRODUCTO O ESCANEAR..." 
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && setSearchTerm('')}
         className="w-full bg-neutral-50 dark:bg-[#1f2c34] border border-neutral-200 dark:border-[#233138] rounded-lg py-2 pl-12 pr-24 text-sm font-medium focus:outline-none transition-all text-black dark:text-[#e9edef] placeholder:text-neutral-500"
       />
       <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
@@ -152,7 +153,7 @@ const Header: React.FC<HeaderProps> = memo(({
     </div>
   )}
 
-       {!['/chango', '/acerca-de', '/terminos', '/contacto'].includes(location.pathname) && (
+       {!['/chango', '/acerca-de', '/terminos', '/contacto', '/comparar-precios', '/como-ahorrar', '/historial-precios', '/ofertas-semana'].includes(location.pathname) && (
          <div className="flex gap-2">
            <button 
              onClick={() => setTrendFilter(trendFilter === 'down' ? null : 'down')} 
