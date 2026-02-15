@@ -200,7 +200,7 @@ export const HowToSaveView: React.FC<{ onClose: () => void }> = ({ onClose }) =>
         <div className="p-6 bg-neutral-50 dark:bg-neutral-900 rounded-3xl border border-neutral-100 dark:border-neutral-800">
           <h3 className="text-xl font-black text-black dark:text-white mb-3">1. Elegí Marcas Blancas</h3>
           <p>
-            Las marcas propias de los supermercados (como "Select" de Coto o "Fin" de Carrefour) ofrecen productos de calidad similar a las marcas líderes pero hasta <span className="text-black dark:text-white font-bold">40% más económicas</span>. En productos básicos como arroz, fideos, aceite y leche, la diferencia de calidad es mínima.
+            Las marcas propias de los supermercados ofrecen productos de calidad similar a las marcas líderes pero hasta <span className="text-black dark:text-white font-bold">40% más económicas</span>. En productos básicos como arroz, fideos, aceite y leche, la diferencia de calidad es mínima.
           </p>
         </div>
         
