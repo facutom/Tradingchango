@@ -109,14 +109,14 @@ const Header: React.FC<HeaderProps> = memo(({
       {/* Buscador con boton de escaneo EAN */}
   {!hideSearch && (
     <div className="relative mb-2 max-w-2xl mx-auto w-full px-2"> 
-      <i className="fa-solid fa-search absolute left-5 top-1/2 -translate-y-1/2 text-neutral-500 text-xs"></i>
+      <i className="fa-solid fa-search absolute left-6 top-1/2 -translate-y-1/2 text-neutral-500 text-xs"></i>
       <input 
         type="text" 
         placeholder="BUSCAR PRODUCTO O ESCANEAR..." 
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && setSearchTerm('')}
-        className="w-full bg-neutral-50 dark:bg-[#1f2c34] border border-neutral-200 dark:border-[#233138] rounded-lg py-2 pl-10 pr-20 text-xs font-medium focus:outline-none transition-all text-black dark:text-[#e9edef] placeholder:text-neutral-500"
+        className="w-full bg-neutral-50 dark:bg-[#1f2c34] border border-neutral-200 dark:border-[#233138] rounded-lg py-2 pl-12 pr-16 text-sm font-medium focus:outline-none transition-all text-black dark:text-[#e9edef] placeholder:text-neutral-500"
       />
       <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
         {searchTerm && (
