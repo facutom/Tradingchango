@@ -9,30 +9,14 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    // Optimizaciones de build
-    minify: 'terser',
-    target: 'es2015',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info', 'console.debug'],
-        passes: 2,
-        // Eliminación de código muerto
-        dead_code: true,
-        unused: true,
-      },
-      mangle: {
-        safari10: true,
-      },
-      format: {
-        comments: false,
-      },
-    },
+    // Usar esbuild para minificación más rápida
+    minify: 'esbuild',
+    target: 'es2020',
     // CSS code splitting
     cssCodeSplit: true,
-    //生成gzip和brotli压缩文件
+    // Reportar tamaño comprimido
     reportCompressedSize: true,
+    // Optimizaciones adicionales
     rollupOptions: {
       output: {
         manualChunks: (id) => {
@@ -46,6 +30,9 @@ export default defineConfig({
             }
             if (id.includes('recharts') || id.includes('d3')) {
               return 'vendor-charts';
+            }
+            if (id.includes('react-window')) {
+              return 'vendor-window';
             }
             return 'vendor';
           }
@@ -76,9 +63,5 @@ export default defineConfig({
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', '@supabase/supabase-js', 'recharts'],
     exclude: [],
-  },
-  // Compresión
-  esbuild: {
-    drop: ['console', 'debugger'],
   },
 });

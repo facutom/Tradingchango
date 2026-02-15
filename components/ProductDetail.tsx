@@ -694,6 +694,22 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Navegación móvil con botones flotantes - solo visible en móvil */}
+        <div className="md:hidden">
+          <button 
+            onClick={onPreviousProduct} 
+            className="fixed left-2 top-1/2 -translate-y-1/2 w-12 h-12 bg-white dark:bg-primary rounded-full text-black dark:text-white flex items-center justify-center shadow-xl active:scale-90 transition-all z-50"
+          >
+            <i className="fa-solid fa-chevron-left"></i>
+          </button>
+          <button 
+            onClick={onNextProduct} 
+            className="fixed right-2 top-1/2 -translate-y-1/2 w-12 h-12 bg-white dark:bg-primary rounded-full text-black dark:text-white flex items-center justify-center shadow-xl active:scale-90 transition-all z-50"
+          >
+            <i className="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
       </div>
     </div>
   );
