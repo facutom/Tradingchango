@@ -139,11 +139,15 @@
   ],
   "rewrites": [
     {
+      "source": "/sitemap.xml",
+      "destination": "/sitemap.xml"
+    },
+    {
       "source": "/sw.js",
       "destination": "/sw.js"
     },
     {
-      "source": "/:path*",
+      "source": "/:path((?!sitemap.xml|sw.js).*)",
       "destination": "/index.html",
       "statusCode": 200
     }
