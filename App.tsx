@@ -701,10 +701,20 @@ const App: React.FC = () => {
           const validPrices = p.prices.filter((price: number) => price > 0).length;
           if (validPrices < 2) return false;
           
-          // Buscamos en nombre y ticker (si existe)
+          // Buscamos en nombre, ticker y EAN
           const nameMatch = p.nombre.toLowerCase().includes(t);
           const tickerMatch = p.ticker && p.ticker.toLowerCase().includes(t);
-          return nameMatch || tickerMatch;
+          // Buscar en EAN (puede ser array o string)
+          let eanMatch = false;
+          const eanValue = p.ean as any;
+          if (eanValue) {
+            if (Array.isArray(eanValue)) {
+              eanMatch = eanValue.some((e: string) => e && e.toString().toLowerCase().includes(t));
+            } else {
+              eanMatch = eanValue.toString().toLowerCase().includes(t);
+            }
+          }
+          return nameMatch || tickerMatch || eanMatch;
         });
       }
     }
@@ -1020,7 +1030,16 @@ const toggleFavorite = useCallback((id: number) => {
         profile={profile}
         trendFilter={trendFilter} setTrendFilter={setTrendFilter}
         onEANFound={(ean: string) => {
-          const found = products.find(p => p.ean && Array.isArray(p.ean) && p.ean.includes(ean));
+          // Buscar por EAN de forma robusta (puede ser array o string)
+          const found = products.find(p => {
+            const eanValue = p.ean as any;
+            if (!eanValue) return false;
+            const eanStr = ean.toString().trim();
+            if (Array.isArray(eanValue)) {
+              return eanValue.some((e: string) => e && e.toString().trim() === eanStr);
+            }
+            return eanValue.toString().trim() === eanStr;
+          });
           if (found) {
             const foundEan = found.ean && Array.isArray(found.ean) && found.ean[0] ? found.ean[0] : null;
             const foundUnique = foundEan ? `-${foundEan}` : `-id${found.id}`;

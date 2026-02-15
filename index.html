@@ -65,30 +65,19 @@
   <link rel="apple-touch-icon" href="/logo192.png" />
   <link rel="manifest" href="/manifest.json" />
 
-  <!-- Font Awesome: Cargar inmediatamente con preconnect -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Font Awesome: Cargar de forma no bloqueante con media query -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
 
-  <!-- Google Fonts: Cargar inmediatamente -->
+  <!-- Google Fonts: Cargar de forma no bloqueante con preconnect y media query -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
-
-  <script type="importmap">
-  {
-    "imports": {
-      "react": "https://esm.sh/react@19.2.3?bundle",
-      "react-dom": "https://esm.sh/react-dom@19.2.3?bundle",
-      "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.90.1?bundle",
-      "recharts": "https://esm.sh/recharts@3.6.0?bundle",
-      "vite": "https://esm.sh/vite@7.3.1?bundle",
-      "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@5.1.2?bundle"
-    }
-  }
-  </script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
 </head>
 <body class="bg-white dark:bg-[#0b141a] text-[#131722] dark:text-[#e9edef]">
     <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
+    <script type="module" src="/index.tsx" fetchpriority="high"></script>
     <script>
       // Precargar ProductDetail después de 2 segundos para que esté listo cuando el usuario haga clic
       setTimeout(function() {

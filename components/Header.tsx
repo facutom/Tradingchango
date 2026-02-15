@@ -128,10 +128,10 @@ const Header: React.FC<HeaderProps> = memo(({
         )}
         <button 
           onClick={() => setShowScanner(!showScanner)}
-          className={`p-1.5 rounded-md transition-colors ${showScanner ? 'bg-red-500 text-white' : 'text-neutral-500 hover:text-black dark:hover:text-white bg-neutral-100 dark:bg-[#233138]'}`}
+          className={`px-2 py-1.5 rounded-md transition-colors ${showScanner ? 'bg-red-500 text-white' : 'text-neutral-500 hover:text-black dark:hover:text-white bg-neutral-100 dark:bg-[#233138]'}`}
           title={showScanner ? 'Detener escaneo' : 'Escanear codigo de barras'}
         >
-          <i className={`fa-solid ${showScanner ? 'fa-stop' : 'fa-barcode'} text-sm`}></i>
+          <i className={`fa-solid ${showScanner ? 'fa-stop' : 'fa-barcode'} text-base`}></i>
         </button>
       </div>
       

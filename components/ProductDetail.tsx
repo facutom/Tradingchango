@@ -431,7 +431,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                     </>
                   ) : (
                     <span className="text-[11px] font-black text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
-                      Solo 1 precio disponible
+                      No disponible
                     </span>
                   )}
                 </div>
@@ -687,7 +687,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                 }`}
               >
                 <i className="fa-solid fa-cart-shopping"></i>
-                {isFavorite ? 'En el Chango' : validPriceCount >= 2 ? 'Añadir al Chango' : 'Solo 1 precio'}
+                {isFavorite ? 'En el Chango' : validPriceCount >= 2 ? 'Añadir al Chango' : 'No Disponible'}
               </button>
             </div>
           </div>
