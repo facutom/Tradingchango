@@ -252,7 +252,7 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
               </button>
               {activeTooltip === 'dispersion' && (
                 <div className={`${tooltipStyle} left-1/2 -translate-x-1/2`}>
-                  Diferencia porcentual entre el precio más alto y más bajo de la categoría
+                  Promedio de las diferencias de precio unitarias entre las distintas cadenas para esta categoría
                   <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-black/80"></div>
                 </div>
               )}
