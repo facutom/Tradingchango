@@ -42,19 +42,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, benefits, userMembersh
         const result = Number(pReg) > 0 && typeof url === 'string' && url.length > 5 && stock !== false;
         return result;
       });
-      
-      // DEBUG: Verificar por qué no detecta supermarkets con todos los productos
-      console.log(`[DEBUG] ${store.name}: hasAllItems=${hasAllItems}, items.length=${items.length}`);
-      if (!hasAllItems) {
-        // Ver qué productos faltan
-        items.forEach((item, idx) => {
-          const pReg = item[`pr_${store.key}` as keyof CartItem];
-          const url = item[`url_${store.key}` as keyof CartItem];
-          const stock = item[`stock_${store.key}` as keyof CartItem];
-          console.log(`  - ${item.nombre}: pReg=${pReg}, url=${url}, stock=${stock}`);
-        });
-      }
-      
+       
       return { 
         name: store.name,
         total,          // PRECIO REAL SEGÚN CANTIDAD (Define el ranking)

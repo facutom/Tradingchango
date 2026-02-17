@@ -62,7 +62,6 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
       return;
     }
     
-    console.log('Código detectado:', ean);
     lastEanRef.current = ean;
     lastScanTimeRef.current = now;
     
@@ -121,8 +120,6 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
     // Verificar si BarcodeDetector está disponible
     const hasDetector = 'BarcodeDetector' in window;
     setDetectorSupported(hasDetector);
-    
-    console.log('BarcodeDetector disponible:', hasDetector);
 
     // Crear detector si está disponible
     if (hasDetector) {
@@ -131,7 +128,6 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
         detectorRef.current = new BarcodeDetector({
           formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39']
         });
-        console.log('Detector creado exitosamente');
       } catch (e) {
         console.error('Error creando detector:', e);
         setError('Error al inicializar el detector de códigos');
@@ -162,7 +158,6 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan, onClose }) => {
           if (videoRef.current) {
             videoRef.current.play()
               .then(() => {
-                console.log('Video reproduce');
                 // Iniciar loop de escaneo
                 if (animationRef.current) {
                   cancelAnimationFrame(animationRef.current);
