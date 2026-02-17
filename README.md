@@ -36,4 +36,4 @@ Email Corporativo: Sistema de soporte y recuperación de contraseñas vía sopor
 
 ---
 
-Creado por @facutom (https://linktr.ee/facutom))
+Creado por @facutom (https://linktr.ee/facutom)) Tradingchango.com ([https://linktr.ee/facutom](https://www.tradingchango.com/)))
