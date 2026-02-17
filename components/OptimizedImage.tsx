@@ -121,7 +121,9 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     return `${url}${separator}${params.toString()}`;
   }, [width, quality, format]);
 
-  const optimizedSrc = isInView ? optimizeUrl(src) : '';
+  // Para imágenes prioritarias, usar la URL directamente sin lazy loading
+  // Para otras imágenes, aplicar lazy loading con IntersectionObserver
+  const optimizedSrc = priority ? optimizeUrl(src) : (isInView ? optimizeUrl(src) : '');
 
   // Mostrar placeholder o skeleton mientras carga
   const showPlaceholder = !isLoaded && !hasError;
@@ -165,8 +167,8 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         />
       )}
 
-      {/* Imagen real - solo carga cuando está en viewport */}
-      {isInView && !hasError && (
+      {/* Imagen real - prioritarias se cargan inmediatamente, las otras cuando están en viewport */}
+      {(priority || isInView) && !hasError && (
         <picture>
           {/* Source para AVIF */}
           {format !== 'jpeg' && format !== 'png' && (
