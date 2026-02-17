@@ -125,10 +125,9 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   // Para otras imágenes, aplicar lazy loading con IntersectionObserver
   const optimizedSrc = priority ? optimizeUrl(src) : (isInView ? optimizeUrl(src) : '');
 
-  // Mostrar placeholder o skeleton mientras carga la imagen
-  // Para imágenes prioritarias: se muestra brevemente hasta que la imagen carga
-  // Para imágenes no prioritarias: se muestra hasta que la imagen entra en viewport
-  const showPlaceholder = !isLoaded && !hasError && (!priority || !isInView);
+  // Mostrar skeleton siempre mientras la imagen no esté cargada
+  // Esto reserva el espacio y evita CLS
+  const showPlaceholder = !isLoaded && !hasError;
 
   return (
     <div
@@ -196,7 +195,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
             fetchPriority={priority ? 'high' : 'auto'}
             onLoad={handleLoad}
             onError={handleError}
-            className={`w-full h-full object-contain transition-opacity duration-75 ${
+            className={`w-full h-full object-contain ${priority ? '' : 'transition-opacity duration-300'} ${
               isLoaded || priority ? 'opacity-100' : 'opacity-0'
             }`}
             // Prevenir drag de imagen para mejor rendimiento
