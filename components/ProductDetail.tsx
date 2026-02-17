@@ -274,29 +274,40 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   const { minPrice, minStore, avgPrice, minStoreUrl, unitPrice, unitMeasure, outliersDetected, validPriceCount = 0 } = useMemo(() => {
     if (!product) return { minPrice: 0, minStore: '', avgPrice: 0, minStoreUrl: '#', unitPrice: 0, unitMeasure: '', outliersDetected: [] };
     
+    // Mapeo de nombres para coincidir con las llaves del JSONB en la base de datos
+    const internalKeys: { [key: string]: string } = {
+      'COTO': 'coto',
+      'CARREFOUR': 'carrefour',
+      'DIA': 'diaonline',
+      'JUMBO': 'jumbo',
+      'MAS ONLINE': 'masonline'
+    };
+    
     const prices = STORES
       .map(s => {
-        const storeKey = s.name.toLowerCase().replace(' ', '');
+        const storeKey = internalKeys[s.name];
         const stockKey = `stock_${storeKey}`;
         const hasStock = (product as any)[stockKey] !== false;
+        const url = (product as any)[s.url] as string;
+        const hasUrl = url && url !== '#' && url.length > 5;
         const isOutlierFromDB = outlierData[storeKey] === true;
-        // Detección dinámica de outliers
         const isOutlierDynamic = isPriceOutlier(product, s.key);
         
         return {
           name: s.name,
           displayName: s.displayName,
           val: (product as any)[s.key] as number,
-          url: (product as any)[s.url] as string,
+          url: url,
           stock: hasStock,
+          hasUrl: hasUrl,
           isOutlier: isOutlierFromDB || isOutlierDynamic
         };
       })
-      .filter(p => p.val > 0 && p.stock && !p.isOutlier);
+      .filter(p => p.val > 0 && p.stock && p.hasUrl && !p.isOutlier);
 
     const outliersDetected = STORES
       .map(s => {
-        const storeKey = s.name.toLowerCase().replace(' ', '');
+        const storeKey = internalKeys[s.name];
         const isOutlierFromDB = outlierData[storeKey] === true;
         const isOutlierDynamic = isPriceOutlier(product, s.key);
         return (isOutlierFromDB || isOutlierDynamic) ? s.name : null;
@@ -328,11 +339,26 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
     limitDate.setDate(limitDate.getDate() - days);
     limitDate.setHours(0, 0, 0, 0);
 
+    // Map history supermarket names to store keys for outlier detection
+    const storeKeyMap: { [key: string]: string } = {
+      'coto': 'p_coto',
+      'carrefour': 'p_carrefour',
+      'dia': 'p_dia',
+      'jumbo': 'p_jumbo',
+      'masonline': 'p_masonline'
+    };
+
     const filtered: ChartDataItem[] = history
       .filter(h => {
         if (!h.fecha) return false;
         const storeKey = h.supermercado?.toLowerCase().replace(' ', '');
+        
+        // Check outlier from DB
         if (outlierData[storeKey] === true) return false;
+        
+        // Also check dynamic outlier detection
+        const priceKey = storeKeyMap[storeKey];
+        if (product && priceKey && isPriceOutlier(product, priceKey)) return false;
         
         const [y, m, d] = h.fecha.split('T')[0].split('-').map(Number);
         return new Date(y, m - 1, d) >= limitDate;
@@ -352,7 +378,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
     
     const change = ((filtered[filtered.length - 1].price - filtered[0].price) / (filtered[0].price || 1)) * 100;
     return { chartData: filtered, percentageChange: change, isTrendUp: change > 0 };
-  }, [history, days, outlierData]);
+  }, [history, days, outlierData, product]);
 
   const handleShare = async () => {
     if (!product) return;

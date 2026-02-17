@@ -17,11 +17,11 @@ interface ProductWithStats extends Product {
 }
 
 const STORES = [
-  { name: "COTO", key: 'p_coto' },
-  { name: "CARREFOUR", key: 'p_carrefour' },
-  { name: "DIA", key: 'p_dia' },
-  { name: "JUMBO", key: 'p_jumbo' },
-  { name: "MAS ONLINE", key: 'p_masonline' }
+  { name: "COTO", key: 'p_coto', url: 'url_coto' },
+  { name: "CARREFOUR", key: 'p_carrefour', url: 'url_carrefour' },
+  { name: "DIA", key: 'p_dia', url: 'url_dia' },
+  { name: "JUMBO", key: 'p_jumbo', url: 'url_jumbo' },
+  { name: "MAS ONLINE", key: 'p_masonline', url: 'url_masonline' }
 ] as const;
 
 interface ProductListItemProps {
@@ -76,15 +76,26 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
         ? JSON.parse(p.outliers) 
         : (p.outliers || {});
 
+      // Mapeo de nombres para coincidir con las llaves del JSONB en la base de datos
+      const internalKeys: { [key: string]: string } = {
+        'COTO': 'coto',
+        'CARREFOUR': 'carrefour',
+        'DIA': 'diaonline',
+        'JUMBO': 'jumbo',
+        'MAS ONLINE': 'masonline'
+      };
+
       const validPrices = STORES.map(s => {
-        const storeKey = s.name.toLowerCase().replace(' ', '');
+        const storeKey = internalKeys[s.name];
         const isOutlierFromDB = outlierData[storeKey] === true;
         const isOutlierDynamic = isPriceOutlier(p, s.key);
         const isOutlier = isOutlierFromDB || isOutlierDynamic;
         const price = (p as any)[s.key];
+        const url = (p as any)[s.url] as string;
+        const hasUrl = url && url !== '#' && url.length > 5;
         const hasStock = (p as any)[`stock_${storeKey}`] !== false;
-        return { price, isOutlier, hasStock, storeKey };
-      }).filter(item => item.price > 0 && item.hasStock && !item.isOutlier);
+        return { price, isOutlier, hasStock, hasUrl, storeKey };
+      }).filter(item => item.price > 0 && item.hasStock && item.hasUrl && !item.isOutlier);
 
       const minPrice = validPrices.length > 0 
         ? Math.min(...validPrices.map(v => v.price)) 
@@ -135,7 +146,7 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
            <button 
             onClick={(e) => { e.stopPropagation(); onTogglePurchased?.(p.id); }}
             aria-label="Marcar como comprado"
-            className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isPurchased ? 'bg-green-500 border-green-500 text-white' : 'border-neutral-600 dark:border-neutral-700'}`}
+            className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isPurchased ? 'bg-green-500 border-green-500 text-white dark:bg-green-400 dark:border-green-400' : 'border-neutral-600 dark:border-neutral-700'}`}
            >
              {isPurchased && <i className="fa-solid fa-check text-[10px]"></i>}
            </button>
@@ -160,7 +171,7 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
               {p.ticker || p.nombre.substring(0, 5).toUpperCase()}
             </span>
             {badges && !isPurchased && badges.map((b, idx) => (
-              <span key={idx} className="bg-green-600 text-white text-[8px] font-[900] px-1 py-0.5 rounded-[1px] uppercase leading-none font-sans">
+              <span key={idx} className="bg-green-500 text-white text-[8px] font-[900] px-1 py-0.5 rounded-[1px] uppercase leading-none font-sans">
                 {b}
               </span>
             ))}

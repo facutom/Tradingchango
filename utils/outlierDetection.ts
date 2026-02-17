@@ -19,6 +19,13 @@ const calculateMedian = (prices: number[]): number => {
   return sorted[mid];
 };
 
+// Función para calcular el promedio de un array de precios
+const calculateAverage = (prices: number[]): number => {
+  if (prices.length === 0) return 0;
+  const sum = prices.reduce((acc, price) => acc + price, 0);
+  return sum / prices.length;
+};
+
 // Procesar un solo producto para detectar outliers
 const processProductOutlier = (product: Product): string => {
   const p_prices: number[] = [];
@@ -39,8 +46,9 @@ const processProductOutlier = (product: Product): string => {
     }
   });
 
-  const p_median = calculateMedian(p_prices);
-  const pr_median = calculateMedian(pr_prices);
+  // Usar promedio en lugar de mediana
+  const p_average = calculateAverage(p_prices);
+  const pr_average = calculateAverage(pr_prices);
 
   const outliers: { [key: string]: boolean } = {};
 
@@ -50,16 +58,18 @@ const processProductOutlier = (product: Product): string => {
     const pr_key = `pr_${store.key.split('_')[1]}` as keyof Product;
 
     const p_price = product[p_key] as number;
-    if (p_median > 0 && p_price > 0) {
-      const p_deviation = Math.abs((p_price - p_median) / p_median);
+    if (p_average > 0 && p_price > 0) {
+      const p_deviation = Math.abs((p_price - p_average) / p_average);
+      // Usar umbral de 50%
       if (p_deviation > 0.5) {
         outliers[storeKey] = true;
       }
     }
 
     const pr_price = product[pr_key] as number;
-    if (pr_median > 0 && pr_price > 0) {
-      const pr_deviation = Math.abs((pr_price - pr_median) / pr_median);
+    if (pr_average > 0 && pr_price > 0) {
+      const pr_deviation = Math.abs((pr_price - pr_average) / pr_average);
+      // Usar umbral de 50%
       if (pr_deviation > 0.5) {
         outliers[storeKey] = true;
       }
@@ -100,6 +110,7 @@ export const calculateOutliers = async (products: Product[], batchSize: number =
 };
 
 // Función para verificar si un precio de un producto es outlier
+// Usa promedio y umbral de 50%
 const isPriceOutlier = (product: Product, storeKey: string): boolean => {
   const prices: number[] = [];
   const price = product[storeKey as keyof Product] as number;
@@ -113,9 +124,11 @@ const isPriceOutlier = (product: Product, storeKey: string): boolean => {
   });
   
   if (prices.length === 0) return false;
-  const median = calculateMedian(prices);
-  if (median === 0) return false;
-  const deviation = Math.abs((price - median) / median);
+  const average = calculateAverage(prices);
+  if (average === 0) return false;
+  const deviation = Math.abs((price - average) / average);
+  
+  // Usar umbral de 50% (0.5)
   return deviation > 0.5;
 };
 
@@ -126,4 +139,4 @@ const detectOutliersByMedian = (prices: number[]): number[] => {
   return prices.filter(price => isPriceOutlier({} as Product, '') && price > 0);
 };
 
-export { isPriceOutlier, detectOutliersByMedian, calculateMedian };
+export { isPriceOutlier, detectOutliersByMedian, calculateMedian, calculateAverage };
