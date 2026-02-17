@@ -6,8 +6,7 @@ import {
   YAxis, 
   Tooltip, 
   ResponsiveContainer, 
-  CartesianGrid,
-  TooltipProps
+  CartesianGrid
 } from 'recharts';
 import { getProductHistory, getProductHistoryByEan } from '../services/supabase';
 import { Product, PriceHistory } from '../types';
@@ -393,7 +392,9 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   const trendColor = isTrendUp ? '#f23645' : '#00c853';
   const ticker = (product as any).ticker || product.nombre.substring(0, 5).toUpperCase();
 
-  const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
+  // Tooltip personalizado para el gráfico
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: any[] }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload as ChartDataItem;
       return (

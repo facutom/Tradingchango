@@ -26,15 +26,23 @@ export default defineConfig({
         manualChunks: (id) => {
           // Separar vendor chunks para mejor caché
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+            // React core - más crítico, separado
+            if (id.includes('react-dom') || id.includes('react/')) {
               return 'vendor-react';
             }
+            // React Router - separado
+            if (id.includes('react-router') || id.includes('react-router-dom')) {
+              return 'vendor-router';
+            }
+            // Supabase - separado
             if (id.includes('@supabase') || id.includes('supabase-js')) {
               return 'vendor-supabase';
             }
-            if (id.includes('recharts') || id.includes('d3')) {
+            // Recharts - muy pesado, separado
+            if (id.includes('recharts') || id.includes('d3') || id.includes('victory')) {
               return 'vendor-charts';
             }
+            // React Window - virtualización
             if (id.includes('react-window')) {
               return 'vendor-window';
             }

@@ -136,6 +136,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
       style={{
         width: width ? `${width}px` : '100%',
         height: height ? `${height}px` : 'auto',
+        aspectRatio: width && height ? `${width}/${height}` : undefined,
         position: 'relative',
         overflow: 'hidden',
         backgroundColor: isLoaded ? 'transparent' : '#f3f4f6',
