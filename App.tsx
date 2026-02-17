@@ -469,7 +469,15 @@ const App: React.FC = () => {
           }, timeout);
           promise.then(
             res => { clearTimeout(timer); resolve(res); },
-            err => { clearTimeout(timer); reject(err); }
+            err => {
+              clearTimeout(timer);
+              // Ignorar AbortError ya que puede ocurrir por timeout interno de Supabase o navegación
+              if (err.name === 'AbortError' || err.message?.includes('aborted')) {
+                resolve(null);
+              } else {
+                reject(err);
+              }
+            }
           );
         });
       };
@@ -479,12 +487,16 @@ const App: React.FC = () => {
         8000
       ) as Promise<[Product[], Record<string, string>]>);
 
-      const productsWithOutliers = await calculateOutliers(prodData || []);
+      // Si los datos son null (por AbortError), usar arrays vacíos
+      const products = prodData || [];
+      const config = configData || {};
+
+      const productsWithOutliers = await calculateOutliers(products);
       setProducts(productsWithOutliers || []);
-      setConfig(configData || {});
+      setConfig(config);
       
-      localStorage.setItem('tc_cache_products', JSON.stringify(productsWithOutliers));
-      localStorage.setItem('tc_cache_config', JSON.stringify(configData || {}));
+      localStorage.setItem('tc_cache_products', JSON.stringify(productsWithOutliers || []));
+      localStorage.setItem('tc_cache_config', JSON.stringify(config));
 
       getPriceHistory(7).then(hist => {
         const histData = hist || [];
