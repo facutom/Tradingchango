@@ -25,6 +25,7 @@
   <link rel="preconnect" href="https://idghvkvkfdklvkvkdvkv.supabase.co">
   <link rel="preconnect" href="https://cdnjs.cloudflare.com">
   <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+  <link rel="dns-prefetch" href="https://idghvkvkfdklvkvkdvkv.supabase.co">
   
   <!-- SEO Básico -->
   <title>TradingChango | Compará Precios de Supermercados en Argentina</title>
@@ -64,11 +65,11 @@
   <link rel="apple-touch-icon" href="/logo192.png" />
   <link rel="manifest" href="/manifest.json" />
 
-  <!-- Font Awesome: Cargar de forma no bloqueante con media query -->
+  <!-- Font Awesome: Cargar de forma no bloqueante -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
 
-  <!-- Google Fonts: Cargar de forma no bloqueante con preconnect y media query -->
+  <!-- Google Fonts: Cargar de forma no bloqueante -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
@@ -80,22 +81,29 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-
     gtag('config', 'G-RVLYJ69FYD');
   </script>
 </head>
 <body class="bg-white dark:bg-[#0b141a] text-[#131722] dark:text-[#e9edef]">
     <div id="root"></div>
-    <script type="module" src="/index.tsx" fetchpriority="high"></script>
+    <!-- Script principal con defer para no bloquear el render -->
+    <script type="module" src="/index.tsx" defer fetchpriority="high"></script>
     <script>
-      // Precargar ProductDetail después de 2 segundos para que esté listo cuando el usuario haga clic
-      setTimeout(function() {
-        var link = document.createElement('link');
-        link.rel = 'prefetch';
-        link.as = 'script';
-        link.href = '/assets/js/ProductDetail-Diuikj-X.js';
-        document.head.appendChild(link);
-      }, 2000);
+      // Precargar chunks de React Router después de que la página sea interactiva
+      window.addEventListener('load', function() {
+        // Precargar el bundle principal después de 1.5 segundos
+        setTimeout(function() {
+          // Buscar cualquier link de prefetch existente y agregarlo si no existe
+          var links = document.querySelectorAll('link[rel="prefetch"]');
+          var hasPrefetch = false;
+          links.forEach(function(link) {
+            if (link.href.includes('index-') || link.href.includes('vendor-')) {
+              hasPrefetch = true;
+            }
+          });
+          // Los bundles se precargan automáticamente por Vite
+        }, 1500);
+      });
     </script>
     <script>
       // Diferir service worker hasta que la página sea interactiva

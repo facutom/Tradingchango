@@ -1,7 +1,7 @@
 import React from 'react';
 import { Product } from '../types';
 import ProductListItem from './ProductListItem';
-import { memo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { FixedSizeList } from 'react-window';
 
 interface ProductWithStats extends Product {
@@ -19,7 +19,7 @@ interface ProductListProps {
   products: ProductWithStats[];
   onProductClick: (product: Product) => void;
   onFavoriteToggle?: (id: number) => void;
-  favorites?: Record<number, number>; // Cambiamos de isFavorite (callback) a favorites (objeto)
+  favorites?: Record<number, number>;
   isCartView?: boolean;
   quantities?: Record<number, number>;
   onUpdateQuantity?: (id: number, delta: number) => void;
@@ -33,7 +33,7 @@ const ProductList: React.FC<ProductListProps> = ({
   products, 
   onProductClick, 
   onFavoriteToggle, 
-  favorites, // Ahora recibe el objeto favorites
+  favorites,
   isCartView,
   quantities,
   onUpdateQuantity,
@@ -42,12 +42,16 @@ const ProductList: React.FC<ProductListProps> = ({
   onTogglePurchased
 }) => {
 
-  // Función helper para determinar si un producto es favorito
-  const isFavorite = React.useCallback((id: number) => !!favorites?.[id], [favorites]);
+  // Memoizar la función de verificación de favorito
+  const isFavorite = useCallback((id: number) => !!favorites?.[id], [favorites]);
 
-  const visibleProducts = React.useMemo(() => {
+  // Memoizar productos visibles
+  const visibleProducts = useMemo(() => {
     return products.filter(p => p.visible_web !== false);
   }, [products]);
+
+  // Memoizar el callback de toggle
+  const handleFavoriteToggle = useCallback(onFavoriteToggle || (() => {}), [onFavoriteToggle]);
 
   if (visibleProducts.length === 0 && searchTerm) {
     return (
@@ -73,44 +77,14 @@ const ProductList: React.FC<ProductListProps> = ({
     );
   }
 
-  const Row = ({ index, style }: { index: number, style: React.CSSProperties }) => {
-    const p = visibleProducts[index];
-    return (
-      <div style={style}>
-        <ProductListItem
-          key={p.id}
-          product={p}
-          isFirst={index === 0}
-          index={index}
-          isFavorite={isFavorite(p.id)}
-          isPurchased={purchasedItems?.has(p.id) || false}
-          quantity={quantities ? (quantities[p.id] || 1) : 1}
-          isCartView={isCartView}
-          onProductClick={onProductClick}
-          onFavoriteToggle={onFavoriteToggle || (() => {})}
-          onTogglePurchased={onTogglePurchased}
-          onUpdateQuantity={onUpdateQuantity}
-        />
-      </div>
-    );
-  };
+  // Usar virtualización solo para listas muy grandes
+  const useVirtualization = visibleProducts.length > 150;
 
-  return (
-    <div 
-      className="divide-neutral-100 dark:divide-neutral-900"
-      style={{ contentVisibility: 'auto', containIntrinsicSize: '1px 1000px' }}
-    >
-      {visibleProducts.length > 100 ? (
-                <FixedSizeList
-                  height={window.innerHeight}
-                  itemCount={visibleProducts.length}
-                  itemSize={100}
-                  width="100%"
-                >
-                  {Row}
-                </FixedSizeList>
-              ) : (
-        visibleProducts.map((p, index) => (
+  if (useVirtualization) {
+    const Row = useCallback(({ index, style }: { index: number, style: React.CSSProperties }) => {
+      const p = visibleProducts[index];
+      return (
+        <div style={style}>
           <ProductListItem
             key={p.id}
             product={p}
@@ -121,22 +95,62 @@ const ProductList: React.FC<ProductListProps> = ({
             quantity={quantities ? (quantities[p.id] || 1) : 1}
             isCartView={isCartView}
             onProductClick={onProductClick}
-            onFavoriteToggle={onFavoriteToggle || (() => {})}
+            onFavoriteToggle={handleFavoriteToggle}
             onTogglePurchased={onTogglePurchased}
             onUpdateQuantity={onUpdateQuantity}
           />
-        ))
-      )}
+        </div>
+      );
+    }, [visibleProducts, isFavorite, purchasedItems, quantities, isCartView, onProductClick, handleFavoriteToggle, onTogglePurchased, onUpdateQuantity]);
+
+    return (
+      <div 
+        className="divide-neutral-100 dark:divide-neutral-900"
+        style={{ contentVisibility: 'auto', containIntrinsicSize: '1px 1000px' }}
+      >
+        <FixedSizeList
+          height={window.innerHeight - 120}
+          itemCount={visibleProducts.length}
+          itemSize={88}
+          width="100%"
+          overscanCount={5}
+        >
+          {Row}
+        </FixedSizeList>
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      className="divide-neutral-100 dark:divide-neutral-900"
+      style={{ contentVisibility: 'auto', containIntrinsicSize: '1px 1000px' }}
+    >
+      {visibleProducts.map((p, index) => (
+        <ProductListItem
+          key={p.id}
+          product={p}
+          isFirst={index === 0}
+          index={index}
+          isFavorite={isFavorite(p.id)}
+          isPurchased={purchasedItems?.has(p.id) || false}
+          quantity={quantities ? (quantities[p.id] || 1) : 1}
+          isCartView={isCartView}
+          onProductClick={onProductClick}
+          onFavoriteToggle={handleFavoriteToggle}
+          onTogglePurchased={onTogglePurchased}
+          onUpdateQuantity={onUpdateQuantity}
+        />
+      ))}
     </div>
   );
 };
 
 export default memo(ProductList, (prevProps, nextProps) => {
   // Comparación rápida para evitar re-renders innecesarios
-  // IMPORTANTE: Comparar favorites directamente para detectar cambios en favoritos
   return prevProps.products === nextProps.products &&
          prevProps.searchTerm === nextProps.searchTerm &&
          prevProps.isCartView === nextProps.isCartView &&
          prevProps.purchasedItems?.size === nextProps.purchasedItems?.size &&
-         JSON.stringify(prevProps.favorites) === JSON.stringify(nextProps.favorites);
+         prevProps.favorites === nextProps.favorites;
 });

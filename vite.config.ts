@@ -16,7 +16,11 @@ export default defineConfig({
     cssCodeSplit: true,
     // Reportar tamaño comprimido
     reportCompressedSize: true,
-    // Optimizaciones adicionales
+    // Generar sourcemaps solo en desarrollo
+    sourcemap: false,
+    // Optimizar chunks
+    chunkSizeWarningLimit: 500,
+    // Optimizaciones adicionales de rendimiento
     rollupOptions: {
       output: {
         manualChunks: (id) => {
@@ -54,10 +58,6 @@ export default defineConfig({
         },
       },
     },
-    // Generar sourcemaps solo en desarrollo
-    sourcemap: false,
-    // Optimizar chunks
-    chunkSizeWarningLimit: 500,
   },
   // Optimizaciones de dependencias
   optimizeDeps: {
