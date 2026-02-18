@@ -7,6 +7,7 @@ import ProductList from './components/ProductList';
 import BottomNav from './components/BottomNav';
 import SEOTags from './components/SEOTags';
 import CategorySEO from './components/CategorySEO';
+import ErrorBoundary from './components/ErrorBoundary';
 import { getCategorySEO, categorySEOConfig } from './utils/categorySEO';
 import { calculateOutliers } from './utils/outlierDetection';
 import { diagnoseProducts, printDiagnosis } from './utils/diagnoseProducts';
@@ -984,7 +985,8 @@ const App: React.FC = () => {
   }
  
   return (
-  <div className="max-w-screen-md mx-auto min-h-screen bg-white dark:bg-primary shadow-2xl transition-colors font-sans pb-16">
+    <ErrorBoundary>
+    <div className="max-w-screen-md mx-auto min-h-screen bg-white dark:bg-primary shadow-2xl transition-colors font-sans pb-16">
 
     {error && products.length === 0 && (
       <div className="fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-white dark:bg-primary p-4 text-center">
@@ -1117,6 +1119,7 @@ const App: React.FC = () => {
       )}
       <MemoizedFooter />
     </div>
+    </ErrorBoundary>
   );
 };
 

@@ -1,6 +1,60 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <!-- Script fail-safe para evitar ReferenceError en móviles -->
+  <script type="text/javascript">
+    // Definir objeto global que falta y causa White Screen of Death
+    window.com_asfmapps_f12_obj = window.com_asfmapps_f12_obj || {
+      ready: true,
+      version: '1.0.0',
+      _stub: function() { return true; }
+    };
+    
+    // Capturar errores de carga de chunks (code splitting)
+    (function() {
+      var originalFetch = window.fetch;
+      window.fetch = function() {
+        var args = Array.prototype.slice.call(arguments);
+        return originalFetch.apply(this, args).catch(function(err) {
+          var url = args[0];
+          if (url && typeof url === 'string' && (url.includes('.js') || url.includes('chunk'))) {
+            console.warn('[ChunkLoadError] Detected failed chunk load, triggering reload:', url);
+            // Forzar recarga suave después de un pequeño delay
+            setTimeout(function() {
+              window.location.reload();
+            }, 100);
+          }
+          throw err;
+        });
+      };
+    })();
+    
+    // Escuchar evento error global para捕获 chunk errors
+    window.addEventListener('error', function(e) {
+      var message = e.message || '';
+      var filename = e.filename || '';
+      
+      // Detectar errores de chunks faltantes
+      if (message.includes('Failed to fetch dynamically imported module') ||
+          message.includes('Loading chunk') ||
+          message.includes('chunk') ||
+          (filename && filename.includes('.js') && !filename.includes('index'))) {
+        console.warn('[ChunkLoadError] Chunk load failure detected:', message);
+        // No recargar inmediatamente para evitar loop
+        if (!window.__chunkReloadAttempted) {
+          window.__chunkReloadAttempted = true;
+          setTimeout(function() {
+            window.location.reload();
+          }, 500);
+        }
+      }
+    }, true);
+    
+    // Cleanup en pagehide para prevenir problemas al volver
+    window.addEventListener('pagehide', function() {
+      window.__chunkReloadAttempted = false;
+    });
+  </script>
   <script type="text/javascript">
     (function(l) {
         if (l.search) {
