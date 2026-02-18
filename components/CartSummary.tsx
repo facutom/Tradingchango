@@ -26,7 +26,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, benefits, userMembersh
   const STORES = [
     { name: "COTO", key: "coto" },
     { name: "CARREFOUR", key: "carrefour" },
-    { name: "DIA", key: "dia" },
+    { name: "DIA ONLINE", key: "dia" },
     { name: "JUMBO", key: "jumbo" },
     { name: "MASONLINE", key: "masonline" }
   ];
@@ -190,9 +190,9 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, benefits, userMembersh
             <div className="mt-1 space-y-1 animate-in slide-in-from-top-1 duration-300">
               {others.map((store) => (
                 <div key={store.name} className="flex justify-between items-center py-2 px-4 bg-neutral-50/50 dark:bg-[#1f2c34] rounded-lg border border-neutral-100 dark:border-[#233138]">
-                  <span className="text-[10px] font-black text-neutral-600 dark:text-[#8696a0] uppercase">{store.name}</span>
+                  <span className="text-[11px] font-black text-neutral-600 dark:text-[#8696a0] uppercase">{store.name}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-red-500 font-mono">+${format(Math.round(store.total - best.total))}</span>
+                    <span className="text-[11px] font-bold text-red-500 font-mono">+${format(Math.round(store.total - best.total))}</span>
                     <span className="font-mono text-[12px] font-black text-black dark:text-[#e9edef]">${format(Math.round(store.total))}</span>
                   </div>
                 </div>

@@ -19,7 +19,7 @@ interface ProductWithStats extends Product {
 const STORES = [
   { name: "COTO", key: 'p_coto', url: 'url_coto' },
   { name: "CARREFOUR", key: 'p_carrefour', url: 'url_carrefour' },
-  { name: "DIA", key: 'p_dia', url: 'url_dia' },
+  { name: "DIA ONLINE", key: 'p_dia', url: 'url_dia' },
   { name: "JUMBO", key: 'p_jumbo', url: 'url_jumbo' },
   { name: "MAS ONLINE", key: 'p_masonline', url: 'url_masonline' }
 ] as const;

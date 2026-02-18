@@ -21,7 +21,7 @@ interface ProductFilterStats {
 const STORES = [
   { name: 'COTO', key: 'p_coto', url: 'url_coto', stock: 'stock_coto', regular: 'pr_coto' },
   { name: 'CARREFOUR', key: 'p_carrefour', url: 'url_carrefour', stock: 'stock_carrefour', regular: 'pr_carrefour' },
-  { name: 'DIA', key: 'p_dia', url: 'url_dia', stock: 'stock_dia', regular: 'pr_dia' },
+  { name: 'DIA ONLINE', key: 'p_dia', url: 'url_dia', stock: 'stock_dia', regular: 'pr_dia' },
   { name: 'JUMBO', key: 'p_jumbo', url: 'url_jumbo', stock: 'stock_jumbo', regular: 'pr_jumbo' },
   { name: 'MAS ONLINE', key: 'p_masonline', url: 'url_masonline', stock: 'stock_masonline', regular: 'pr_masonline' }
 ] as const;

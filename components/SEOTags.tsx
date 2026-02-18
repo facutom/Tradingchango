@@ -198,7 +198,7 @@ export function generateCollectionPageSchema(name: string, description: string, 
 
 export function generateStoreSchema(storeName: string, productCount: number) {
   const storeNames: Record<string, string> = {
-    'COTO': 'Coto', 'CARREFOUR': 'Carrefour', 'DIA': 'Día',
+    'COTO': 'Coto', 'CARREFOUR': 'Carrefour', 'DIA': 'Día Online',
     'JUMBO': 'Jumbo', 'MAS ONLINE': 'Mas Online'
   };
   
