@@ -9,6 +9,7 @@ import SEOTags from './components/SEOTags';
 import CategorySEO from './components/CategorySEO';
 import { getCategorySEO, categorySEOConfig } from './utils/categorySEO';
 import { calculateOutliers } from './utils/outlierDetection';
+import { diagnoseProducts, printDiagnosis } from './utils/diagnoseProducts';
 
 const AuthModal = lazy(() => import('./components/AuthModal'));
 const CartSummary = lazy(() => import('./components/CartSummary'));
@@ -176,6 +177,11 @@ const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUp
   const navigate = useNavigate();
   const location = useLocation();
   
+  console.log('=== DIAGNOSTICO ===');
+  console.log('Category:', category);
+  console.log('Slug:', slug);
+  console.log('Products length:', products?.length);
+  
   const product = products.find((p: any) => {
     const categoryMatch = slugify(p.categoria || 'general') === category;
     const nameSlug = slugify(p.nombre);
@@ -186,11 +192,36 @@ const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUp
     const matchByEan = eanValue && (nameSlug + '-' + eanValue) === slug;
     const matchById = (nameSlug + '-id' + p.id) === slug;
     
+    console.log(`Producto ID ${p.id}: ${p.nombre}`);
+    console.log(`  categoryMatch: ${categoryMatch} (${p.categoria} vs ${category})`);
+    console.log(`  matchByName: ${matchByName} (${nameSlug} vs ${slug})`);
+    console.log(`  matchByEan: ${matchByEan}`);
+    console.log(`  matchById: ${matchById}`);
+    
     return categoryMatch && (matchByName || matchByEan || matchById);
   });
 
+  console.log('Producto encontrado:', product);
+  
   if (products.length === 0) return null;
-  if (!product) return <Navigate to="/" replace />;
+  
+  // TEMPORAL: Comentado para diagnosticar error
+  // if (!product) return <Navigate to="/" replace />;
+  
+  if (!product) {
+    console.error('ERROR: Producto no encontrado');
+    console.error('  category:', category);
+    console.error('  slug:', slug);
+    return (
+      <div style={{padding: '20px', background: '#ffebee', color: '#c62828'}}>
+        <h1>Producto no encontrado</h1>
+        <p>Category: {category}</p>
+        <p>Slug: {slug}</p>
+        <p>Productos disponibles: {products.length}</p>
+        <button onClick={() => navigate('/')}>Volver al inicio</button>
+      </div>
+    );
+  }
 
   const handleClose = () => {
     if (location.state?.from === 'chango' || location.pathname === '/chango') {
@@ -435,14 +466,20 @@ const App: React.FC = () => {
   };
 
   const favoriteItems = useMemo(() => {
+    // Obtener todos los productos procesados
+    const allProcessed = processProducts(products, history, STORES);
     return Object.keys(favorites)
       .map(id => {
-        const product = products.find(p => p.id === Number(id));
+        const product = allProcessed.find(p => p.id === Number(id));
         if (!product) return null;
-        return { ...product, quantity: favorites[Number(id)] };
+        return { 
+          ...product, 
+          quantity: favorites[Number(id)],
+          isAvailable: product.visible_web !== false && product.validPriceCount >= 2
+        } as CartItem & { isAvailable: boolean };
       })
-      .filter((p): p is CartItem => p !== null);
-  }, [favorites, products]);
+      .filter((p): p is CartItem & { isAvailable: boolean } => p !== null);
+  }, [favorites, products, history]);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -493,6 +530,11 @@ const App: React.FC = () => {
 
       const productsWithOutliers = await calculateOutliers(products);
       setProducts(productsWithOutliers || []);
+      
+      // EXPONER PRODUCTOS PARA DIAGNÓSTICO
+      const prods = productsWithOutliers || [];
+      (window as any).__PRODUCTS__ = prods;
+      (window as any).__DIAGNOSE__ = () => printDiagnosis(prods, []);
       setConfig(config);
       
       localStorage.setItem('tc_cache_products', JSON.stringify(productsWithOutliers || []));
@@ -683,7 +725,16 @@ const App: React.FC = () => {
   }, [products, history]);
 
   const cartItems = useMemo(() => {
-    return processedProductsCache.filter(p => favorites[p.id]).map(p => ({ ...p, quantity: favorites[p.id] || 1 } as CartItem));
+    // Obtener todos los productos procesadps (incluyendo los no disponibles)
+    const allProcessed = processProducts(products, history, STORES);
+    // Filtrar solo los que están en favoritos
+    const favoritesInProducts = allProcessed.filter(p => favorites[p.id]);
+    // Agregar bandera isAvailable para cada producto
+    return favoritesInProducts.map(p => ({
+      ...p,
+      quantity: favorites[p.id] || 1,
+      isAvailable: p.visible_web !== false && p.validPriceCount >= 2
+    } as CartItem & { isAvailable: boolean }));
   }, [processedProductsCache, favorites]);
 
   const filteredProducts = useMemo(() => {

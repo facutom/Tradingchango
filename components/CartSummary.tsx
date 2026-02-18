@@ -2,8 +2,12 @@ import React, { useMemo, useState } from 'react';
 import { CartItem, Benefit, UserMembership } from '../types';
 import { calculateStoreTotal } from '../utils/calculateStoreTotal';
 
+interface CartItemWithAvailability extends CartItem {
+  isAvailable?: boolean;
+}
+
 interface CartSummaryProps {
-  items: CartItem[];
+  items: CartItemWithAvailability[];
   benefits: Benefit[];
   userMemberships?: UserMembership[];
   onSaveCart?: (name: string) => void;
@@ -34,7 +38,9 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, benefits, userMembersh
 
       // 2. Validación de disponibilidad:
       // Filtramos tiendas que no tengan el producto o precio regular cargado
-      const hasAllItems = items.every(item => {
+      // Solo consideramos productos disponibles (isAvailable !== false)
+      const availableItems = items.filter(item => item.isAvailable !== false);
+      const hasAllItems = availableItems.every(item => {
         const pReg = item[`pr_${store.key}` as keyof CartItem];
         const url = item[`url_${store.key}` as keyof CartItem];
         const stock = item[`stock_${store.key}` as keyof CartItem];

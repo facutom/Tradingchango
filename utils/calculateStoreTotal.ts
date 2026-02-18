@@ -31,7 +31,10 @@ export const calculateStoreTotal = (
   let subtotalAcc = 0;
   let totalAcc = 0;
 
-  cartItems.forEach((item) => {
+  // Filtrar solo productos disponibles para el cálculo
+  const availableItems = cartItems.filter(item => item.isAvailable !== false);
+
+  availableItems.forEach((item) => {
     const quantity = Math.max(0, Number(item.quantity) || 0);
     if (quantity <= 0) return;
 

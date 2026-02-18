@@ -32,6 +32,7 @@ interface ProductListItemProps {
   isPurchased: boolean;
   quantity: number;
   isCartView?: boolean;
+  isAvailable?: boolean; // Nueva prop para productos no disponibles
   onProductClick: (product: Product) => void;
   onFavoriteToggle: (id: number) => void;
   onTogglePurchased?: (id: number) => void;
@@ -63,6 +64,7 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
   isPurchased,
   quantity,
   isCartView,
+  isAvailable = true, // Por defecto disponible
   onProductClick,
   onFavoriteToggle,
   onTogglePurchased,
@@ -139,7 +141,7 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
   return (
     <div 
       onClick={() => onProductClick(p)}
-      className={`flex items-center justify-between px-3 py-2 bg-white dark:bg-primary hover:bg-neutral-50 dark:hover:bg-neutral-900/30 cursor-pointer transition-all ${isPurchased ? 'opacity-30 grayscale' : ''}`}
+      className={`flex items-center justify-between px-3 py-2 bg-white dark:bg-primary hover:bg-neutral-50 dark:hover:bg-neutral-900/30 cursor-pointer transition-all ${isPurchased ? 'opacity-30 grayscale' : ''} ${!isAvailable && isCartView ? 'opacity-50 grayscale' : ''}`}
     >
       <div className="flex items-center gap-3 shrink-0">
          {isCartView && (
@@ -193,7 +195,7 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
             </>
           ) : (
             <span className="font-mono text-[11px] text-neutral-400 dark:text-neutral-600">
-              No disponible
+              {isCartView && !isAvailable ? 'No disponible' : 'No disponible'}
             </span>
           )}
         </div>

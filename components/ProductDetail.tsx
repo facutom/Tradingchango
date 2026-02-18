@@ -410,8 +410,10 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
     return null;
   };
 
-  return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm md:p-4 product-detail-backdrop">
+  // Envolver el return en try-catch para diagnóstico
+  try {
+    return (
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm md:p-4 product-detail-backdrop">
       <div ref={modalRef} data-keep-open className="product-detail-modal w-full max-w-lg h-auto max-h-full md:max-h-[95vh] bg-white dark:bg-primary md:rounded-[1.2rem] overflow-y-auto shadow-2xl relative">
         
         <div className="sticky top-0 z-20 bg-white/95 dark:bg-primary/95 backdrop-blur-md px-4 py-2 flex items-center justify-between border-b border-neutral-100 dark:border-[#233138]">
@@ -766,6 +768,15 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       </div>
     </div>
   );
+  } catch (error) {
+    console.error('ERROR DE RENDER:', error);
+    return (
+      <div style={{padding: '20px', background: '#ffebee', color: '#c62828'}}>
+        <h1>Error al renderizar ProductDetail</h1>
+        <pre>{String(error)}</pre>
+      </div>
+    );
+  }
 };
 
 export default ProductDetail;

@@ -13,6 +13,7 @@ interface ProductWithStats extends Product {
     isUp: boolean;
     isDown: boolean;
   };
+  isAvailable?: boolean;
 }
 
 interface ProductListProps {
@@ -46,9 +47,13 @@ const ProductList: React.FC<ProductListProps> = ({
   const isFavorite = useCallback((id: number) => !!favorites?.[id], [favorites]);
 
   // Memoizar productos visibles
+  // En el carrito (isCartView), mostrar todos los productos incluyendo los no disponibles
   const visibleProducts = useMemo(() => {
+    if (isCartView) {
+      return products; // Mostrar todos los productos en el carrito
+    }
     return products.filter(p => p.visible_web !== false);
-  }, [products]);
+  }, [products, isCartView]);
 
   // Memoizar el callback de toggle
   const handleFavoriteToggle = useCallback(onFavoriteToggle || (() => {}), [onFavoriteToggle]);
@@ -94,6 +99,7 @@ const ProductList: React.FC<ProductListProps> = ({
             isPurchased={purchasedItems?.has(p.id) || false}
             quantity={quantities ? (quantities[p.id] || 1) : 1}
             isCartView={isCartView}
+            isAvailable={p.isAvailable !== false}
             onProductClick={onProductClick}
             onFavoriteToggle={handleFavoriteToggle}
             onTogglePurchased={onTogglePurchased}
@@ -136,6 +142,7 @@ const ProductList: React.FC<ProductListProps> = ({
           isPurchased={purchasedItems?.has(p.id) || false}
           quantity={quantities ? (quantities[p.id] || 1) : 1}
           isCartView={isCartView}
+          isAvailable={p.isAvailable !== false}
           onProductClick={onProductClick}
           onFavoriteToggle={handleFavoriteToggle}
           onTogglePurchased={onTogglePurchased}

@@ -47,6 +47,7 @@ export interface Product {
 
 export interface CartItem extends Product {
   quantity: number;
+  isAvailable?: boolean;
 }
 
 export interface Benefit {
@@ -112,4 +113,13 @@ export interface Profile {
   membresias: UserMembership[];
   nombre?: string;
   email?: string;
+}
+
+// Variables globales para diagnóstico
+declare global {
+  interface Window {
+    __PRODUCTS__?: Product[];
+    __DIAGNOSE__?: () => void;
+    __HISTORY__?: PriceHistory[];
+  }
 }

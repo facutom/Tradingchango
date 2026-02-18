@@ -130,9 +130,6 @@ async function getWeeklyVariationReal(products: Product[]): Promise<WeeklyVariat
       }
     }
     
-    // Debug: log para ver datos
-    console.log(`[CategoryMetrics] Fecha: ${dateStr}, Productos: ${productNames.length}, Historial encontrado: ${allHistoryData.length}`);
-    
     // Si no hay datos histÃ³ricos
     if (allHistoryData.length === 0) {
       return { variation: 0, hasData: false };
@@ -140,7 +137,6 @@ async function getWeeklyVariationReal(products: Product[]): Promise<WeeklyVariat
     
     // Calcular variación para cada producto con datos históricos
     const variations: number[] = [];
-    console.log(`[CategoryMetrics] Calculating variations for ${products.length} products.`);
     
     for (const product of products) {
       const historicalPrices = allHistoryData.filter(h => h.nombre_producto === product.nombre);
@@ -153,7 +149,6 @@ async function getWeeklyVariationReal(products: Product[]): Promise<WeeklyVariat
           if (currentPrice > 0) {
             const variation = ((currentPrice - historicalAvg) / historicalAvg) * 100;
             variations.push(variation);
-            console.log(`[CategoryMetrics] Product: ${product.nombre}, Current Min: ${currentPrice.toFixed(2)}, Historical Avg: ${historicalAvg.toFixed(2)}, Variation: ${variation.toFixed(2)}%`);
           }
         }
       }
@@ -161,12 +156,10 @@ async function getWeeklyVariationReal(products: Product[]): Promise<WeeklyVariat
     
     // Si ningún producto tiene datos coincidentes
     if (variations.length === 0) {
-      console.log('[CategoryMetrics] No products with matching historical data found.');
       return { variation: 0, hasData: false };
     }
     
     const avgVariation = variations.reduce((sum, v) => sum + v, 0) / variations.length;
-    console.log(`[CategoryMetrics] Final average variation: ${avgVariation.toFixed(2)}%`);
     
     return { 
       variation: Math.round(avgVariation * 10) / 10,
@@ -249,25 +242,21 @@ export async function calculateCategoryMetrics(products: Product[]): Promise<Cat
     };
   }
   
-  // --- LOGS PARA DISPERSIÓN ---
-  console.log('[CategoryMetrics] Calculating dispersion...');
+  // Calcular dispersión
   const dispersions = visibleProducts.map(p => {
     const min = getMinPrice(p);
     const max = getMaxPrice(p);
     if (min === 0 || max === 0) return 0;
     const dispersion = ((max - min) / min) * 100;
     const limitedDispersion = Math.min(dispersion, 150);
-    console.log(`[CategoryMetrics] Dispersion for ${p.nombre}: Min: ${min}, Max: ${max}, Dispersion: ${dispersion.toFixed(2)}%, Limited: ${limitedDispersion.toFixed(2)}%`);
     return limitedDispersion;
   }).filter(d => d > 0);
   
   const avgDispersion = dispersions.length > 0 
     ? dispersions.reduce((a, b) => a + b, 0) / dispersions.length 
     : 0;
-  console.log(`[CategoryMetrics] Final average dispersion: ${avgDispersion.toFixed(2)}%`);
   
-  // --- LOGS PARA LÍDER ---
-  console.log('[CategoryMetrics] Calculating leader store...');
+  // Calcular líder
   const storeCounts: Record<string, number> = {};
   visibleProducts.forEach(p => {
     const cheapest = getCheapestStore(p);
@@ -276,11 +265,9 @@ export async function calculateCategoryMetrics(products: Product[]): Promise<Cat
       storeCounts[storeName] = (storeCounts[storeName] || 0) + 1;
     }
   });
-  console.log('[CategoryMetrics] Cheapest product counts per store:', storeCounts);
   
   const leaderStore = Object.entries(storeCounts)
     .sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
-  console.log(`[CategoryMetrics] Determined leader store: ${leaderStore}`);
   
   // Calcular variación semanal real
   const variationResult = await getWeeklyVariationReal(visibleProducts);
