@@ -17,6 +17,7 @@ const Footer: React.FC = () => {
             <Link to="/como-ahorrar" className="text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white whitespace-nowrap">Cómo Ahorrar</Link>
             <Link to="/historial-precios" className="text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white whitespace-nowrap">Historial Precios</Link>
             <Link to="/ofertas-semana" className="text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white whitespace-nowrap">Ofertas Semana</Link>
+            <Link to="https://bestgaming.com.ar/" target="_blank" rel="noopener noreferrer" className="text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white whitespace-nowrap" > BestGaming </Link>
           </div>
         </div>
         <p className="text-[10px] font-mono font-bold text-neutral-600 dark:text-neutral-700 uppercase tracking-[0.2em]">
