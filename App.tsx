@@ -483,20 +483,84 @@ const App: React.FC = () => {
 
   const [error, setError] = useState<string | null>(null);
 
-  const loadData = useCallback(async (sessionUser: User | null, attempt = 1) => {
-    // Timeout de seguridad para evitar que loading quede pillado
-    const loadingTimeout = setTimeout(() => {
-      console.warn('Timeout de carga - forzando estado');
-      setLoading(false);
-    }, 15000);
+  const loadDataTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const loadDataRetryRef = useRef<NodeJS.Timeout | null>(null);
+  const isLoadingDataRef = useRef(false);
+
+  // Cleanup de timeouts al desmontar el componente
+  useEffect(() => {
+    return () => {
+      if (loadDataTimeoutRef.current) {
+        clearTimeout(loadDataTimeoutRef.current);
+      }
+      if (loadDataRetryRef.current) {
+        clearTimeout(loadDataRetryRef.current);
+      }
+    };
+  }, []);
+
+  // Manejo específico para móvil: cuando la app vuelve del background,
+  // intentamos reconectar para obtener datos frescos
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && !isLoadingDataRef.current) {
+        // La app volvió a estar visible - intentar reconectar si hay datos antiguos
+        const cachedProds = localStorage.getItem('tc_cache_products');
+        const cacheTime = localStorage.getItem('tc_cache_time');
+        const now = Date.now();
+        const CACHE_MAX_AGE = 5 * 60 * 1000; // 5 minutos
+        
+        // Si hay cache pero es antiguo (más de 5 min), intentar reconectar
+        if (cachedProds && cacheTime && (now - parseInt(cacheTime) > CACHE_MAX_AGE)) {
+          console.log('Cache antiguo, intentando reconectar...');
+          // No forzamos carga completa, solo solicitamos datos nuevos
+          // El usuario puede ver los datos cacheados inmediatamente
+          loadData(user, 1).catch(console.error);
+        }
+      }
+    };
     
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [user]);
+
+  const loadData = useCallback(async (sessionUser: User | null, attempt = 1) => {
+    // Si ya está cargando, no iniciar otra vez
+    if (isLoadingDataRef.current) {
+      console.log('loadData ya está en progreso, ignorando llamada');
+      return;
+    }
+    
+    // Limpiar cualquier timeout pendiente de intentos anteriores
+    if (loadDataRetryRef.current) {
+      clearTimeout(loadDataRetryRef.current);
+      loadDataRetryRef.current = null;
+    }
+    
+    isLoadingDataRef.current = true;
     setLoading(true);
     setError(null);
+    
+    // Timeout de seguridad - si pasan más de 20 segundos sin respuesta, forzamos fin de carga
+    loadDataTimeoutRef.current = setTimeout(() => {
+      console.warn('Timeout de carga - forzando estado');
+      isLoadingDataRef.current = false;
+      // Si no hay productos en cache, mostrar error
+      const cachedProds = localStorage.getItem('tc_cache_products');
+      if (!cachedProds && products.length === 0) {
+        setError('La conexión tardó demasiado. Verificá tu conexión a internet.');
+      }
+      setLoading(false);
+    }, 20000);
     try {
       // Primero intentar cargar del cache inmediatamente para mostrar algo rápido
       const cachedProds = localStorage.getItem('tc_cache_products');
       const cachedHistory = localStorage.getItem('tc_cache_history');
       const cachedConfig = localStorage.getItem('tc_cache_config');
+      const cacheTime = localStorage.getItem('tc_cache_time');
+      
+      // Calcular si el cache es antiguo (más de 5 minutos)
+      const isCacheStale = cacheTime ? (Date.now() - parseInt(cacheTime)) > (5 * 60 * 1000) : true;
       
       if (cachedProds && attempt === 1) {
         setProducts(JSON.parse(cachedProds));
@@ -548,6 +612,7 @@ const App: React.FC = () => {
       
       localStorage.setItem('tc_cache_products', JSON.stringify(productsWithOutliers || []));
       localStorage.setItem('tc_cache_config', JSON.stringify(config));
+      localStorage.setItem('tc_cache_time', Date.now().toString());
 
       getPriceHistory(7).then(hist => {
         const histData = hist || [];
@@ -557,16 +622,29 @@ const App: React.FC = () => {
       getBenefits(new Date().getDay()).then(setBenefits);
       
       // Limpiar timeout y marcar como cargado
-      clearTimeout(loadingTimeout);
+      if (loadDataTimeoutRef.current) {
+        clearTimeout(loadDataTimeoutRef.current);
+        loadDataTimeoutRef.current = null;
+      }
+      isLoadingDataRef.current = false;
       setLoading(false);
 
     } catch (err: any) {
       // Limpiar timeout en caso de error
-      clearTimeout(loadingTimeout);
+      if (loadDataTimeoutRef.current) {
+        clearTimeout(loadDataTimeoutRef.current);
+        loadDataTimeoutRef.current = null;
+      }
+      
+      console.error('Error en loadData:', err);
       
       if (attempt < 2) { 
-        setTimeout(() => loadData(sessionUser, attempt + 1), 3000);
+        console.log(`Reintentando carga (intento ${attempt + 1})...`);
+        loadDataRetryRef.current = setTimeout(() => {
+          loadData(sessionUser, attempt + 1);
+        }, 3000);
       } else {
+        isLoadingDataRef.current = false;
         setLoading(false);
         // Si falló todo, usar cache si existe, o mostrar mensaje
         const cachedProds = localStorage.getItem('tc_cache_products');
@@ -889,10 +967,12 @@ const App: React.FC = () => {
   );
  
   // Pantalla de carga mejorada - muestra spinner si está cargando Y no hay datos disponibles
-  // También muestra si hay error O si realmente está cargando por primera vez sin caché
-  const showLoadingScreen = loading && products.length === 0;
+  // Nunca debe quedar en blanco: si hay error O productos en cache, los mostraremos
+  const showLoadingScreen = loading && products.length === 0 && !error;
   const hasDataToShow = products.length > 0 || error !== null;
   
+  // SIEMPRE mostrar algo: si está cargando sin datos Y sin error, mostrar spinner
+  // Si tiene productos O error, nunca mostrar el spinner de carga completo
   if (showLoadingScreen && !hasDataToShow) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center dark:bg-primary dark:text-white font-mono text-[11px] uppercase tracking-[0.2em] bg-white">
