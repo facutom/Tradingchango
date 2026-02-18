@@ -484,19 +484,28 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const loadData = useCallback(async (sessionUser: User | null, attempt = 1) => {
+    // Timeout de seguridad para evitar que loading quede pillado
+    const loadingTimeout = setTimeout(() => {
+      console.warn('Timeout de carga - forzando estado');
+      setLoading(false);
+    }, 15000);
+    
     setLoading(true);
     setError(null);
     try {
-      if (attempt === 1) {
-        const cachedProds = localStorage.getItem('tc_cache_products');
-        if (cachedProds) {
-          setProducts(JSON.parse(cachedProds));
-          setLoading(false);
-        }
-        const cachedHistory = localStorage.getItem('tc_cache_history');
-        if (cachedHistory) {
-          setHistory(JSON.parse(cachedHistory));
-        }
+      // Primero intentar cargar del cache inmediatamente para mostrar algo rápido
+      const cachedProds = localStorage.getItem('tc_cache_products');
+      const cachedHistory = localStorage.getItem('tc_cache_history');
+      const cachedConfig = localStorage.getItem('tc_cache_config');
+      
+      if (cachedProds && attempt === 1) {
+        setProducts(JSON.parse(cachedProds));
+      }
+      if (cachedHistory) {
+        setHistory(JSON.parse(cachedHistory));
+      }
+      if (cachedConfig) {
+        setConfig(JSON.parse(cachedConfig));
       }
 
       const fetchDataWithTimeout = (promise: Promise<any>, timeout: number) => {
@@ -521,7 +530,7 @@ const App: React.FC = () => {
 
       const [prodData, configData] = await (fetchDataWithTimeout(
         Promise.all([getProducts(), getConfig()]), 
-        8000
+        10000
       ) as Promise<[Product[], Record<string, string>]>);
 
       // Si los datos son null (por AbortError), usar arrays vacíos
@@ -546,16 +555,28 @@ const App: React.FC = () => {
         localStorage.setItem('tc_cache_history', JSON.stringify(histData));
       });
       getBenefits(new Date().getDay()).then(setBenefits);
+      
+      // Limpiar timeout y marcar como cargado
+      clearTimeout(loadingTimeout);
       setLoading(false);
 
     } catch (err: any) {
+      // Limpiar timeout en caso de error
+      clearTimeout(loadingTimeout);
+      
       if (attempt < 2) { 
-        setTimeout(() => loadData(sessionUser, 2), 3000);
+        setTimeout(() => loadData(sessionUser, attempt + 1), 3000);
       } else {
         setLoading(false);
-        setError("No se pudo conectar con el mercado. Por favor, revisá tu conexión a internet y volvé a intentarlo.");
+        // Si falló todo, usar cache si existe, o mostrar mensaje
         const cachedProds = localStorage.getItem('tc_cache_products');
-        if (!cachedProds) setProducts([]);
+        if (cachedProds) {
+          // Ya tenemos los products del cache cargados arriba, solo logger
+          console.warn('Usando datos cacheados tras error');
+        } else {
+          setError("No se pudo conectar con el mercado. Por favor, revisá tu conexión a internet y volvé a intentarlo.");
+          setProducts([]);
+        }
       }
     }
   }, []);
@@ -867,7 +888,20 @@ const App: React.FC = () => {
   </> 
   );
  
-  if (loading && products.length === 0) return <div className="min-h-screen flex items-center justify-center dark:bg-primary dark:text-white font-mono text-[11px] uppercase tracking-[0.2em]">Conectando a Mercado...</div>;
+  // Pantalla de carga mejorada - muestra spinner si está cargando Y no hay datos disponibles
+  // También muestra si hay error O si realmente está cargando por primera vez sin caché
+  const showLoadingScreen = loading && products.length === 0;
+  const hasDataToShow = products.length > 0 || error !== null;
+  
+  if (showLoadingScreen && !hasDataToShow) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center dark:bg-primary dark:text-white font-mono text-[11px] uppercase tracking-[0.2em] bg-white">
+        <div className="w-10 h-10 border-3 border-t-transparent border-neutral-800 dark:border-white rounded-full animate-spin mb-4"></div>
+        <span>Conectando a Mercado...</span>
+        <span className="text-[9px] mt-2 opacity-50">Si esto tarda demasiado, recargá la página</span>
+      </div>
+    );
+  }
  
   return (
   <div className="max-w-screen-md mx-auto min-h-screen bg-white dark:bg-primary shadow-2xl transition-colors font-sans pb-16">
