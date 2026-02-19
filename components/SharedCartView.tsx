@@ -644,8 +644,8 @@ const SharedCartView: React.FC = () => {
   // El total real del mejor store
   const calculatedTotal = best ? best.total : 0;
   
-  // Usar el savings del mejor store directamente (ya calculado con la lógica correcta)
-  const calculatedSavings = best ? best.savings : 0;
+  // Calcular ahorro como en CartSummary: diferencia entre el store más caro y el más barato
+  const calculatedSavings = (best && worst) ? (worst.total - best.total) : (best ? best.savings : 0);
   
   const shareTitle = `${cart.user_name} está ahorrando ${formatPrice(calculatedSavings)} en su Chango`;
   const storeEmoji = (key: string) => STORES.find(s => s.key === key)?.emoji ?? '🏪';
@@ -689,7 +689,7 @@ const SharedCartView: React.FC = () => {
               <div className="sc-savings-label">Ahorro total</div>
               <div className="sc-savings-amount">${formatPrice(calculatedSavings)}</div>
               <div className="sc-savings-desc">eligiendo el supermercado más barato</div>
-              <div className="sc-savings-disclaimer">Valores estimados. La aplicación de beneficios y el precio final en caja dependen exclusivamente de las condiciones vigentes de cada comercio y entidad emisora.</div>
+              <div className="sc-savings-disclaimer">Valores estimados. Los precios son relevados de forma automática y pueden variar según la sucursal, promociones bancarias o  condiciones vigentes de cada comercio y entidad emisora.</div>
             </div>
 
             <div className="sc-stats">
@@ -752,7 +752,7 @@ const SharedCartView: React.FC = () => {
                 {worst && worst.key !== best?.key && (
                   <div className="sc-store-worst">
                     <div>
-                      <div className="sc-store-worst-label">MÁS CARO</div>
+                      <div className="sc-store-worst-label">OTRAS OPCIONES</div>
                       <div className="sc-store-worst-name">
                         {storeEmoji(worst.key)} {worst.name}
                       </div>
