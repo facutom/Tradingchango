@@ -168,3 +168,35 @@ export const trackError = (errorType: string, errorMessage: string): void => {
     error_message: errorMessage,
   });
 };
+
+/**
+ * Evento: Recuperación automática de crash
+ * Se dispara cuando la app se recupera sola sin intervención del usuario
+ */
+export const trackCrashRecovery = (attemptNumber: number, method: string = 'auto'): void => {
+  sendGA4Event('app_crash_recovered', {
+    recovery_method: method,
+    attempt_number: attemptNumber,
+  });
+  sendClarityEvent('app_crash_recovered', {
+    recovery_method: method,
+    attempt_number: attemptNumber,
+    timestamp: new Date().toISOString(),
+  });
+  console.log(`[Analytics] Crash recovery: intento ${attemptNumber}, método: ${method}`);
+};
+
+/**
+ * Evento: App actualizándose desde Service Worker
+ */
+export const trackAppUpdate = (previousVersion?: string, newVersion?: string): void => {
+  sendGA4Event('app_update', {
+    previous_version: previousVersion || 'unknown',
+    new_version: newVersion || 'unknown',
+  });
+  sendClarityEvent('app_update', {
+    previous_version: previousVersion,
+    new_version: newVersion,
+    timestamp: new Date().toISOString(),
+  });
+};
