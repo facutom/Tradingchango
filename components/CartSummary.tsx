@@ -113,7 +113,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, benefits, userMembersh
                 className="z-20 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-xs font-bold uppercase flex items-center gap-2 shadow-lg transition-colors"
               >
                 <i className="fa-solid fa-cart-shopping"></i>
-                Compartir Ahorro
+                Compartir Chango
               </button>
             </div>
           )}
