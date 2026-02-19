@@ -21,4 +21,8 @@ export const STORAGE_KEYS = {
   CACHE_HISTORY: 'tc_cache_history',
   CACHE_CONFIG: 'tc_cache_config',
   CACHE_TIME: 'tc_cache_time',
+  COOKIE_CONSENT: 'tc_cookie_consent',
 } as const;
+
+// Límites
+export const ANONYMOUS_FAVORITES_LIMIT = 3;

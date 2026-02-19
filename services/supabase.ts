@@ -135,6 +135,69 @@ export const getSavedCartData = async (userId: string): Promise<{ active: Record
   return items || { active: {}, saved: [] };
 };
 
+// =====================
+// CHANGOS COMPARTIDOS
+// =====================
+
+export interface SharedCart {
+  id: string;
+  user_id: string;
+  user_name: string;
+  items: { active: Record<number, number>, saved: any[] };
+  total_savings: number;
+  created_at: string;
+  expires_at: string;
+}
+
+// Crear un chango compartido público
+export const createSharedCart = async (
+  userId: string,
+  userName: string,
+  items: { active: Record<number, number>, saved: any[] },
+  totalSavings: number
+): Promise<string> => {
+  // Generar ID único
+  const shareId = Math.random().toString(36).substring(2, 10);
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 30); // Expira en 30 días
+  
+  const { error } = await supabase
+    .from('changos_compartidos')
+    .insert({
+      id: shareId,
+      user_id: userId,
+      user_name: userName,
+      items: items,
+      total_savings: totalSavings,
+      created_at: new Date().toISOString(),
+      expires_at: expiresAt.toISOString(),
+    });
+  
+  if (error) {
+    console.error('[SharedCart] Error creating:', error);
+    throw error;
+  }
+  
+  return shareId;
+};
+
+// Obtener un chango compartido por ID
+export const getSharedCart = async (shareId: string): Promise<SharedCart | null> => {
+  const { data, error } = await supabase
+    .from('changos_compartidos')
+    .select('*')
+    .eq('id', shareId)
+    .gt('expires_at', new Date().toISOString())
+    .maybeSingle();
+  
+  if (error) {
+    console.error('[SharedCart] Error fetching:', error);
+    return null;
+  }
+  
+  return data;
+};
+
 // Guarda un carrito individual
 export const saveCart = async (userId: string, name: string, items: Record<number, number>) => {
   const { data, error } = await supabase
@@ -159,18 +222,6 @@ export const getSavedCarts = async (userId: string) => {
     .order('created_at', { ascending: false });
   if (error) throw error;
   return data || [];
-};
-
-// Obtiene un carrito compartido por su ID
-export const getSharedCart = async (cartId: string) => {
-  const { data, error } = await supabase
-    .from('carritos_guardados')
-    .select('items, name')
-    .eq('id', cartId)
-    .eq('is_public', true)
-    .single();
-  if (error) throw error;
-  return data;
 };
 
 // Actualiza un carrito (para compartir, etc.)

@@ -89,6 +89,27 @@ export const trackAddToWishlist = (itemId: number, itemName: string, category?: 
 };
 
 /**
+ * Evento: Vista de chango compartido (viralidad)
+ */
+export const trackSharedCartView = (cartId: string, userName: string, totalSavings: number, itemCount: number, source: string): void => {
+  sendGA4Event('view_shared_chango', {
+    cart_id: cartId,
+    user_name: userName,
+    total_savings: totalSavings,
+    item_count: itemCount,
+    traffic_source: source,
+  });
+  sendClarityEvent('view_shared_chango', {
+    cart_id: cartId,
+    user_name: userName,
+    total_savings: totalSavings,
+    item_count: itemCount,
+    traffic_source: source,
+  });
+  console.log('[Analytics] Vista de chango compartido:', { cartId, userName, totalSavings, itemCount, source });
+};
+
+/**
  * Configurar propiedades de usuario
  */
 export const setUserProperties = (userId: string, isRegistered: boolean): void => {

@@ -11,13 +11,14 @@ interface CartSummaryProps {
   benefits: Benefit[];
   userMemberships?: UserMembership[];
   onSaveCart?: (name: string) => void;
+  onShareCart?: () => void;
   canSave: boolean;
   savedCarts: any[];
   onLoadCart: (index: number) => void;
   onDeleteCart: (index: number) => void;
 }
 
-const CartSummary: React.FC<CartSummaryProps> = ({ items, benefits, userMemberships = [], onSaveCart, canSave, savedCarts, onLoadCart, onDeleteCart }) => {
+const CartSummary: React.FC<CartSummaryProps> = ({ items, benefits, userMemberships = [], onSaveCart, onShareCart, canSave, savedCarts, onLoadCart, onDeleteCart }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [newCartName, setNewCartName] = useState('');
   const [showSaveInput, setShowSaveInput] = useState(false);
@@ -103,6 +104,16 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, benefits, userMembersh
     <div className="p-4 space-y-2 animate-in fade-in duration-700">
       {/* Tarjeta Principal: Mejor Opción */}
       <div className="bg-white dark:bg-primary border-[3px] border-black dark:border-[#e9edef] rounded-2xl p-4 shadow-xl relative">
+        {/* Botón Compartir en esquina superior derecha */}
+        {onShareCart && items.length > 0 && (
+          <button
+            onClick={() => onShareCart()}
+            className="absolute top-3 right-3 z-20 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-full text-xs font-bold uppercase flex items-center gap-1.5 shadow-lg transition-colors"
+          >
+            <i className="fa-solid fa-share-nodes"></i>
+            Compartir Ahorro
+          </button>
+        )}
         <div className="flex flex-col gap-3 relative z-10">
           
           <div className="flex flex-col items-center gap-2 text-center">
@@ -243,7 +254,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, benefits, userMembersh
             </div>
             <button 
               onClick={() => setShowSaveInput(false)}
-              className="text-[9px] text-neutral-500 dark:text-[#8696a0] uppercase font-bold text-left pl-1"
+              className="text-[9px] text-neutral-500 dark:text-[#8696a0] uppercase font-bold text-left pl-1 mt-1"
             >
               Cancelar
             </button>

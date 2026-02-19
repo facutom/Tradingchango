@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense, memo, useRef } from 'react';
 import type { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
-import { supabase, getProducts, getPriceHistory, getProfile, getConfig, getBenefits, getSavedCartData, saveCartData, getProductHistoryByEan } from './services/supabase';
+import { supabase, getProducts, getPriceHistory, getProfile, getConfig, getBenefits, getSavedCartData, saveCartData, getProductHistoryByEan, createSharedCart } from './services/supabase';
 import { Product, PriceHistory, Profile, TabType, ProductStats, Benefit, CartItem } from './types';
 import Header from './components/Header';
 import ProductList from './components/ProductList';
@@ -9,7 +9,7 @@ import SEOTags from './components/SEOTags';
 import CategorySEO from './components/CategorySEO';
 import ErrorBoundary from './components/ErrorBoundary';
 import { getCategorySEO, categorySEOConfig } from './utils/categorySEO';
-import { APP_VERSION, LOAD_TIMEOUT_MS, CACHE_MAX_AGE_MS, STORAGE_KEYS } from './utils/constants';
+import { APP_VERSION, LOAD_TIMEOUT_MS, CACHE_MAX_AGE_MS, STORAGE_KEYS, ANONYMOUS_FAVORITES_LIMIT } from './utils/constants';
 import { 
   initClarityGA4Integration, 
   trackSignUp, 
@@ -153,6 +153,9 @@ const LoadingScreen = () => (
 
 const ProductDetail = lazy(() => 
   import('./components/ProductDetail').then(module => ({ default: module.default }))
+);
+const SharedCartView = lazy(() => 
+  import('./components/SharedCartView').then(module => ({ default: module.default }))
 );
 const MemoizedHeader = memo(Header); 
 const MemoizedBottomNav = memo(BottomNav); 
@@ -332,12 +335,8 @@ const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUp
   const hasPrevious = categoryProducts.length > 1;
   const hasNext = categoryProducts.length > 1;
 
-  // Función wrapper para verificar autenticación antes de agregar al carrito
+  // Función wrapper para verificar límite de favoritos anónimos
   const handleFavoriteWithAuth = (id: number, itemName?: string) => {
-    if (!user) {
-      setIsAuthOpen(true);
-      return;
-    }
     toggleFavorite(id, itemName, product?.categoria);
   };
 
@@ -420,6 +419,10 @@ const App: React.FC = () => {
       return {};
     }
   });
+  
+  // Ref para mantener referencia actualizada de favorites
+  const favoritesRef = useRef(favorites);
+  favoritesRef.current = favorites;
 
   const [savedCarts, setSavedCarts] = useState<any[]>((() => {
     try {
@@ -786,11 +789,33 @@ const App: React.FC = () => {
           }
         }
         setProfile(prof);
-        const cartData = await getSavedCartData(sessionUser.id);
-        if (cartData) {
-          setFavorites(cartData.active || {});
-          setSavedCarts(cartData.saved || []);
+        
+        // Leer favoritos locales antes de cargar los de la base de datos
+        let localFavorites = {};
+        try {
+          const savedFavs = localStorage.getItem('tc_favs');
+          localFavorites = savedFavs ? JSON.parse(savedFavs) : {};
+        } catch (e) {
+          console.warn('Error al leer favoritos locales:', e);
         }
+        
+        const cartData = await getSavedCartData(sessionUser.id);
+        let dbFavorites = cartData?.active || {};
+        
+        // Fusionar favoritos locales con los de la base de datos
+        const mergedFavorites = { ...dbFavorites, ...localFavorites };
+        const hasLocalFavorites = Object.keys(localFavorites).length > 0;
+        
+        // Si hay favoritos locales que no estaban en la DB, guardarlos
+        if (hasLocalFavorites) {
+          await saveCartData(sessionUser.id, { active: mergedFavorites, saved: cartData?.saved || [] });
+          // Limpiar favoritos locales después de migrar
+          localStorage.removeItem('tc_favs');
+          console.log('[Favorites] Migrados favoritos locales a la base de datos');
+        }
+        
+        setFavorites(mergedFavorites);
+        setSavedCarts(cartData?.saved || []);
       } else {
         setProfile(null);
         try {
@@ -971,7 +996,17 @@ const App: React.FC = () => {
   const visibleProducts = useMemo(() => filteredProducts.slice(0, displayLimit), [filteredProducts, displayLimit]);
 
   const toggleFavorite = useCallback((id: number, itemName?: string, category?: string) => {
-    const wasAdded = !favorites[id];
+    const isLoggedIn = !!user;
+    const currentFavorites = favoritesRef.current;
+    const wasAdded = !currentFavorites[id];
+    const currentFavoritesCount = Object.keys(currentFavorites).length;
+    
+    // Si no está logueado y está agregando, verificar límite
+    if (!isLoggedIn && wasAdded && currentFavoritesCount >= ANONYMOUS_FAVORITES_LIMIT) {
+      console.log('[toggleFavorite] Abriendo modal por límite - count:', currentFavoritesCount);
+      setIsAuthOpen(true);
+      return;
+    }
     
     setFavorites(prev => {
       const next = { ...prev };
@@ -991,7 +1026,7 @@ const App: React.FC = () => {
       }
       return next;
     });
-  }, [favorites]);
+  }, [user]);
 
   const handleFavoriteChangeInCart = useCallback((id: number, delta: number) => {
     setFavorites(prev => {
@@ -1001,16 +1036,10 @@ const App: React.FC = () => {
     });
   }, []);
 
-  // Función wrapper para verificar autenticación antes de agregar al carrito
+  // Función wrapper para verificar límite de favoritos anónimos
   const handleToggleFavoriteWithAuth = useCallback((id: number) => {
-    if (!user) {
-      // Usuario no autenticado - abrir modal de autenticación
-      setIsAuthOpen(true);
-      return;
-    }
-    // Usuario autenticado - proceder con agregar al carrito
     toggleFavorite(id);
-  }, [user]);
+  }, []);
 
   const togglePurchased = useCallback((id: number) => {
     setPurchasedItems(prev => {
@@ -1025,6 +1054,58 @@ const App: React.FC = () => {
     const limit = isPro ? 10 : 2;
     if (savedCarts.length >= limit) { alert(`Límite de listas alcanzado (${limit}).`); return; }
     setSavedCarts(prev => [...prev, { name, items: { ...favorites }, date: new Date().toISOString() }]);
+  };
+  
+  const handleShareCurrentCart = async () => {
+    if (!user || !profile) {
+      setIsAuthOpen(true);
+      return;
+    }
+    
+    if (Object.keys(favorites).length === 0) {
+      alert('Tu chango está vacío');
+      return;
+    }
+    
+    try {
+      // Calcular ahorro total
+      let totalSavings = 0;
+      const allProducts = processProducts(products, history, STORES);
+      
+      for (const [productId, qty] of Object.entries(favorites)) {
+        const product = allProducts.find(p => p.id === parseInt(productId));
+        if (product && product.stats) {
+          // Calcular el ahorro: diferencia entre el precio más alto y el más bajo
+          const prices = [product.p_jumbo, product.p_carrefour, product.p_coto, product.p_dia, product.p_disco, product.p_vea, product.p_laanonima].filter(p => p > 0);
+          if (prices.length > 1) {
+            const maxPrice = Math.max(...prices);
+            const minPrice = Math.min(...prices);
+            totalSavings += (maxPrice - minPrice) * qty;
+          }
+        }
+      }
+      
+      const shareId = await createSharedCart(
+        user.id,
+        profile.nombre || 'Usuario',
+        { active: favorites, saved: savedCarts },
+        totalSavings
+      );
+      
+      const shareUrl = `${window.location.origin}/chango/${shareId}`;
+      
+      // Copiar al portapapeles
+      await navigator.clipboard.writeText(shareUrl);
+      
+      // También abrir WhatsApp
+      const message = encodeURIComponent(`¡Mirá cuánto ahorré en mi Chango de TradingChango! 🛒💰`);
+      window.open(`https://wa.me/?text=${message}%20${encodeURIComponent(shareUrl)}`, '_blank');
+      
+      alert('¡Link copiado y WhatsApp abierto! Compartilo con tus amigos');
+    } catch (error) {
+      console.error('Error sharing cart:', error);
+      alert('Error al compartir el chango. Intentalo de nuevo.');
+    }
   };
 
   const handleDeleteSavedCart = (index: number) => {
@@ -1204,11 +1285,12 @@ const App: React.FC = () => {
           <Route path="/chango" element={
             <>
               {cartItems.length > 0 && (
-                  <CartSummary items={favoriteItems} benefits={benefits} userMemberships={profile?.membresias} onSaveCart={handleSaveCurrentCart} canSave={!!user} savedCarts={savedCarts} onLoadCart={handleLoadSavedCart} onDeleteCart={handleDeleteSavedCart} />
+                  <CartSummary items={favoriteItems} benefits={benefits} userMemberships={profile?.membresias} onSaveCart={handleSaveCurrentCart} onShareCart={handleShareCurrentCart} canSave={!!user} savedCarts={savedCarts} onLoadCart={handleLoadSavedCart} onDeleteCart={handleDeleteSavedCart} />
               )}
               <MemoizedProductList products={filteredProducts as any} onProductClick={handleProductClick} onFavoriteToggle={handleToggleFavoriteWithAuth} favorites={favorites} isCartView={true} quantities={favorites} onUpdateQuantity={handleFavoriteChangeInCart} searchTerm={searchTerm} purchasedItems={purchasedItems} onTogglePurchased={togglePurchased} />
             </>
           } />
+          <Route path="/chango/:id" element={<SharedCartView />} />
           <Route path="/:category/:slug" element={ <ProductDetailWrapper products={products} favorites={favorites} toggleFavorite={toggleFavorite} theme={theme} onUpdateQuantity={handleFavoriteChangeInCart} user={user} setIsAuthOpen={setIsAuthOpen} /> } />
           <Route path="/acerca-de" element={<AboutView onClose={() => navigate('/')} content={config.acerca_de} />} />
           <Route path="/terminos" element={<TermsView onClose={() => navigate('/')} content={config.terminos} />} />
