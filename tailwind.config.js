@@ -6,6 +6,8 @@ export default {
     "./*.{js,ts,jsx,tsx}",
     "./components/**/*.{js,ts,jsx,tsx}",
   ],
+  // Modo JIT para purgar CSS no utilizado
+  mode: 'jit',
   darkMode: 'class',
   theme: {
     extend: {

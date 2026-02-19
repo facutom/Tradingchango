@@ -108,13 +108,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <meta name="theme-color" content="#0b141a">
   
-  <!-- Preconnect hints -->
+  <!-- Preconnect solo a orígenes críticos (máximo 2-3) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://idghvkvkfdklvkvkdvkv.supabase.co">
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
   <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
-  <link rel="dns-prefetch" href="https://idghvkvkfdklvkvkdvkv.supabase.co">
   
   <!-- SEO Básico -->
   <title>TradingChango | Compará Precios de Supermercados en Argentina</title>
@@ -164,8 +161,11 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
 
-  <!-- Google tag (gtag.js) - Defer para no bloquear render -->
-  <script defer src="https://www.googletagmanager.com/gtag/js?id=G-RVLYJ69FYD"></script>
+  <!-- Preload crítico para el bundle principal -->
+  <link rel="preload" href="/index.tsx" as="script" type="module">
+
+  <!-- Google tag (gtag.js) - Async para no bloquear render -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-RVLYJ69FYD"></script>
   <script defer>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
@@ -175,8 +175,8 @@
 </head>
 <body class="bg-white dark:bg-[#0b141a] text-[#131722] dark:text-[#e9edef]">
     <div id="root"></div>
-    <!-- Script principal con defer para no bloquear el render -->
-    <script type="module" src="/index.tsx" defer fetchpriority="high"></script>
+    <!-- Script principal - async para no bloquear el parseo HTML -->
+    <script type="module" src="/index.tsx"></script>
     <script>
       // Precargar chunks de React Router después de que la página sea interactiva
       window.addEventListener('load', function() {

@@ -3,53 +3,54 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react({
+      babel: {
+        parserOpts: {
+          plugins: ['typescript'],
+        },
+      },
+    }),
+  ],
   server: {
     port: 3000,
   },
   build: {
     outDir: 'dist',
-    // Usar esbuild para minificación más rápida
-    minify: 'esbuild',
+    minify: 'terser',
     target: 'es2020',
-    // CSS code splitting
     cssCodeSplit: true,
-    // Reportar tamaño comprimido
     reportCompressedSize: true,
-    // Generar sourcemaps solo en desarrollo
     sourcemap: false,
-    // Optimizar chunks
     chunkSizeWarningLimit: 500,
-    // Optimizaciones adicionales de rendimiento
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Separar vendor chunks para mejor caché
           if (id.includes('node_modules')) {
-            // React y react-dom siempre juntos
             if (id.includes('react') || id.includes('react-dom')) {
               return 'vendor-react';
             }
-            // React Router
             if (id.includes('react-router')) {
               return 'vendor-router';
             }
-            // Supabase
             if (id.includes('@supabase') || id.includes('supabase-js')) {
               return 'vendor-supabase';
             }
-            // Recharts - muy pesado
             if (id.includes('recharts') || id.includes('d3')) {
               return 'vendor-charts';
             }
-            // React Window - virtualización
             if (id.includes('react-window')) {
               return 'vendor-window';
             }
             return 'vendor';
           }
+          if (id.includes('components/ProductDetail')) {
+            return 'product-detail';
+          }
+          if (id.includes('components/InfoViews')) {
+            return 'info-views';
+          }
         },
-        // Configurar chunking óptimo
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
         assetFileNames: (assetInfo: { name?: string }) => {
@@ -67,7 +68,6 @@ export default defineConfig({
       },
     },
   },
-  // Optimizaciones de dependencias
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', '@supabase/supabase-js', 'recharts'],
     exclude: [],
