@@ -213,36 +213,23 @@ const SharedCartView: React.FC = () => {
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
   const goHome = () => navigate(`/?utm_source=${utmSource}&utm_campaign=shared_cart_cta`);
 
-  // ── Minimal White Styles ───────────────────────────────────────────────────────
+  // ── Minimal White Styles (System fonts for performance) ───────────────────────────────────────────────────────
   const styles = `
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-
     .sc-root *, .sc-root *::before, .sc-root *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     .sc-root {
       position: fixed; inset: 0; z-index: 9999;
       overflow-y: auto; overflow-x: hidden;
-      font-family: 'Inter', -apple-system, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: #ffffff;
       color: #111827;
     }
     
-    /* Rain of balloons/money - simplified for performance */
-    .sc-rain {
-      position: fixed; inset: 0; z-index: 0;
-      pointer-events: none;
-      overflow: hidden;
-      display: none; /* Disabled for performance on mobile */
-    }
-
     .sc-content {
       position: relative; z-index: 1;
       max-width: 520px; margin: 0 auto;
       padding: 0 0 110px;
-      opacity: 0; transform: translateY(32px) scale(0.98);
-      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .sc-content.visible { opacity: 1; transform: translateY(0) scale(1); }
 
     /* Cards - white minimal */
     .sc-card {
@@ -675,18 +662,7 @@ const SharedCartView: React.FC = () => {
 
       <div className="sc-root">
         {/* Floating savings elements - rain */}
-        <div className="sc-rain">
-          <div className="sc-rain-item" style={{left: '5%', animationDelay: '0s'}}>🎈</div>
-          <div className="sc-rain-item" style={{left: '15%', animationDelay: '2s'}}>💰</div>
-          <div className="sc-rain-item" style={{left: '25%', animationDelay: '4s'}}>🎈</div>
-          <div className="sc-rain-item" style={{left: '35%', animationDelay: '1s'}}>💵</div>
-          <div className="sc-rain-item" style={{left: '45%', animationDelay: '3s'}}>🎈</div>
-          <div className="sc-rain-item" style={{left: '55%', animationDelay: '5s'}}>💰</div>
-          <div className="sc-rain-item" style={{left: '65%', animationDelay: '0.5s'}}>🎈</div>
-          <div className="sc-rain-item" style={{left: '75%', animationDelay: '2.5s'}}>💵</div>
-          <div className="sc-rain-item" style={{left: '85%', animationDelay: '4.5s'}}>🎈</div>
-          <div className="sc-rain-item" style={{left: '95%', animationDelay: '1.5s'}}>💰</div>
-        </div>
+        {/* Celebration decorations - simplified */}
 
         <div className={`sc-content ${visible ? 'visible' : ''}`}>
 
