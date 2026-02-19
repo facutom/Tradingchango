@@ -67,7 +67,7 @@ const SharedCartView: React.FC = () => {
           Object.keys(cartData.items.active).length, utmSource
         );
         setLoading(false);
-        setTimeout(() => setVisible(true), 50);
+        setVisible(true);
       } catch {
         setError('Error al cargar el chango compartido');
         setLoading(false);
@@ -227,24 +227,12 @@ const SharedCartView: React.FC = () => {
       color: #111827;
     }
     
-    /* Rain of balloons/money */
+    /* Rain of balloons/money - simplified for performance */
     .sc-rain {
       position: fixed; inset: 0; z-index: 0;
       pointer-events: none;
       overflow: hidden;
-    }
-    .sc-rain-item {
-      position: absolute;
-      top: -50px;
-      font-size: 20px;
-      opacity: 0.12;
-      animation: rainFall 8s linear infinite;
-    }
-    @keyframes rainFall {
-      0% { transform: translateY(-30px) rotate(0deg); opacity: 0; }
-      10% { opacity: 0.12; }
-      90% { opacity: 0.12; }
-      100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+      display: none; /* Disabled for performance on mobile */
     }
 
     .sc-content {
@@ -308,27 +296,17 @@ const SharedCartView: React.FC = () => {
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
     }
 
-    .sc-avatar-wrap {
-      position: relative;
-      margin-bottom: 12px;
-    }
-    .sc-avatar-glow {
-      display: none;
-    }
-    .sc-avatar {
-      width: 56px; height: 56px; border-radius: 50%;
-      background: #f3f4f6;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 24px; margin: 0 auto;
-      border: 2px solid #e5e7eb;
-    }
     .sc-hero-name {
-      font-weight: 700; font-size: 20px;
-      color: #111827; margin-bottom: 4px;
+      font-weight: 700; font-size: 28px;
+      color: #16a34a; margin-bottom: 4px;
     }
-    .sc-hero-sub { 
-      font-size: 13px; color: #6b7280; 
-      margin-bottom: 14px; 
+    .sc-hero-title { 
+      font-size: 16px; color: #111827; 
+      margin-bottom: 8px; 
+    }
+    .sc-hero-sub2 { 
+      font-size: 13px; color: #9ca3af; 
+      margin-top: 10px; 
     }
 
     /* Savings box - minimal white */
@@ -627,8 +605,7 @@ const SharedCartView: React.FC = () => {
     @media (max-width: 400px) {
       .sc-hero { padding: 24px 18px 22px; }
       .sc-savings-amount { font-size: 36px; }
-      .sc-avatar { width: 60px; height: 60px; font-size: 26px; }
-      .sc-hero-name { font-size: 20px; }
+      .sc-hero-name { font-size: 32px; }
       .sc-store-row, .sc-product { padding: 12px 14px; }
     }
   `;
@@ -729,17 +706,9 @@ const SharedCartView: React.FC = () => {
 
           {/* ── Hero ── */}
           <div className="sc-hero">
-            <div className="sc-avatar-wrap">
-              <div className="sc-avatar-glow" />
-              <div className="sc-avatar">🛒</div>
-            </div>
-              <div className="sc-hero-name" style={{ textTransform: 'uppercase', fontWeight: 'bold' }}>
-              {cart.user_name}
-            </div>
-            <p className="sc-hero-sub" style={{ textTransform: 'uppercase', fontWeight: 700 }}>
-              ¡MIRÁ CUANTO AHORRÉ HOY! ¿VOS CUÁNTO ESTÁS PAGANDO DE MÁS?
+            <p className="sc-hero-title" style={{ textTransform: 'uppercase', fontWeight: 700 }}>
+              ¡MIRÁ CUANTO AHORRÉ HOY! 🛒💰
             </p>
-
             <div className="sc-savings-box">
               <div className="sc-savings-label">Ahorro total</div>
               <div className="sc-savings-amount">${formatPrice(calculatedSavings)}</div>
