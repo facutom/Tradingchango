@@ -12,6 +12,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
     "@types/react-window": "^1.8.5",
+    "clarity-js": "github:Microsoft/clarity-js",
     "clsx": "^2.1.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -25,10 +26,11 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.24",
+    "esbuild": "^0.27.3",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.19",
     "typescript": "^5.5.3",
-    "vite": "^5.4.2",
+    "vite": "^6.0.0",
     "vite-plugin-pwa": "^1.2.0"
   }
 }

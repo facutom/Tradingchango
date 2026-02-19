@@ -9,6 +9,15 @@ import SEOTags from './components/SEOTags';
 import CategorySEO from './components/CategorySEO';
 import ErrorBoundary from './components/ErrorBoundary';
 import { getCategorySEO, categorySEOConfig } from './utils/categorySEO';
+import { APP_VERSION, LOAD_TIMEOUT_MS, CACHE_MAX_AGE_MS, STORAGE_KEYS } from './utils/constants';
+import { 
+  initClarityGA4Integration, 
+  trackSignUp, 
+  trackSearch, 
+  trackAddToWishlist, 
+  setUserProperties,
+  trackViewItem 
+} from './utils/analytics';
 import { calculateOutliers } from './utils/outlierDetection';
 import { diagnoseProducts, printDiagnosis } from './utils/diagnoseProducts';
 
@@ -124,9 +133,20 @@ const processProducts = (
   });
 };
 
-const LoadingSpinner = () => (
-  <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+// Componente unificado de Loading - consistente en toda la app
+const LoadingSpinner = ({ message = 'Cargando...' }: { message?: string }) => (
+  <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm">
     <div className="w-12 h-12 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
+    <span className="text-white mt-4 text-sm font-medium">{message}</span>
+  </div>
+);
+
+// Pantalla de carga completa (fullscreen)
+const LoadingScreen = () => (
+  <div className="min-h-screen flex flex-col items-center justify-center dark:bg-primary dark:text-white font-mono text-[11px] uppercase tracking-[0.2em] bg-white">
+    <div className="w-10 h-10 border-[3px] border-t-transparent border-neutral-800 dark:border-white rounded-full animate-spin mb-4"></div>
+    <span>Conectando a Mercado...</span>
+    <span className="text-[9px] mt-2 opacity-50">Si esto tarda demasiado, recargá la página</span>
   </div>
 );
 
@@ -312,12 +332,12 @@ const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUp
   const hasNext = categoryProducts.length > 1;
 
   // Función wrapper para verificar autenticación antes de agregar al carrito
-  const handleFavoriteWithAuth = (id: number) => {
+  const handleFavoriteWithAuth = (id: number, itemName?: string) => {
     if (!user) {
       setIsAuthOpen(true);
       return;
     }
-    toggleFavorite(id);
+    toggleFavorite(id, itemName, product?.categoria);
   };
 
   return (
@@ -358,6 +378,39 @@ const App: React.FC = () => {
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [displayLimit, setDisplayLimit] = useState(20);
+
+  // Inicializar Microsoft Clarity solo en el cliente
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    // Evitar inicializar múltiples veces
+    // @ts-ignore
+    if (window.clarityInitialized) {
+      initClarityGA4Integration();
+      return;
+    }
+    
+    // @ts-ignore
+    (function(c,l,a,r,i,t,y){
+      // @ts-ignore
+      c[i]=c[i]||function(){(c[i].q=c[i].q||[]).push(arguments)};
+      // @ts-ignore
+      c[i].l=1*new Date();
+      // @ts-ignore
+      t=l.createElement(a);y=l.getElementsByTagName(a)[0];
+      // @ts-ignore
+      t.async=1;t.src=r;y.parentNode.insertBefore(t,y);
+      // @ts-ignore
+    })(window,document,'script','https://www.clarity.ms/tag/vjkjcslj8f','clarity');
+    
+    // @ts-ignore
+    window.clarityInitialized = true;
+    
+    // Integrar Clarity con GA4
+    initClarityGA4Integration();
+    
+    console.log('[Clarity] Inicializado correctamente');
+  }, []);
   const [favorites, setFavorites] = useState<Record<number, number>>(() => {
     try {
       const saved = localStorage.getItem('tc_favs');
@@ -412,6 +465,9 @@ const App: React.FC = () => {
     const currentQ = currentParams.get('q') || '';
     
     if (searchTerm && searchTerm.trim() !== currentQ) {
+      // Track search event
+      trackSearch(searchTerm.trim());
+      
       const newUrl = searchTerm.trim() 
         ? `${location.pathname}?q=${encodeURIComponent(searchTerm.trim())}` 
         : location.pathname;
@@ -498,9 +554,41 @@ const App: React.FC = () => {
 
   const [error, setError] = useState<string | null>(null);
 
+  // Constantes de configuración de carga
+  // Versión actual - se compara con localStorage al iniciar
+  const currentVersion = APP_VERSION;
+  
+  // Efecto de verificación de versión al montar la app
+  useEffect(() => {
+    const storedVersion = localStorage.getItem(STORAGE_KEYS.APP_VERSION);
+    const reloadDone = sessionStorage.getItem(STORAGE_KEYS.VERSION_RELOAD_DONE);
+    
+    // Si hay una versión previa y es diferente, limpiar todo
+    if (storedVersion && storedVersion !== currentVersion && !reloadDone) {
+      console.log('[VersionCheck] Versión cambió de', storedVersion, 'a', currentVersion);
+      // Limpiar todo
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch (e) {
+        console.warn('[VersionCheck] Error limpiando storage:', e);
+      }
+      // Guardar nueva versión
+      localStorage.setItem(STORAGE_KEYS.APP_VERSION, currentVersion);
+      sessionStorage.setItem(STORAGE_KEYS.VERSION_RELOAD_DONE, 'true');
+      // Recargar (forzar bypass cache)
+      window.location.href = window.location.href + '?v=' + Date.now();
+      return;
+    }
+    
+    // Actualizar versión
+    localStorage.setItem(STORAGE_KEYS.APP_VERSION, currentVersion);
+  }, [currentVersion]);
+  
   const loadDataTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const loadDataRetryRef = useRef<NodeJS.Timeout | null>(null);
   const isLoadingDataRef = useRef(false);
+  const isInitialLoadRef = useRef(true);
 
   // Cleanup de timeouts al desmontar el componente
   useEffect(() => {
@@ -524,10 +612,9 @@ const App: React.FC = () => {
           const cachedProds = localStorage.getItem('tc_cache_products');
           const cacheTime = localStorage.getItem('tc_cache_time');
           const now = Date.now();
-          const CACHE_MAX_AGE = 5 * 60 * 1000; // 5 minutos
           
           // Si hay cache pero es antiguo (más de 5 min), intentar reconectar
-          if (cachedProds && cacheTime && (now - parseInt(cacheTime) > CACHE_MAX_AGE)) {
+          if (cachedProds && cacheTime && (now - parseInt(cacheTime) > CACHE_MAX_AGE_MS)) {
             console.log('Cache antiguo, intentando reconectar...');
             // No forzamos carga completa, solo solicitamos datos nuevos
             // El usuario puede ver los datos cacheados inmediatamente
@@ -570,7 +657,7 @@ const App: React.FC = () => {
         setError('La conexión tardó demasiado. Verificá tu conexión a internet.');
       }
       setLoading(false);
-    }, 20000);
+    }, LOAD_TIMEOUT_MS);
     try {
       // Primero intentar cargar del cache inmediatamente para mostrar algo rápido
       try {
@@ -580,7 +667,7 @@ const App: React.FC = () => {
         const cacheTime = localStorage.getItem('tc_cache_time');
         
         // Calcular si el cache es antiguo (más de 5 minutos)
-        const isCacheStale = cacheTime ? (Date.now() - parseInt(cacheTime)) > (5 * 60 * 1000) : true;
+        const isCacheStale = cacheTime ? (Date.now() - parseInt(cacheTime)) > CACHE_MAX_AGE_MS : true;
         
         if (cachedProds) {
           setProducts(JSON.parse(cachedProds));
@@ -686,6 +773,9 @@ const App: React.FC = () => {
     const auth = supabase.auth as any;
     const fetchProfileAndData = async (sessionUser: User | null) => {
       if (sessionUser) {
+        // Configurar propiedades de usuario en analytics
+        setUserProperties(sessionUser.id, true);
+        
         let prof = await getProfile(sessionUser.id);
         if (prof && prof.subscription === 'pro' && prof.subscription_end) {
           const expiryDate = new Date(prof.subscription_end);
@@ -879,11 +969,18 @@ const App: React.FC = () => {
 
   const visibleProducts = useMemo(() => filteredProducts.slice(0, displayLimit), [filteredProducts, displayLimit]);
 
-  const toggleFavorite = useCallback((id: number) => {
+  const toggleFavorite = useCallback((id: number, itemName?: string, category?: string) => {
+    const wasAdded = !favorites[id];
+    
     setFavorites(prev => {
       const next = { ...prev };
-      if (!next[id]) next[id] = 1;
-      else {
+      if (!next[id]) {
+        next[id] = 1;
+        // Tracking solo cuando se agrega (no cuando se elimina)
+        if (itemName) {
+          trackAddToWishlist(id, itemName, category);
+        }
+      } else {
         delete next[id];
         setPurchasedItems(prevPurchased => {
           const newPurchased = new Set(prevPurchased);
@@ -893,7 +990,7 @@ const App: React.FC = () => {
       }
       return next;
     });
-  }, []);
+  }, [favorites]);
 
   const handleFavoriteChangeInCart = useCallback((id: number, delta: number) => {
     setFavorites(prev => {
@@ -1010,13 +1107,7 @@ const App: React.FC = () => {
   // SIEMPRE mostrar algo: si está cargando sin datos Y sin error, mostrar spinner
   // Si tiene productos O error, nunca mostrar el spinner de carga completo
   if (showLoadingScreen && !hasDataToShow) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center dark:bg-primary dark:text-white font-mono text-[11px] uppercase tracking-[0.2em] bg-white">
-        <div className="w-10 h-10 border-3 border-t-transparent border-neutral-800 dark:border-white rounded-full animate-spin mb-4"></div>
-        <span>Conectando a Mercado...</span>
-        <span className="text-[9px] mt-2 opacity-50">Si esto tarda demasiado, recargá la página</span>
-      </div>
-    );
+    return <LoadingScreen />;
   }
  
   return (
@@ -1149,7 +1240,23 @@ const App: React.FC = () => {
 
       {isAuthOpen && (
         <Suspense fallback={<LoadingSpinner />}>
-          <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} user={user} profile={profile} onSignOut={handleSignOut} onProfileUpdate={() => loadData(user)} savedCarts={savedCarts} onSaveCart={handleSaveCurrentCart} onDeleteCart={handleDeleteSavedCart} onLoadCart={handleLoadSavedCart} currentActiveCartSize={visibleCartCount} />
+          <AuthModal 
+            isOpen={isAuthOpen} 
+            onClose={() => setIsAuthOpen(false)} 
+            user={user} 
+            profile={profile} 
+            onSignOut={handleSignOut} 
+            onProfileUpdate={() => {
+              // Track sign_up cuando se actualiza el perfil (nuevo registro)
+              trackSignUp('email');
+              loadData(user);
+            }} 
+            savedCarts={savedCarts} 
+            onSaveCart={handleSaveCurrentCart} 
+            onDeleteCart={handleDeleteSavedCart} 
+            onLoadCart={handleLoadSavedCart} 
+            currentActiveCartSize={visibleCartCount} 
+          />
         </Suspense>
       )}
       <MemoizedFooter />
