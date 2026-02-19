@@ -18,7 +18,7 @@ export const initClarityGA4Integration = (): void => {
   const clarity = window.clarity;
   if (clarity) {
     clarity('set', 'GA_Measurement_Id', GA_MEASUREMENT_ID);
-    console.log('[Analytics] Clarity-GA4 integración inicializada');
+    // console.log('[Analytics] Clarity-GA4 integración inicializada');
   }
 };
 
@@ -32,7 +32,7 @@ export const sendGA4Event = (eventName: string, params?: Record<string, any>): v
   const gtag = window.gtag;
   if (gtag) {
     gtag('event', eventName, params);
-    console.log('[GA4] Evento enviado:', eventName, params);
+    // console.log('[GA4] Evento enviado:', eventName, params);
   } else {
     console.warn('[GA4] gtag no disponible');
   }
@@ -48,7 +48,7 @@ export const sendClarityEvent = (eventName: string, params?: Record<string, any>
   const clarity = window.clarity;
   if (clarity) {
     clarity('event', eventName, params);
-    console.log('[Clarity] Evento enviado:', eventName, params);
+    // console.log('[Clarity] Evento enviado:', eventName, params);
   } else {
     console.warn('[Clarity] no disponible');
   }
@@ -106,7 +106,7 @@ export const trackSharedCartView = (cartId: string, userName: string, totalSavin
     item_count: itemCount,
     traffic_source: source,
   });
-  console.log('[Analytics] Vista de chango compartido:', { cartId, userName, totalSavings, itemCount, source });
+  // console.log('[Analytics] Vista de chango compartido:', { cartId, userName, totalSavings, itemCount, source });
 };
 
 /**

@@ -202,10 +202,14 @@ const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUp
   const navigate = useNavigate();
   const location = useLocation();
   
-  console.log('=== DIAGNOSTICO ===');
-  console.log('Category:', category);
-  console.log('Slug:', slug);
-  console.log('Products length:', products?.length);
+  // eslint-disable-next-line no-console
+  // console.log('=== DIAGNOSTICO ===');
+  // eslint-disable-next-line no-console
+  // console.log('Category:', category);
+  // eslint-disable-next-line no-console
+  // console.log('Slug:', slug);
+  // eslint-disable-next-line no-console
+  // console.log('Products length:', products?.length);
   
   const product = products.find((p: any) => {
     const categoryMatch = slugify(p.categoria || 'general') === category;
@@ -217,16 +221,22 @@ const ProductDetailWrapper = ({ products, favorites, toggleFavorite, theme, onUp
     const matchByEan = eanValue && (nameSlug + '-' + eanValue) === slug;
     const matchById = (nameSlug + '-id' + p.id) === slug;
     
-    console.log(`Producto ID ${p.id}: ${p.nombre}`);
-    console.log(`  categoryMatch: ${categoryMatch} (${p.categoria} vs ${category})`);
-    console.log(`  matchByName: ${matchByName} (${nameSlug} vs ${slug})`);
-    console.log(`  matchByEan: ${matchByEan}`);
-    console.log(`  matchById: ${matchById}`);
+    // eslint-disable-next-line no-console
+    // console.log(`Producto ID ${p.id}: ${p.nombre}`);
+    // eslint-disable-next-line no-console
+    // console.log(`  categoryMatch: ${categoryMatch} (${p.categoria} vs ${category})`);
+    // eslint-disable-next-line no-console
+    // console.log(`  matchByName: ${matchByName} (${nameSlug} vs ${slug})`);
+    // eslint-disable-next-line no-console
+    // console.log(`  matchByEan: ${matchByEan}`);
+    // eslint-disable-next-line no-console
+    // console.log(`  matchById: ${matchById}`);
     
     return categoryMatch && (matchByName || matchByEan || matchById);
   });
 
-  console.log('Producto encontrado:', product);
+  // eslint-disable-next-line no-console
+  // console.log('Producto encontrado:', product);
   
   if (products.length === 0) return null;
   
@@ -409,7 +419,7 @@ const App: React.FC = () => {
     // Integrar Clarity con GA4
     initClarityGA4Integration();
     
-    console.log('[Clarity] Inicializado correctamente');
+    // console.log('[Clarity] Inicializado correctamente');
   }, []);
   const [favorites, setFavorites] = useState<Record<number, number>>(() => {
     try {
@@ -619,7 +629,7 @@ const App: React.FC = () => {
           
           // Si hay cache pero es antiguo (más de 5 min), intentar reconectar
           if (cachedProds && cacheTime && (now - parseInt(cacheTime) > CACHE_MAX_AGE_MS)) {
-            console.log('Cache antiguo, intentando reconectar...');
+          // console.log('Cache antiguo, intentando reconectar...');
             // No forzamos carga completa, solo solicitamos datos nuevos
             // El usuario puede ver los datos cacheados inmediatamente
             loadData(user, 1).catch(console.error);
@@ -637,7 +647,7 @@ const App: React.FC = () => {
   const loadData = useCallback(async (sessionUser: User | null, attempt = 1) => {
     // Si ya está cargando, no iniciar otra vez
     if (isLoadingDataRef.current) {
-      console.log('loadData ya está en progreso, ignorando llamada');
+    // console.log('loadData ya está en progreso, ignorando llamada');
       return;
     }
     
@@ -653,7 +663,7 @@ const App: React.FC = () => {
     
     // Timeout de seguridad - si pasan más de 20 segundos sin respuesta, forzamos fin de carga
     loadDataTimeoutRef.current = setTimeout(() => {
-      console.warn('Timeout de carga - forzando estado');
+      // console.warn('Timeout de carga - forzando estado');
       isLoadingDataRef.current = false;
       // Si no hay productos en cache, mostrar error
       const cachedProds = localStorage.getItem('tc_cache_products');
@@ -753,7 +763,7 @@ const App: React.FC = () => {
       console.error('Error en loadData:', err);
       
       if (attempt < 2) { 
-        console.log(`Reintentando carga (intento ${attempt + 1})...`);
+      // console.log(`Reintentando carga (intento ${attempt + 1})...`);
         loadDataRetryRef.current = setTimeout(() => {
           loadData(sessionUser, attempt + 1);
         }, 3000);
@@ -764,7 +774,7 @@ const App: React.FC = () => {
         const cachedProds = localStorage.getItem('tc_cache_products');
         if (cachedProds) {
           // Ya tenemos los products del cache cargados arriba, solo logger
-          console.warn('Usando datos cacheados tras error');
+          // console.warn('Usando datos cacheados tras error');
         } else {
           setError("No se pudo conectar con el mercado. Por favor, revisá tu conexión a internet y volvé a intentarlo.");
           setProducts([]);
@@ -811,7 +821,7 @@ const App: React.FC = () => {
           await saveCartData(sessionUser.id, { active: mergedFavorites, saved: cartData?.saved || [] });
           // Limpiar favoritos locales después de migrar
           localStorage.removeItem('tc_favs');
-          console.log('[Favorites] Migrados favoritos locales a la base de datos');
+          // console.log('[Favorites] Migrados favoritos locales a la base de datos');
         }
         
         setFavorites(mergedFavorites);
@@ -1006,7 +1016,7 @@ const App: React.FC = () => {
     
     // Si no está logueado y está agregando, verificar límite
     if (!isLoggedIn && wasAdded && currentFavoritesCount >= ANONYMOUS_FAVORITES_LIMIT) {
-      console.log('[toggleFavorite] Abriendo modal por límite - count:', currentFavoritesCount);
+      // console.log('[toggleFavorite] Abriendo modal por límite - count:', currentFavoritesCount);
       setIsAuthOpen(true);
       return;
     }
