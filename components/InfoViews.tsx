@@ -91,6 +91,13 @@ export const TermsView: React.FC<InfoViewProps> = ({ onClose, content }) => (
         </section>
       )}
       
+      <section className="pt-6 border-t border-neutral-100 dark:border-neutral-900">
+        <h3 className="text-black dark:text-white font-bold mb-2 uppercase text-[10px] tracking-widest">Tratamiento de Datos y Mejora del Servicio</h3>
+        <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+          Para garantizar la precisión de los precios y la estabilidad técnica de la plataforma, TradingChango utiliza herramientas de análisis de terceros (Google Analytics y Microsoft Clarity). Al utilizar nuestra web, el usuario acepta la recolección anónima de datos de navegación, tales como términos de búsqueda, interacciones con productos y errores de carga. Esta información se utiliza exclusivamente para optimizar la experiencia de usuario, entender las tendencias de consumo en el mercado local y asegurar el correcto funcionamiento de la aplicación en dispositivos móviles. No compartimos ni comercializamos información personal identificable con terceros.
+        </p>
+      </section>
+
       <section className="pt-6 border-t border-neutral-100 dark:border-neutral-900 text-[9px] font-mono uppercase text-neutral-400">
         Última actualización: {new Date().toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })}
       </section>

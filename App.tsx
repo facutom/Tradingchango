@@ -24,6 +24,7 @@ import { diagnoseProducts, printDiagnosis } from './utils/diagnoseProducts';
 const AuthModal = lazy(() => import('./components/AuthModal'));
 const CartSummary = lazy(() => import('./components/CartSummary'));
 import Footer from './components/Footer';
+import CookieBanner from './components/CookieBanner';
 const AboutView = lazy(() => import('./components/InfoViews').then(module => ({ default: module.AboutView })));
 const TermsView = lazy(() => import('./components/InfoViews').then(module => ({ default: module.TermsView })));
 const ContactView = lazy(() => import('./components/InfoViews').then(module => ({ default: module.ContactView })));
@@ -1259,6 +1260,7 @@ const App: React.FC = () => {
           />
         </Suspense>
       )}
+      <CookieBanner />
       <MemoizedFooter />
     </div>
     </ErrorBoundary>
