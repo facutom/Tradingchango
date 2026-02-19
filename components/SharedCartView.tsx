@@ -723,7 +723,7 @@ const SharedCartView: React.FC = () => {
                       <div className="sc-store-icon">{storeEmoji(best.key)}</div>
                       <div>
                         <div className="sc-store-name-best">{best.name}</div>
-                        <div className="sc-store-tag">La opción ganadora 🏆</div>
+                        <div className="sc-store-tag">GANADOR DE LA COMPARACIÓN 🏆</div>
                       </div>
                     </div>
                     <div className="sc-store-price-best">
@@ -750,16 +750,19 @@ const SharedCartView: React.FC = () => {
 
                 {/* Worst */}
                 {worst && worst.key !== best?.key && (
-                  <div className="sc-store-worst">
-                    <div>
-                      <div className="sc-store-worst-label">OTRAS OPCIONES</div>
-                      <div className="sc-store-worst-name">
-                        {storeEmoji(worst.key)} {worst.name}
-                      </div>
-                    </div>
+                  <div className="sc-store-row"> 
+                    <span className="sc-store-row-name">
+                      {storeEmoji(worst.key)} {worst.name}
+                    </span>
                     <div style={{ textAlign: 'right' }}>
-                      <div className="sc-store-worst-price">${formatPrice(worst.total)}</div>
-                      {best && <div className="sc-store-worst-diff">+${formatPrice(worst.total - best.total)} vs {best.name}</div>}
+                      <div className="sc-store-row-price">
+                        ${formatPrice(worst.total)}
+                      </div>
+                      {best && (
+                        <div className="sc-store-row-diff">
+                          +${formatPrice(worst.total - best.total)} más caro
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
