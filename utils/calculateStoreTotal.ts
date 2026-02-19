@@ -35,57 +35,61 @@ export const calculateStoreTotal = (
   const availableItems = cartItems.filter(item => item.isAvailable !== false);
 
   availableItems.forEach((item) => {
-    const quantity = Math.max(0, Number(item.quantity) || 0);
-    if (quantity <= 0) return;
+    try {
+      const quantity = Math.max(0, Number(item.quantity) || 0);
+      if (quantity <= 0) return;
 
-    // 1. OBTENCIÓN DE PRECIOS
-    const pRegRaw = sanitizePrice(item[`pr_${storeKey}` as keyof CartItem]);
-    const pPromoRaw = sanitizePrice(item[`p_${storeKey}` as keyof CartItem]);
+      // 1. OBTENCIÓN DE PRECIOS
+      const pRegRaw = sanitizePrice(item[`pr_${storeKey}` as keyof CartItem]);
+      const pPromoRaw = sanitizePrice(item[`p_${storeKey}` as keyof CartItem]);
 
-    // SEGURIDAD: El precio regular SIEMPRE debe ser el mayor de los dos
-    // Esto evita que si el scraper guardó mal los campos, el subtotal se rompa
-    const pRegular = Math.max(pRegRaw, pPromoRaw);
-    const pPromo = Math.min(pRegRaw, pPromoRaw);
+      // SEGURIDAD: El precio regular SIEMPRE debe ser el mayor de los dos
+      // Esto evita que si el scraper guardó mal los campos, el subtotal se rompa
+      const pRegular = Math.max(pRegRaw, pPromoRaw);
+      const pPromo = Math.min(pRegRaw, pPromoRaw);
 
-    if (pRegular <= 0) return;
+      if (pRegular <= 0) return;
 
-    // 2. REGLA PARA SUBTOTAL: Siempre el precio de lista (el más alto)
-    subtotalAcc += pRegular * quantity;
+      // 2. REGLA PARA SUBTOTAL: Siempre el precio de lista (el más alto)
+      subtotalAcc += pRegular * quantity;
 
-    // 3. EXTRACCIÓN DE ETIQUETA
-    let ofertaTexto = "";
-    if (item.oferta_gondola && typeof item.oferta_gondola === 'object') {
-      const actualKey = Object.keys(item.oferta_gondola).find(
-        (key) => key.toLowerCase() === storeKey.toLowerCase()
-      );
-      if (actualKey) {
-        ofertaTexto = String((item.oferta_gondola as any)[actualKey] || "");
+      // 3. EXTRACCIÓN DE ETIQUETA
+      let ofertaTexto = "";
+      if (item.oferta_gondola && typeof item.oferta_gondola === 'object') {
+        const actualKey = Object.keys(item.oferta_gondola).find(
+          (key) => key.toLowerCase() === storeKey.toLowerCase()
+        );
+        if (actualKey) {
+          ofertaTexto = String((item.oferta_gondola as any)[actualKey] || "");
+        }
       }
+
+      // DENTRO DEL BUCLE item.forEach en calculateStoreTotal.ts
+
+      const threshold = getOfferThreshold(ofertaTexto);
+      let itemTotalFinal = 0;
+
+      if (threshold !== null && threshold > 0 && pPromo > 0 && pPromo < pRegular) {
+        // 1. Calculamos cuántos combos completos (ej: cuántos grupos de 3)
+        const numCombos = Math.floor(quantity / threshold);
+        
+        // 2. Calculamos cuántas unidades quedan fuera del combo (el resto)
+        const remainder = quantity % threshold;
+
+        // 3. Unidades en combo van a precio pPromo, las sueltas a pRegular
+        const unitsInPromo = numCombos * threshold;
+        
+        itemTotalFinal = (unitsInPromo * pPromo) + (remainder * pRegular);
+      } else {
+        // Caso sin umbral o promo directa: se aplica a todo si pPromo es mejor
+        const priceToUse = (pPromo > 0 && pPromo < pRegular) ? pPromo : pRegular;
+        itemTotalFinal = quantity * priceToUse;
+      }
+
+      totalAcc += Number.isFinite(itemTotalFinal) ? itemTotalFinal : 0;
+    } catch (e) {
+      console.warn('Error calculando precio para item:', item, e);
     }
-
-    // DENTRO DEL BUCLE item.forEach en calculateStoreTotal.ts
-
-const threshold = getOfferThreshold(ofertaTexto);
-let itemTotalFinal = 0;
-
-if (threshold !== null && threshold > 0 && pPromo > 0 && pPromo < pRegular) {
-  // 1. Calculamos cuántos combos completos (ej: cuántos grupos de 3)
-  const numCombos = Math.floor(quantity / threshold);
-  
-  // 2. Calculamos cuántas unidades quedan fuera del combo (el resto)
-  const remainder = quantity % threshold;
-
-  // 3. Unidades en combo van a precio pPromo, las sueltas a pRegular
-  const unitsInPromo = numCombos * threshold;
-  
-  itemTotalFinal = (unitsInPromo * pPromo) + (remainder * pRegular);
-} else {
-  // Caso sin umbral o promo directa: se aplica a todo si pPromo es mejor
-  const priceToUse = (pPromo > 0 && pPromo < pRegular) ? pPromo : pRegular;
-  itemTotalFinal = quantity * priceToUse;
-}
-
-totalAcc += itemTotalFinal;
   });
 
   const finalSub = Number(subtotalAcc.toFixed(2));

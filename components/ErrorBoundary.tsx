@@ -49,10 +49,47 @@ class ErrorBoundary extends Component<Props, State> {
       errorInfo,
     });
 
+    // Detectar errores específicos de background/foreground que requieren reset
+    const errorMessage = error.message || '';
+    const errorStack = error.stack || '';
+    
+    const isBackgroundError = 
+      error instanceof TypeError || 
+      error instanceof ReferenceError ||
+      errorMessage.includes('Cannot read properties') ||
+      errorMessage.includes('is not defined') ||
+      errorMessage.includes('of null') ||
+      errorMessage.includes('of undefined') ||
+      errorStack.includes('undefined');
+    
+    // Si es un error de tipo background/foreground, forzar limpieza
+    if (isBackgroundError) {
+      console.warn('[ErrorBoundary] Error de tipo background detected, limpiando estado...');
+      this.cleanupAndReload();
+    }
+
     // Opcional: Reportar a servicio de tracking (Sentry, etc.)
     // if (window.Sentry) {
     //   window.Sentry.captureException(error, { extra: errorInfo });
     // }
+  }
+
+  // Limpiar estado local antes de recargar para evitar errores persistentes
+  cleanupAndReload(): void {
+    try {
+      // Limpiar cache de la app
+      localStorage.removeItem('tc_cache_products');
+      localStorage.removeItem('tc_cache_history');
+      localStorage.removeItem('tc_cache_config');
+      localStorage.removeItem('tc_cache_time');
+      
+      // Limpiar estado de sessionStorage también
+      sessionStorage.clear();
+      
+      console.log('[ErrorBoundary] Estado limpiado, recargando...');
+    } catch (e) {
+      console.warn('[ErrorBoundary] Error limpiando estado:', e);
+    }
   }
 
   handleReload = (): void => {

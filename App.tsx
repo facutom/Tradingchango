@@ -359,20 +359,34 @@ const App: React.FC = () => {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [displayLimit, setDisplayLimit] = useState(20);
   const [favorites, setFavorites] = useState<Record<number, number>>(() => {
-    const saved = localStorage.getItem('tc_favs');
-    return saved ? JSON.parse(saved) : {};
+    try {
+      const saved = localStorage.getItem('tc_favs');
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
   });
 
   const [savedCarts, setSavedCarts] = useState<any[]>((() => {
-    const saved = localStorage.getItem('tc_saved_lists');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem('tc_saved_lists');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
   }));
 
   const [purchasedItems, setPurchasedItems] = useState<Set<number>>(new Set());
   const [showPwaPill, setShowPwaPill] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [theme, setTheme] = useState<'light' | 'dark'>(
-    (localStorage.getItem('theme') as 'light' | 'dark') || 'light'
+    (() => {
+      try {
+        return (localStorage.getItem('theme') as 'light' | 'dark') || 'light';
+      } catch {
+        return 'light';
+      }
+    })()
   );
 
   const scrollPositionRef = useRef(0);
@@ -506,17 +520,21 @@ const App: React.FC = () => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && !isLoadingDataRef.current) {
         // La app volvió a estar visible - intentar reconectar si hay datos antiguos
-        const cachedProds = localStorage.getItem('tc_cache_products');
-        const cacheTime = localStorage.getItem('tc_cache_time');
-        const now = Date.now();
-        const CACHE_MAX_AGE = 5 * 60 * 1000; // 5 minutos
-        
-        // Si hay cache pero es antiguo (más de 5 min), intentar reconectar
-        if (cachedProds && cacheTime && (now - parseInt(cacheTime) > CACHE_MAX_AGE)) {
-          console.log('Cache antiguo, intentando reconectar...');
-          // No forzamos carga completa, solo solicitamos datos nuevos
-          // El usuario puede ver los datos cacheados inmediatamente
-          loadData(user, 1).catch(console.error);
+        try {
+          const cachedProds = localStorage.getItem('tc_cache_products');
+          const cacheTime = localStorage.getItem('tc_cache_time');
+          const now = Date.now();
+          const CACHE_MAX_AGE = 5 * 60 * 1000; // 5 minutos
+          
+          // Si hay cache pero es antiguo (más de 5 min), intentar reconectar
+          if (cachedProds && cacheTime && (now - parseInt(cacheTime) > CACHE_MAX_AGE)) {
+            console.log('Cache antiguo, intentando reconectar...');
+            // No forzamos carga completa, solo solicitamos datos nuevos
+            // El usuario puede ver los datos cacheados inmediatamente
+            loadData(user, 1).catch(console.error);
+          }
+        } catch (e) {
+          console.warn('Error al leer cache:', e);
         }
       }
     };
@@ -555,22 +573,26 @@ const App: React.FC = () => {
     }, 20000);
     try {
       // Primero intentar cargar del cache inmediatamente para mostrar algo rápido
-      const cachedProds = localStorage.getItem('tc_cache_products');
-      const cachedHistory = localStorage.getItem('tc_cache_history');
-      const cachedConfig = localStorage.getItem('tc_cache_config');
-      const cacheTime = localStorage.getItem('tc_cache_time');
-      
-      // Calcular si el cache es antiguo (más de 5 minutos)
-      const isCacheStale = cacheTime ? (Date.now() - parseInt(cacheTime)) > (5 * 60 * 1000) : true;
-      
-      if (cachedProds && attempt === 1) {
-        setProducts(JSON.parse(cachedProds));
-      }
-      if (cachedHistory) {
-        setHistory(JSON.parse(cachedHistory));
-      }
-      if (cachedConfig) {
-        setConfig(JSON.parse(cachedConfig));
+      try {
+        const cachedProds = localStorage.getItem('tc_cache_products');
+        const cachedHistory = localStorage.getItem('tc_cache_history');
+        const cachedConfig = localStorage.getItem('tc_cache_config');
+        const cacheTime = localStorage.getItem('tc_cache_time');
+        
+        // Calcular si el cache es antiguo (más de 5 minutos)
+        const isCacheStale = cacheTime ? (Date.now() - parseInt(cacheTime)) > (5 * 60 * 1000) : true;
+        
+        if (cachedProds) {
+          setProducts(JSON.parse(cachedProds));
+        }
+        if (cachedHistory) {
+          setHistory(JSON.parse(cachedHistory));
+        }
+        if (cachedConfig) {
+          setConfig(JSON.parse(cachedConfig));
+        }
+      } catch (cacheError) {
+        console.warn('Error al leer cache:', cacheError);
       }
 
       const fetchDataWithTimeout = (promise: Promise<any>, timeout: number) => {
@@ -680,10 +702,16 @@ const App: React.FC = () => {
         }
       } else {
         setProfile(null);
-        const savedFavs = localStorage.getItem('tc_favs');
-        const savedLists = localStorage.getItem('tc_saved_lists');
-        setFavorites(savedFavs ? JSON.parse(savedFavs) : {});
-        setSavedCarts(savedLists ? JSON.parse(savedLists) : []);
+        try {
+          const savedFavs = localStorage.getItem('tc_favs');
+          const savedLists = localStorage.getItem('tc_saved_lists');
+          setFavorites(savedFavs ? JSON.parse(savedFavs) : {});
+          setSavedCarts(savedLists ? JSON.parse(savedLists) : []);
+        } catch (e) {
+          console.warn('Error al leer datos locales:', e);
+          setFavorites({});
+          setSavedCarts([]);
+        }
       }
       loadData(sessionUser);
     };
@@ -713,12 +741,16 @@ const App: React.FC = () => {
   }, [loadData]);
 
   useEffect(() => {
-    localStorage.setItem('tc_favs', JSON.stringify(favorites));
-    localStorage.setItem('tc_saved_lists', JSON.stringify(savedCarts));
+    try {
+      localStorage.setItem('tc_favs', JSON.stringify(favorites || {}));
+      localStorage.setItem('tc_saved_lists', JSON.stringify(savedCarts || []));
+    } catch (e) {
+      console.warn('Error guardando en localStorage:', e);
+    }
     const sincronizarConNube = async () => {
       if (user && profile && !loading) {
         try {
-          const dataToSave = { active: favorites, saved: savedCarts };
+          const dataToSave = { active: favorites || {}, saved: savedCarts || [] };
           await saveCartData(user.id, dataToSave);
         } catch (e) { console.error("Error sincronizando:", e); }
       }
@@ -730,15 +762,18 @@ const App: React.FC = () => {
   }, [favorites, savedCarts, user, loading]);
 
   useEffect(() => {
-    if (products.length > 0) {
-      const firstProductImage = products[0].imagen_url;
-      if (firstProductImage) {
-        const existingLink = document.querySelector(`link[rel="preload"][href^="${firstProductImage}"]`);
-        if (!existingLink) {
-          const link = document.createElement('link');
-          link.rel = 'preload'; link.as = 'image';
-          link.href = `${firstProductImage}?width=120&quality=75&format=webp`;
-          document.head.appendChild(link);
+    if (products && products.length > 0) {
+      const firstProduct = products[0];
+      if (firstProduct && firstProduct.imagen_url) {
+        const firstProductImage = firstProduct.imagen_url;
+        if (firstProductImage) {
+          const existingLink = document.querySelector(`link[rel="preload"][href^="${firstProductImage}"]`);
+          if (!existingLink) {
+            const link = document.createElement('link');
+            link.rel = 'preload'; link.as = 'image';
+            link.href = `${firstProductImage}?width=120&quality=75&format=webp`;
+            document.head.appendChild(link);
+          }
         }
       }
     }
