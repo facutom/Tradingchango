@@ -46,8 +46,8 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   className = '',
   placeholder,
   onLoad,
-  quality = 75,
-  format = 'auto',
+  quality = 60,
+  format = 'webp',
   style,
   ...props
 }) => {
@@ -101,25 +101,27 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     setHasError(true);
   }, []);
 
-  // Generar URL con parámetros optimizados para WebP/AVIF
+  // Generar URL con parámetros optimizados para WebP
   const optimizeUrl = useCallback((url: string): string => {
     if (!url || url.startsWith('http')) return url;
     
     const separator = url.includes('?') ? '&' : '?';
     const params = new URLSearchParams();
     
-    if (width) params.append('width', String(Math.min(width, 1200))); // Limitar ancho máximo
-    params.append('quality', String(Math.max(10, Math.min(95, quality))));
+    // IMPORTANTE: Limitar el tamaño de descarga al tamaño de visualización real
+    // Las imágenes de thumbnail se muestran a ~95px pero se descargaban a 500px
+    // Usamos 150px como máximo para thumbnails
+    const maxSize = width ? Math.min(width, 150) : 150;
+    params.append('width', String(maxSize));
+    params.append('height', String(maxSize));
+    // Calidad reducida para thumbnails para reducir tamaño
+    params.append('quality', String(Math.max(10, Math.min(65, quality))));
     
-    // Preferir AVIF si está disponible, sino WebP
-    if (format === 'auto' || format === 'avif') {
-      params.append('format', 'avif');
-    } else if (format === 'webp') {
-      params.append('format', 'webp');
-    }
+    // WebP para mejor compatibilidad y tamaño
+    params.append('format', 'webp');
     
     return `${url}${separator}${params.toString()}`;
-  }, [width, quality, format]);
+  }, [width, quality]);
 
   // Para imágenes prioritarias, usar la URL directamente sin lazy loading
   // Para otras imágenes, aplicar lazy loading con IntersectionObserver

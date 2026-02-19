@@ -436,11 +436,11 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
           <div className="flex gap-4 items-start mb-4">
             <div className="w-32 h-32 md:w-40 md:h-40 bg-white rounded-xl border border-neutral-100 shadow-sm flex items-center justify-center p-2 shrink-0">
               <OptimizedImage
-                src={product.imagen_url ? `${product.imagen_url}?width=160&quality=75&format=webp` : 'https://via.placeholder.com/160?text=N/A'}
+                src={product.imagen_url || 'https://via.placeholder.com/150?text=N/A'}
                 alt={product.nombre}
                 className="w-full h-full object-contain"
-                width={160}
-                height={160}
+                width={150}
+                height={150}
                 priority
               />
             </div>
@@ -670,12 +670,13 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                   className="cursor-pointer bg-neutral-50 dark:bg-[#1f2c34] rounded-lg p-2 flex flex-col items-center text-center transition-transform hover:scale-105"
                 >
                   <img
-                    src={related.imagen_url ? `${related.imagen_url}?width=80&quality=75&format=webp` : 'https://via.placeholder.com/80?text=N/A'}
+                    src={related.imagen_url ? `${related.imagen_url}?width=64&quality=60&format=webp` : 'https://via.placeholder.com/64?text=N/A'}
                     alt={related.nombre}
                     className="w-16 h-16 object-contain mb-2"
-                    width="80"
-                    height="80"
+                    width="64"
+                    height="64"
                     loading="lazy"
+                    decoding="async"
                   />
                   <p className="text-[10px] font-bold text-black dark:text-white leading-tight break-words">
                     {related.nombre}

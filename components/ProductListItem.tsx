@@ -155,13 +155,12 @@ const ProductListItem: React.FC<ProductListItemProps> = ({
          )}
          <div className="w-16 h-16 rounded-lg bg-white border border-neutral-100 flex items-center justify-center overflow-hidden shrink-0 aspect-square">
           <OptimizedImage
-            src={p.imagen_url ? `${p.imagen_url}?width=120&quality=75&format=webp` : 'https://via.placeholder.com/120?text=N/A'}
+            src={p.imagen_url || 'https://via.placeholder.com/100?text=N/A'}
             alt={p.nombre}
             className="w-full h-full object-contain p-1"
-            width={120}
-            height={120}
+            width={100}
+            height={100}
             priority={index < 4}
-            format="auto"
           />
          </div>
       </div>
