@@ -162,7 +162,10 @@ const SharedCartView: React.FC = () => {
     return STORES.map(store => {
       let total = 0; let regularTotal = 0; let hasAllItems = true;
       cartItems.forEach(item => {
-        if (!item.product) return;
+        if (!item.product) {
+          hasAllItems = false;
+          return;
+        }
         const urlKey = `url_${store.key}` as keyof Product;
         const storeUrl = item.product[urlKey];
         
@@ -175,7 +178,8 @@ const SharedCartView: React.FC = () => {
         
         total += price;
         regularTotal += regTotal;
-        if (!storeUrl || storeUrl === '') hasAllItems = false;
+        // Debe tener URL Y precio válido (mayor a 0)
+        if (!storeUrl || storeUrl === '' || price <= 0) hasAllItems = false;
       });
       return { ...store, total, regularTotal, savings: regularTotal - total, hasAllItems };
     })
@@ -194,11 +198,14 @@ const SharedCartView: React.FC = () => {
         item.quantity,
         item.oferta_gondola
       );
-      const bestStorePrice = item.quantity > 0 ? price / item.quantity : 0;
+      // Si el precio es 0, usar minPrice como fallback
+      const unitPrice = item.quantity > 0 ? price / item.quantity : 0;
+      const bestStorePrice = unitPrice > 0 ? unitPrice : item.minPrice;
+      const finalTotal = unitPrice > 0 ? price : item.minPrice * item.quantity;
       return {
         ...item,
         bestStorePrice,
-        total: price,
+        total: finalTotal,
       };
     });
   }, [cartItems, storeResults]);
@@ -206,588 +213,414 @@ const SharedCartView: React.FC = () => {
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
   const goHome = () => navigate(`/?utm_source=${utmSource}&utm_campaign=shared_cart_cta`);
 
-  // ── Enhanced Styles ───────────────────────────────────────────────────────
+  // ── Minimal White Styles ───────────────────────────────────────────────────────
   const styles = `
-    @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=DM+Sans:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
     .sc-root *, .sc-root *::before, .sc-root *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     .sc-root {
       position: fixed; inset: 0; z-index: 9999;
       overflow-y: auto; overflow-x: hidden;
-      font-family: 'DM Sans', sans-serif;
-      background: #050507;
-      color: #fff;
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #ffffff;
+      color: #111827;
     }
-
-    /* Animated grid pattern */
-    .sc-root::before {
-      content: '';
-      position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      background-image: 
-        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-      background-size: 60px 60px;
-      mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
-      -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+    
+    /* Rain of balloons/money */
+    .sc-rain {
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
     }
-
-    /* Noise overlay */
-    .sc-root::after {
-      content: '';
-      position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    .sc-rain-item {
+      position: absolute;
+      top: -50px;
+      font-size: 20px;
+      opacity: 0.12;
+      animation: rainFall 8s linear infinite;
     }
-
-    /* Enhanced animated gradient orbs */
-    .sc-bg {
-      position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
-    }
-    .sc-orb {
-      position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.4;
-      animation: orbFloat 12s ease-in-out infinite;
-    }
-    .sc-orb-1 { 
-      width: 600px; height: 600px; 
-      background: linear-gradient(135deg, #00c853, #00e676); 
-      top: -200px; left: -150px; 
-      animation-delay: 0s;
-    }
-    .sc-orb-2 { 
-      width: 500px; height: 500px; 
-      background: linear-gradient(135deg, #2979ff, #448aff); 
-      bottom: -100px; right: -100px; 
-      animation-delay: -4s;
-    }
-    .sc-orb-3 { 
-      width: 350px; height: 350px; 
-      background: linear-gradient(135deg, #ff6d00, #ff9100); 
-      top: 50%; left: 60%; 
-      animation-delay: -8s;
-    }
-    .sc-orb-4 {
-      width: 250px; height: 250px;
-      background: linear-gradient(135deg, #aa00ff, #e040fb);
-      bottom: 30%; left: -50px;
-      animation-delay: -6s;
-    }
-    @keyframes orbFloat {
-      0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
-      25% { transform: translate(30px, -40px) scale(1.08) rotate(5deg); }
-      50% { transform: translate(-20px, 20px) scale(0.95) rotate(-3deg); }
-      75% { transform: translate(40px, 30px) scale(1.03) rotate(8deg); }
+    @keyframes rainFall {
+      0% { transform: translateY(-30px) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.12; }
+      90% { opacity: 0.12; }
+      100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
     }
 
     .sc-content {
       position: relative; z-index: 1;
-      max-width: 480px; margin: 0 auto;
-      padding: 0 0 140px;
+      max-width: 520px; margin: 0 auto;
+      padding: 0 0 110px;
       opacity: 0; transform: translateY(32px) scale(0.98);
       transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .sc-content.visible { opacity: 1; transform: translateY(0) scale(1); }
 
-    /* Glass card effect */
-    .sc-glass {
-      background: rgba(20, 20, 25, 0.6);
-      backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 
-        0 4px 24px rgba(0, 0, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    /* Cards - white minimal */
+    .sc-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
 
     /* Header */
     .sc-header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 20px 20px 16px;
+      padding: 16px 16px 14px;
     }
     .sc-logo {
-      display: flex; align-items: center; gap: 10px;
+      display: flex; align-items: center; gap: 8px;
       cursor: pointer; text-decoration: none;
     }
-    .sc-logo-mark {
-      width: 40px; height: 40px;
-      background: linear-gradient(135deg, #00c853 0%, #00e676 100%);
-      border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 16px rgba(0, 200, 83, 0.3);
-      transition: transform 0.2s, box-shadow 0.2s;
-      position: relative;
-    }
-    .sc-logo-mark:hover {
-      transform: scale(1.05) rotate(-2deg);
-      box-shadow: 0 6px 24px rgba(0, 200, 83, 0.4);
-    }
-    .sc-logo-icon {
-      font-size: 18px !important;
-      color: #0a0a0a !important;
-    }
-    .sc-logo-trend {
-      position: absolute !important;
-      top: -4px !important;
-      right: -4px !important;
-      font-size: 11px !important;
-      color: #00a650 !important;
-      background-color: #0a0a0a !important;
-      border-radius: 50% !important;
-      padding: 2px !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      width: 14px; height: 14px;
-      z-index: 2;
+    .sc-logo-img {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      object-fit: contain;
     }
     .sc-logo-text {
       font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
-      font-weight: 800 !important; font-size: 22px !important;
-      letter-spacing: -1px !important;
-      color: #e9edef !important;
+      font-weight: 700 !important; font-size: 18px !important;
+      letter-spacing: -0.5px !important;
+      color: #111827 !important;
     }
     .sc-header-cta {
-      background: linear-gradient(135deg, rgba(0, 200, 83, 0.15) 0%, rgba(0, 200, 83, 0.05) 100%);
-      color: #00e676;
-      padding: 8px 14px; border-radius: 100px;
-      font-weight: 600; font-size: 11px; text-decoration: none;
-      border: 1px solid rgba(0, 200, 83, 0.3);
+      background: #111827;
+      color: #ffffff;
+      padding: 10px 14px; border-radius: 8px;
+      font-weight: 600; font-size: 12px; text-decoration: none;
+      border: none;
       cursor: pointer;
       transition: all 0.2s;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
     }
     .sc-header-cta:hover { 
-      background: rgba(0, 200, 83, 0.25); 
-      transform: scale(1.04);
-      border-color: rgba(0, 200, 83, 0.5);
+      background: #374151; 
     }
 
-    /* Hero card - enhanced */
+    /* Hero card - minimal white */
     .sc-hero {
-      margin: 12px 16px 16px;
-      background: linear-gradient(145deg, rgba(15, 15, 18, 0.9) 0%, rgba(25, 25, 30, 0.7) 100%);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 28px;
-      padding: 32px 24px 28px;
+      margin: 12px 16px 12px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 22px 20px;
       text-align: center;
-      position: relative; overflow: hidden;
-      box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.4),
-        0 0 0 1px rgba(255, 255, 255, 0.03) inset;
-    }
-    .sc-hero::before {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0; height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-    }
-    .sc-hero::after {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0; height: 3px;
-      background: linear-gradient(90deg, #00c853, #2979ff, #ff6d00, #aa00ff);
-      background-size: 300% 100%;
-      animation: gradientShift 4s ease infinite;
-    }
-    @keyframes gradientShift {
-      0%, 100% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
     }
 
     .sc-avatar-wrap {
       position: relative;
-      margin-bottom: 18px;
+      margin-bottom: 12px;
     }
     .sc-avatar-glow {
-      position: absolute; inset: -8px;
-      background: radial-gradient(circle, rgba(0, 200, 83, 0.3) 0%, transparent 70%);
-      border-radius: 50%;
-      animation: pulse 2s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 0.5; }
-      50% { transform: scale(1.15); opacity: 0.8; }
+      display: none;
     }
     .sc-avatar {
-      width: 72px; height: 72px; border-radius: 50%;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      width: 56px; height: 56px; border-radius: 50%;
+      background: #f3f4f6;
       display: flex; align-items: center; justify-content: center;
-      font-size: 32px; margin: 0 auto;
-      box-shadow: 
-        0 0 0 4px rgba(0, 200, 83, 0.15),
-        0 8px 32px rgba(0, 0, 0, 0.4);
-      position: relative;
+      font-size: 24px; margin: 0 auto;
+      border: 2px solid #e5e7eb;
     }
     .sc-hero-name {
-      font-family: 'Unbounded', sans-serif; font-weight: 900; font-size: 24px;
-      color: #fff; margin-bottom: 6px;
-      letter-spacing: -0.5px;
+      font-weight: 700; font-size: 20px;
+      color: #111827; margin-bottom: 4px;
     }
     .sc-hero-sub { 
-      font-size: 14px; color: rgba(255,255,255,0.5); 
-      margin-bottom: 24px; 
-      font-weight: 500;
+      font-size: 13px; color: #6b7280; 
+      margin-bottom: 14px; 
     }
 
-    /* Savings box - premium */
+    /* Savings box - minimal white */
     .sc-savings-box {
-      background: linear-gradient(145deg, #00c853 0%, #00a844 100%);
-      border-radius: 20px; padding: 20px 24px;
-      margin-bottom: 16px;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 
-        0 8px 32px rgba(0, 200, 83, 0.35),
-        0 0 0 1px rgba(255,255,255,0.1) inset;
-    }
-    .sc-savings-box::before {
-      content: '';
-      position: absolute; top: -50%; left: -50%;
-      width: 200%; height: 200%;
-      background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 50%);
-      animation: shimmer 3s ease-in-out infinite;
-    }
-    @keyframes shimmer {
-      0%, 100% { transform: translate(-30%, -30%); }
-      50% { transform: translate(0%, 0%); }
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 12px; padding: 14px 18px;
+      margin-bottom: 12px;
     }
     .sc-savings-label {
-      font-size: 11px; font-weight: 700; letter-spacing: 2px;
-      text-transform: uppercase; color: rgba(0,0,0,0.5); margin-bottom: 6px;
-      position: relative;
+      font-size: 11px; font-weight: 600; letter-spacing: 1px;
+      text-transform: uppercase; color: #16a34a; margin-bottom: 2px;
     }
     .sc-savings-amount {
-      font-family: 'Unbounded', sans-serif; font-weight: 900; font-size: 42px;
-      color: #0a0a0a; letter-spacing: -2px; line-height: 1;
-      position: relative;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      font-weight: 700; font-size: 32px;
+      color: #16a34a; letter-spacing: -0.5px; line-height: 1;
     }
     .sc-savings-desc { 
-      font-size: 13px; color: rgba(0,0,0,0.5); margin-top: 6px; 
-      position: relative;
-      font-weight: 500;
+      font-size: 12px; color: #6b7280; margin-top: 2px; 
+    }
+    .sc-savings-disclaimer {
+      font-size: 10px; color: #9ca3af; margin-top: 8px;
+      line-height: 1.3;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 8px;
     }
 
-    /* Stats - improved */
+    /* Stats - minimal */
     .sc-stats {
       display: flex; gap: 10px;
     }
     .sc-stat {
       flex: 1; 
-      background: rgba(30, 30, 35, 0.6);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 16px;
-      padding: 14px 10px; text-align: center;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 12px 8px; text-align: center;
       transition: all 0.2s;
     }
     .sc-stat:hover {
-      background: rgba(40, 40, 45, 0.8);
-      border-color: rgba(255, 255, 255, 0.1);
-      transform: translateY(-2px);
+      border-color: #d1d5db;
     }
     .sc-stat-val {
-      font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: 18px;
-      color: #fff;
+      font-weight: 600; font-size: 18px;
+      color: #111827;
     }
-    .sc-stat-lbl { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 4px; }
+    .sc-stat-lbl { font-size: 11px; color: #6b7280; margin-top: 2px; }
 
     /* Section */
-    .sc-section { margin: 0 16px 16px; }
+    .sc-section { margin: 0 12px 8px; }
     .sc-section-title {
-      font-size: 11px; font-weight: 700; letter-spacing: 2px;
-      text-transform: uppercase; color: rgba(255,255,255,0.4); 
-      margin-bottom: 14px; padding-left: 4px;
-      display: flex; align-items: center; gap: 10px;
+      font-size: 9px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: #6b7280; 
+      margin-bottom: 6px; padding-left: 4px;
+      display: flex; align-items: center; gap: 8px;
     }
     .sc-section-title::after {
       content: ''; flex: 1; height: 1px;
-      background: linear-gradient(90deg, rgba(255,255,255,0.1), transparent);
+      background: linear-gradient(90deg, #e5e7eb, transparent);
     }
 
-    /* Store comparison - enhanced */
-    .sc-stores { display: flex; flex-direction: column; gap: 10px; }
+    /* Store comparison - minimal */
+    .sc-stores { display: flex; flex-direction: column; gap: 8px; }
 
     .sc-store-best {
-      background: linear-gradient(145deg, #00c853 0%, #00e676 100%);
-      border-radius: 20px; padding: 18px 20px;
+      background: #f0fdf4;
+      border: 1px solid #16a34a;
+      border-radius: 12px; padding: 14px 16px;
       display: flex; align-items: center; justify-content: space-between;
-      position: relative; overflow: hidden;
-      box-shadow: 
-        0 8px 32px rgba(0, 200, 83, 0.4),
-        0 0 0 1px rgba(255,255,255,0.15) inset;
     }
-    .sc-store-best::before {
-      content: '🏆 MEJOR OPCIÓN';
-      position: absolute; top: 10px; right: -24px;
-      background: rgba(0,0,0,0.15); font-size: 9px; font-weight: 700;
-      letter-spacing: 1px; color: rgba(0,0,0,0.5);
-      transform: rotate(38deg); padding: 4px 40px;
-    }
-    .sc-store-best::after {
-      content: '';
-      position: absolute; top: 0; right: 0; width: 150px; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1));
-    }
-    .sc-store-left { display: flex; align-items: center; gap: 14px; position: relative; z-index: 1; }
+    .sc-store-best { position: relative; }
+    .sc-store-left { display: flex; align-items: center; gap: 10px; }
     .sc-store-icon {
-      width: 46px; height: 46px; background: rgba(0,0,0,0.15);
-      border-radius: 14px; display: flex; align-items: center;
-      justify-content: center; font-size: 22px;
+      width: 32px; height: 32px; background: #dcfce7;
+      border-radius: 8px; display: flex; align-items: center;
+      justify-content: center; font-size: 16px;
     }
     .sc-store-name-best {
-      font-family: 'Unbounded', sans-serif; font-weight: 900; font-size: 16px; color: #0a0a0a;
+      font-weight: 600; font-size: 15px; color: #111827;
     }
     .sc-store-tag {
-      font-size: 12px; font-weight: 600; color: rgba(0,0,0,0.45); margin-top: 3px;
+      font-size: 11px; font-weight: 500; color: #16a34a; margin-top: 1px;
     }
     .sc-store-price-best {
-      font-family: 'Unbounded', sans-serif; font-weight: 900; font-size: 24px; color: #0a0a0a;
-      position: relative; z-index: 1;
+      text-align: right;
+    }
+    .sc-store-price-old {
+      font-size: 12px; color: #9ca3af; text-decoration: line-through; margin-bottom: 2px;
+    }
+    .sc-store-price-new {
+      font-weight: 600; font-size: 18px; color: #16a34a;
     }
 
     .sc-store-row {
-      background: rgba(18, 18, 22, 0.8);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.04);
-      border-radius: 16px;
-      padding: 16px 20px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 14px 16px;
       display: flex; align-items: center; justify-content: space-between;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.2s;
     }
     .sc-store-row:hover { 
-      background: rgba(25, 25, 30, 0.9);
-      border-color: rgba(255, 255, 255, 0.1);
-      transform: translateX(4px);
+      border-color: #d1d5db;
     }
     .sc-store-row-name { 
-      font-size: 14px; font-weight: 600; color: #ccc; 
+      font-size: 15px; font-weight: 500; color: #374151; 
       display: flex; align-items: center; gap: 10px; 
     }
     .sc-store-row-price { 
-      font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: 15px; color: #fff; 
+      font-weight: 600; font-size: 15px; color: #111827; 
     }
     .sc-store-row-diff { 
-      font-size: 11px; color: rgba(255,255,255,0.5); 
+      font-size: 12px; color: #6b7280; 
       text-align: right; margin-top: 2px;
-      font-weight: 500;
     }
 
     .sc-store-worst {
-      background: rgba(40, 15, 15, 0.6);
-      border: 1px solid rgba(239, 83, 80, 0.2);
-      border-radius: 16px;
-      padding: 16px 20px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 12px;
+      padding: 12px 14px;
       display: flex; align-items: center; justify-content: space-between;
-      transition: all 0.25s;
     }
     .sc-store-worst:hover {
-      background: rgba(50, 20, 20, 0.7);
-      border-color: rgba(239, 83, 80, 0.3);
+      border-color: #fca5a5;
     }
     .sc-store-worst-name { 
-      font-size: 14px; font-weight: 600; color: #ef5350; 
+      font-size: 14px; font-weight: 500; color: #dc2626; 
       display: flex; align-items: center; gap: 10px; 
     }
     .sc-store-worst-label { 
-      font-size: 10px; color: #c62828; font-weight: 700; letter-spacing: 1px; 
+      font-size: 8px; color: #dc2626; font-weight: 700; letter-spacing: 0.5px; 
     }
     .sc-store-worst-price { 
-      font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: 15px; 
-      color: #ef5350; text-align: right; 
+      font-weight: 600; font-size: 13px; 
+      color: #dc2626; text-align: right; 
     }
-    .sc-store-worst-diff { font-size: 11px; color: #ef5350; margin-top: 2px; font-weight: 500; }
+    .sc-store-worst-diff { font-size: 10px; color: #dc2626; margin-top: 1px; }
 
-    /* Products - enhanced */
-    .sc-products { display: flex; flex-direction: column; gap: 10px; }
+    /* Products - minimal */
+    .sc-products { display: flex; flex-direction: column; gap: 8px; }
     .sc-product {
-      background: rgba(18, 18, 22, 0.8);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.04);
-      border-radius: 18px;
-      padding: 14px; display: flex; align-items: center; gap: 14px;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 12px; display: flex; align-items: center; gap: 12px;
+      transition: all 0.2s;
     }
     .sc-product:hover { 
-      background: rgba(25, 25, 32, 0.95);
-      border-color: rgba(255, 255, 255, 0.1);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      border-color: #d1d5db;
     }
     .sc-product-img {
-      width: 56px; height: 56px; 
-      background: linear-gradient(135deg, #1a1a22 0%, #252530 100%);
-      border-radius: 14px;
+      width: 48px; height: 48px; 
+      background: #f3f4f6;
+      border-radius: 10px;
       flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-      font-size: 26px; overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      font-size: 20px; overflow: hidden;
     }
-    .sc-product-img img { width: 48px; height: 48px; object-fit: contain; }
+    .sc-product-img img { width: 36px; height: 36px; object-fit: contain; }
     .sc-product-name { 
-      font-size: 14px; font-weight: 600; color: #eee; 
-      margin-bottom: 4px; 
+      font-size: 13px; font-weight: 500; color: #111827; 
+      margin-bottom: 1px; 
     }
-    .sc-product-qty { font-size: 12px; color: rgba(255,255,255,0.4); }
+    .sc-product-qty { font-size: 12px; color: #6b7280; }
     .sc-product-total {
       margin-left: auto; flex-shrink: 0;
-      font-family: 'Unbounded', sans-serif; font-weight: 700; font-size: 16px; 
-      color: #00e676;
-      background: rgba(0, 200, 83, 0.1);
-      padding: 6px 12px; border-radius: 10px;
+      font-weight: 600; font-size: 13px; 
+      color: #16a34a;
+      background: #f0fdf4;
+      padding: 4px 10px; border-radius: 6px;
     }
 
-    /* CTA section - premium */
+    /* CTA section - minimal */
     .sc-cta-block {
       margin: 0 16px; 
-      background: linear-gradient(145deg, rgba(20, 20, 28, 0.9) 0%, rgba(15, 15, 20, 0.95) 100%);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 24px;
-      padding: 28px; text-align: center;
-      box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.3),
-        0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 20px; text-align: center;
     }
     .sc-cta-emoji { 
-      font-size: 40px; margin-bottom: 16px; 
-      display: inline-block;
-      animation: bounce 2s ease-in-out infinite;
-    }
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-8px); }
+      font-size: 28px; margin-bottom: 10px; 
     }
     .sc-cta-title {
-      font-family: 'Unbounded', sans-serif; font-weight: 900; font-size: 20px;
-      color: #fff; margin-bottom: 10px; line-height: 1.3;
-      letter-spacing: -0.3px;
+      font-weight: 700; font-size: 16px;
+      color: #111827; margin-bottom: 8px; line-height: 1.3;
     }
     .sc-cta-desc { 
-      font-size: 14px; color: rgba(255,255,255,0.5); 
-      line-height: 1.6; margin-bottom: 24px; 
+      font-size: 13px; color: #6b7280; 
+      line-height: 1.5; margin-bottom: 14px; 
     }
     .sc-features { 
-      display: flex; flex-direction: column; gap: 10px; 
-      margin-bottom: 24px; text-align: left; 
+      display: flex; flex-direction: column; gap: 8px; 
+      margin-bottom: 14px; text-align: left; 
     }
     .sc-feature {
-      display: flex; align-items: center; gap: 12px;
-      background: rgba(30, 30, 38, 0.6);
-      border-radius: 14px; padding: 14px 18px;
-      border: 1px solid rgba(255, 255, 255, 0.04);
+      display: flex; align-items: center; gap: 10px;
+      background: #f9fafb;
+      border-radius: 10px; padding: 12px 14px;
+      border: 1px solid #e5e7eb;
       transition: all 0.2s;
     }
     .sc-feature:hover {
-      background: rgba(35, 35, 45, 0.8);
-      border-color: rgba(255, 255, 255, 0.08);
+      border-color: #d1d5db;
     }
     .sc-feature-icon { 
-      font-size: 20px; flex-shrink: 0;
-      width: 36px; height: 36px;
+      font-size: 18px; flex-shrink: 0;
+      width: 32px; height: 32px;
       display: flex; align-items: center; justify-content: center;
-      background: rgba(0, 200, 83, 0.1);
-      border-radius: 10px;
+      background: #f0fdf4;
+      border-radius: 8px;
     }
-    .sc-feature-text { font-size: 13px; color: #bbb; line-height: 1.4; }
-    .sc-feature-text strong { color: #fff; font-weight: 600; }
+    .sc-feature-text { font-size: 12px; color: #4b5563; line-height: 1.4; }
+    .sc-feature-text strong { color: #111827; font-weight: 600; }
 
-    /* Fixed bottom CTA - enhanced */
+    /* Fixed bottom CTA - minimal white */
     .sc-footer-cta {
       position: fixed; bottom: 0; left: 0; right: 0; z-index: 10;
-      padding: 16px 20px 28px;
-      background: linear-gradient(to top, rgba(5,5,7,0.98) 40%, rgba(5,5,7,0.9) 70%, transparent);
+      padding: 14px 16px 24px;
+      background: white;
+      border-top: 1px solid #e5e7eb;
     }
     .sc-btn-main {
-      display: block; width: 100%; max-width: 480px; margin: 0 auto;
-      background: linear-gradient(135deg, #00c853 0%, #00a844 100%);
-      color: #0a0a0a;
-      padding: 14px 20px; border-radius: 14px; border: none; cursor: pointer;
-      font-family: 'Unbounded', sans-serif; font-weight: 900; font-size: 14px;
-      letter-spacing: 0.5px; text-align: center; text-decoration: none;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 
-        0 6px 24px rgba(0, 200, 83, 0.35),
-        0 0 0 1px rgba(255, 255, 255, 0.1) inset;
-      position: relative;
-      overflow: hidden;
+      display: block; width: 100%; max-width: 520px; margin: 0 auto;
+      background: #111827;
+      color: white;
+      padding: 16px 24px; border-radius: 10px; border: none; cursor: pointer;
+      font-weight: 600; font-size: 14px;
+      text-align: center; text-decoration: none;
+      transition: all 0.2s;
       text-transform: uppercase;
     }
-    .sc-btn-main::before {
-      content: '';
-      position: absolute; top: 0; left: -100%;
-      width: 100%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-      transition: left 0.5s;
-    }
     .sc-btn-main:hover { 
-      transform: translateY(-2px); 
-      box-shadow: 
-        0 12px 36px rgba(0, 200, 83, 0.45),
-        0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+      background: #374151; 
     }
-    .sc-btn-main:hover::before { left: 100%; }
     .sc-btn-sub { 
-      font-size: 11px; color: rgba(0,0,0,0.45); margin-top: 4px; 
-      display: block; font-family: 'DM Sans', sans-serif; font-weight: 500; 
+      font-size: 11px; color: #9ca3af; margin-top: 4px; 
+      display: block; font-weight: 500; 
       text-transform: none;
     }
 
-    /* Loading & Error - enhanced */
+    /* Loading & Error - minimal */
     .sc-loading {
       position: fixed; inset: 0; z-index: 9999;
-      background: #050507; display: flex; align-items: center; justify-content: center;
+      background: #ffffff; display: flex; align-items: center; justify-content: center;
     }
     .sc-loader {
       position: relative;
-      width: 64px; height: 64px;
+      width: 48px; height: 48px;
     }
     .sc-loader::before, .sc-loader::after {
       content: ''; position: absolute; inset: 0;
       border-radius: 50%;
-      border: 3px solid transparent;
+      border: 3px solid #e5e7eb;
     }
     .sc-loader::before {
-      border-top-color: #00c853;
+      border-top-color: #16a34a;
       animation: spin 1s linear infinite;
     }
     .sc-loader::after {
-      border-right-color: #2979ff;
+      border-right-color: #3b82f6;
       animation: spin 1.5s linear infinite reverse;
       inset: 6px;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     .sc-loading-text {
-      font-family: 'Unbounded', sans-serif; font-size: 14px; color: rgba(255,255,255,0.4);
-      margin-top: 24px; text-align: center;
-      letter-spacing: 0.5px;
+      font-size: 13px; color: #6b7280;
+      margin-top: 20px; text-align: center;
     }
 
     .sc-error {
       position: fixed; inset: 0; z-index: 9999;
-      background: #050507; display: flex; align-items: center; justify-content: center;
+      background: #ffffff; display: flex; align-items: center; justify-content: center;
       padding: 24px;
     }
     .sc-error-box {
-      max-width: 380px; text-align: center;
+      max-width: 320px; text-align: center;
     }
     .sc-error-emoji { 
-      font-size: 64px; margin-bottom: 20px; 
-      animation: shake 0.5s ease-in-out;
-    }
-    @keyframes shake {
-      0%, 100% { transform: rotate(0); }
-      25% { transform: rotate(-10deg); }
-      75% { transform: rotate(10deg); }
+      font-size: 48px; margin-bottom: 16px; 
     }
     .sc-error-title {
-      font-family: 'Unbounded', sans-serif; font-weight: 900; font-size: 26px;
-      color: #fff; margin-bottom: 10px;
-      letter-spacing: -0.5px;
+      font-weight: 700; font-size: 20px;
+      color: #111827; margin-bottom: 8px;
     }
-    .sc-error-msg { font-size: 15px; color: rgba(255,255,255,0.5); margin-bottom: 28px; }
+    .sc-error-msg { font-size: 14px; color: #6b7280; margin-bottom: 24px; }
 
     /* Divider */
     .sc-divider { 
       height: 1px; 
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent); 
-      margin: 8px 16px 16px; 
+      background: #e5e7eb; 
+      margin: 12px 16px; 
     }
 
     /* Responsive adjustments */
@@ -864,12 +697,18 @@ const SharedCartView: React.FC = () => {
       <style>{styles}</style>
 
       <div className="sc-root">
-        {/* Enhanced animated background */}
-        <div className="sc-bg">
-          <div className="sc-orb sc-orb-1" />
-          <div className="sc-orb sc-orb-2" />
-          <div className="sc-orb sc-orb-3" />
-          <div className="sc-orb sc-orb-4" />
+        {/* Floating savings elements - rain */}
+        <div className="sc-rain">
+          <div className="sc-rain-item" style={{left: '5%', animationDelay: '0s'}}>🎈</div>
+          <div className="sc-rain-item" style={{left: '15%', animationDelay: '2s'}}>💰</div>
+          <div className="sc-rain-item" style={{left: '25%', animationDelay: '4s'}}>🎈</div>
+          <div className="sc-rain-item" style={{left: '35%', animationDelay: '1s'}}>💵</div>
+          <div className="sc-rain-item" style={{left: '45%', animationDelay: '3s'}}>🎈</div>
+          <div className="sc-rain-item" style={{left: '55%', animationDelay: '5s'}}>💰</div>
+          <div className="sc-rain-item" style={{left: '65%', animationDelay: '0.5s'}}>🎈</div>
+          <div className="sc-rain-item" style={{left: '75%', animationDelay: '2.5s'}}>💵</div>
+          <div className="sc-rain-item" style={{left: '85%', animationDelay: '4.5s'}}>🎈</div>
+          <div className="sc-rain-item" style={{left: '95%', animationDelay: '1.5s'}}>💰</div>
         </div>
 
         <div className={`sc-content ${visible ? 'visible' : ''}`}>
@@ -877,11 +716,8 @@ const SharedCartView: React.FC = () => {
           {/* ── Header ── */}
           <header className="sc-header">
             <div className="sc-logo" onClick={() => navigate('/')}>
-              <div className="sc-logo-mark">
-                <i className="fa-solid fa-cart-shopping sc-logo-icon"></i>
-                <i className="fa-solid fa-arrow-trend-up sc-logo-trend"></i>
-              </div>
-              <span className="sc-logo-text">TradingChango</span>
+              <img src="/logo192.png" alt="TradingChango" className="sc-logo-img" />
+              <span className="sc-logo-text">Tradingchango</span>
             </div>
             <Link
               to={`/?utm_source=${utmSource}&utm_campaign=shared_cart_header`}
@@ -900,7 +736,7 @@ const SharedCartView: React.FC = () => {
               <div className="sc-hero-name" style={{ textTransform: 'uppercase', fontWeight: 'bold' }}>
               {cart.user_name}
             </div>
-            <p className="sc-hero-sub" style={{ textTransform: 'uppercase' }}>
+            <p className="sc-hero-sub" style={{ textTransform: 'uppercase', fontWeight: 700 }}>
               ¡MIRÁ CUANTO AHORRÉ HOY! ¿VOS CUÁNTO ESTÁS PAGANDO DE MÁS?
             </p>
 
@@ -908,6 +744,7 @@ const SharedCartView: React.FC = () => {
               <div className="sc-savings-label">Ahorro total</div>
               <div className="sc-savings-amount">${formatPrice(calculatedSavings)}</div>
               <div className="sc-savings-desc">eligiendo el supermercado más barato</div>
+              <div className="sc-savings-disclaimer">Valores estimados. La aplicación de beneficios y el precio final en caja dependen exclusivamente de las condiciones vigentes de cada comercio y entidad emisora.</div>
             </div>
 
             <div className="sc-stats">
@@ -921,7 +758,7 @@ const SharedCartView: React.FC = () => {
               </div>
               {best && (
                 <div className="sc-stat">
-                  <div className="sc-stat-val" style={{ color: '#00e676' }}>{best.name.split(' ')[0]}</div>
+                  <div className="sc-stat-val" style={{ color: '#16a34a' }}>{best.name.split(' ')[0]}</div>
                   <div className="sc-stat-lbl">mejor precio</div>
                 </div>
               )}
@@ -944,7 +781,12 @@ const SharedCartView: React.FC = () => {
                         <div className="sc-store-tag">La opción ganadora 🏆</div>
                       </div>
                     </div>
-                    <div className="sc-store-price-best">${formatPrice(best.total)}</div>
+                    <div className="sc-store-price-best">
+                      {worst && worst.total > best.total && (
+                        <div className="sc-store-price-old">${formatPrice(worst.total)}</div>
+                      )}
+                      <div className="sc-store-price-new">${formatPrice(best.total)}</div>
+                    </div>
                   </div>
                 )}
 

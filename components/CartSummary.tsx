@@ -104,17 +104,19 @@ const CartSummary: React.FC<CartSummaryProps> = ({ items, benefits, userMembersh
     <div className="p-4 space-y-2 animate-in fade-in duration-700">
       {/* Tarjeta Principal: Mejor Opción */}
       <div className="bg-white dark:bg-primary border-[3px] border-black dark:border-[#e9edef] rounded-2xl p-4 shadow-xl relative">
-        {/* Botón Compartir en esquina superior derecha */}
-        {onShareCart && items.length > 0 && (
-          <button
-            onClick={() => onShareCart()}
-            className="absolute top-3 right-3 z-20 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-full text-xs font-bold uppercase flex items-center gap-1.5 shadow-lg transition-colors"
-          >
-            <i className="fa-solid fa-share-nodes"></i>
-            Compartir Ahorro
-          </button>
-        )}
         <div className="flex flex-col gap-3 relative z-10">
+          {/* Botón Compartir centrado arriba, antes de Valores estimados */}
+          {onShareCart && items.length > 0 && (
+            <div className="flex justify-center pb-2">
+              <button
+                onClick={() => onShareCart()}
+                className="z-20 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-xs font-bold uppercase flex items-center gap-2 shadow-lg transition-colors"
+              >
+                <i className="fa-solid fa-share-nodes"></i>
+                Compartir Ahorro
+              </button>
+            </div>
+          )}
           
           <div className="flex flex-col items-center gap-2 text-center">
             <span className="text-black dark:text-neutral-200 text-sm font-black uppercase tracking-[0.15em]">Tu Mejor opción</span>
