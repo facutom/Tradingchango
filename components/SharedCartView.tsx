@@ -687,9 +687,9 @@ const SharedCartView: React.FC = () => {
             </p>
             <div className="sc-savings-box">
               <div className="sc-savings-label">Ahorro total</div>
-              <div className="sc-savings-amount">${formatPrice(calculatedSavings)}</div>
+              <div className="sc-savings-amount">${formatPrice(calculatedSavings)}*</div>
               <div className="sc-savings-desc">eligiendo el supermercado más barato</div>
-              <div className="sc-savings-disclaimer">Valores estimados. Los precios son relevados de forma automática y pueden variar según la sucursal, promociones bancarias o  condiciones vigentes de cada comercio y entidad emisora.</div>
+              <div className="sc-savings-disclaimer">*Valores estimados. Los precios son relevados de forma automática y pueden variar según la sucursal, promociones bancarias o  condiciones vigentes de cada comercio y entidad emisora.</div>
             </div>
 
             <div className="sc-stats">
