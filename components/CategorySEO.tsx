@@ -193,7 +193,7 @@ const CategorySEO: React.FC<CategorySEOProps> = ({ data, categoryName, products 
 
   const leaderStyle = "text-white font-bold border-green-500 bg-green-800";
   const dispersionStyle = "bg-neutral-800 text-white border-neutral-600";
-  const tooltipStyle = "absolute bottom-full mb-2 w-max max-w-[280px] p-2 bg-black/80 backdrop-blur-sm border border-neutral-700 text-white text-[11px] rounded shadow-lg z-50 text-center whitespace-normal";
+  const tooltipStyle = "absolute bottom-full mb-2 w-max max-w-[280px] p-2 bg-black/80 border border-neutral-700 text-white text-[11px] rounded shadow-lg z-50 text-center whitespace-normal";
 
 
   return (

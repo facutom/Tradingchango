@@ -136,7 +136,7 @@ const processProducts = (
 
 // Componente unificado de Loading - consistente en toda la app
 const LoadingSpinner = ({ message = 'Cargando...' }: { message?: string }) => (
-  <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm">
+  <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black/60">
     <div className="w-12 h-12 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
     <span className="text-white mt-4 text-sm font-medium">{message}</span>
   </div>

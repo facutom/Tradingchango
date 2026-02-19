@@ -413,10 +413,10 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   // Envolver el return en try-catch para diagnóstico
   try {
     return (
-      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm md:p-4 product-detail-backdrop">
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 md:p-4 product-detail-backdrop">
       <div ref={modalRef} data-keep-open className="product-detail-modal w-full max-w-lg h-auto max-h-full md:max-h-[95vh] bg-white dark:bg-primary md:rounded-[1.2rem] overflow-y-auto shadow-2xl relative">
         
-        <div className="sticky top-0 z-20 bg-white/95 dark:bg-primary/95 backdrop-blur-md px-4 py-2 flex items-center justify-between border-b border-neutral-100 dark:border-[#233138]">
+        <div className="sticky top-0 z-20 bg-white/95 dark:bg-primary/95 px-4 py-2 flex items-center justify-between border-b border-neutral-100 dark:border-[#233138]">
           <button onClick={onClose} className="text-black dark:text-[#e9edef] p-2">
             <i className="fa-solid fa-arrow-left text-xl"></i>
           </button>
@@ -686,7 +686,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
           )}
 
           {/* Footer Sticky con Acciones */}
-          <div className="w-full sticky bottom-0 bg-white/95 dark:bg-primary/95 backdrop-blur-md pt-2 pb-6 md:pb-4 px-4">
+          <div className="w-full sticky bottom-0 bg-white/95 dark:bg-primary/95 pt-2 pb-6 md:pb-4 px-4">
             <div className="flex gap-2 h-12">
               {isFavorite && onUpdateQuantity && (
                 <div className="flex items-center bg-neutral-100 dark:bg-[#1f2c34] rounded-lg border border-neutral-200 dark:border-[#233138] overflow-hidden animate-in slide-in-from-left-2 duration-300">
@@ -725,7 +725,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         </div>
 
         {/* Navegación Móvil */}
-        <div className="sticky bottom-0 z-20 bg-white/95 dark:bg-primary/95 backdrop-blur-md p-2 flex md:hidden items-center justify-between border-t border-neutral-100 dark:border-[#233138]">
+        <div className="sticky bottom-0 z-20 bg-white/95 dark:bg-primary/95 p-2 flex md:hidden items-center justify-between border-t border-neutral-100 dark:border-[#233138]">
           {onPreviousProduct && (
             <button 
               onClick={onPreviousProduct} 
@@ -749,7 +749,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         {onPreviousProduct && (
           <button 
             onClick={onPreviousProduct} 
-            className="hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-[70] bg-white/80 dark:bg-black/80 backdrop-blur-sm rounded-full w-12 h-12 items-center justify-center shadow-lg hover:scale-110 transition-transform"
+            className="hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-[70] bg-white/80 dark:bg-black/80 rounded-full w-12 h-12 items-center justify-center shadow-lg hover:scale-110 transition-transform"
             aria-label="Anterior producto"
           >
             <i className="fa-solid fa-chevron-left text-black dark:text-white"></i>
@@ -759,7 +759,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         {onNextProduct && (
           <button 
             onClick={onNextProduct} 
-            className="hidden md:flex fixed right-4 top-1/2 -translate-y-1/2 z-[70] bg-white/80 dark:bg-black/80 backdrop-blur-sm rounded-full w-12 h-12 items-center justify-center shadow-lg hover:scale-110 transition-transform"
+            className="hidden md:flex fixed right-4 top-1/2 -translate-y-1/2 z-[70] bg-white/80 dark:bg-black/80 rounded-full w-12 h-12 items-center justify-center shadow-lg hover:scale-110 transition-transform"
             aria-label="Siguiente producto"
           >
             <i className="fa-solid fa-chevron-right text-black dark:text-white"></i>
