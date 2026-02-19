@@ -35,6 +35,12 @@ export const supabase = createClient(
   }
 );
 
+export const getCurrentSession = async () => {
+  const { data, error } = await supabase.auth.getSession();
+  if (error) return null;
+  return data.session;
+};
+
 export const getProducts = async (): Promise<Product[]> => {
   const { data, error } = await supabase.from('productos').select('*');
   if (error) throw error;

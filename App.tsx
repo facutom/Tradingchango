@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense, memo, useRef } from 'react';
 import type { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
-import { supabase, getProducts, getPriceHistory, getProfile, getConfig, getBenefits, getSavedCartData, saveCartData, getProductHistoryByEan, createSharedCart } from './services/supabase';
+import { supabase, getProducts, getPriceHistory, getProfile, getConfig, getBenefits, getSavedCartData, saveCartData, getProductHistoryByEan, createSharedCart, getCurrentSession } from './services/supabase';
 import { Product, PriceHistory, Profile, TabType, ProductStats, Benefit, CartItem } from './types';
 import Header from './components/Header';
 import ProductList from './components/ProductList';
@@ -995,8 +995,11 @@ const App: React.FC = () => {
 
   const visibleProducts = useMemo(() => filteredProducts.slice(0, displayLimit), [filteredProducts, displayLimit]);
 
-  const toggleFavorite = useCallback((id: number, itemName?: string, category?: string) => {
-    const isLoggedIn = !!user;
+  const toggleFavorite = useCallback(async (id: number, itemName?: string, category?: string) => {
+    // Verificar sesión directamente desde Supabase para mayor precisión
+    const session = await getCurrentSession();
+    const isLoggedIn = !!session;
+    
     const currentFavorites = favoritesRef.current;
     const wasAdded = !currentFavorites[id];
     const currentFavoritesCount = Object.keys(currentFavorites).length;
@@ -1026,7 +1029,7 @@ const App: React.FC = () => {
       }
       return next;
     });
-  }, [user]);
+  }, []);
 
   const handleFavoriteChangeInCart = useCallback((id: number, delta: number) => {
     setFavorites(prev => {
@@ -1057,7 +1060,9 @@ const App: React.FC = () => {
   };
   
   const handleShareCurrentCart = async () => {
-    if (!user || !profile) {
+    // Verificar sesión directamente desde Supabase
+    const session = await getCurrentSession();
+    if (!session || !profile) {
       setIsAuthOpen(true);
       return;
     }
@@ -1086,7 +1091,7 @@ const App: React.FC = () => {
       }
       
       const shareId = await createSharedCart(
-        user.id,
+        (session?.user?.id || user?.id) as string,
         profile.nombre || 'Usuario',
         { active: favorites, saved: savedCarts },
         totalSavings
