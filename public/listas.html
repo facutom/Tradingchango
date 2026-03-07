@@ -1,0 +1,2374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#ffffff">
+<title>Lista — TradingChango</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+:root{
+  --g: #22c55e;
+  --gd:#16a34a;
+  --ink:#0f0f0f;
+  --ink2:#6b7280;
+  --ink3:#9ca3af;
+  --bg:#f9fafb;
+  --white:#ffffff;
+  --border:#f3f4f6;
+  --border2:#e5e7eb;
+  --red:#ef4444;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --shadow-lg:0 10px 40px rgba(0,0,0,.10);
+}
+
+html,body{
+  height:100%;
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  background:var(--white);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+  overscroll-behavior:none;
+  touch-action:manipulation;
+}
+
+/* ─── APP SHELL ─── */
+#app{
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  max-width:560px;
+  margin:0 auto;
+  position:relative;
+}
+
+/* ─── HEADER ─── */
+.hdr{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:env(safe-area-inset-top,12px) 20px 0;
+  padding-top:calc(env(safe-area-inset-top) + 12px);
+  background:var(--white);
+  flex-shrink:0;
+}
+/* Logo - igual que en tradingchango.com */
+.logo {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 22px !important;
+  letter-spacing: -1px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  text-decoration: none !important;
+  user-select: none;
+  color: #131722 !important;
+}
+.logo-icon-wrapper {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.logo .fa-cart-shopping {
+  font-size: 20px !important;
+  color: inherit !important;
+}
+.trend-icon-overlay {
+  position: absolute !important;
+  top: -5px !important;
+  right: -7px !important;
+  font-size: 13px !important;
+  color: #22c55e !important;
+  background-color: white !important;
+  border-radius: 50% !important;
+  padding: 1px !important;
+}
+
+.hdr-logo{
+  font-size:22px;
+  display:flex;
+  align-items:center;
+  font-weight:800;
+  letter-spacing:-1px;
+  color:#131722;
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  gap:8px;
+}
+.logo-icon{position:relative;display:inline-flex;align-items:center;justify-content:center;font-size:20px}
+.logo-icon .fa-cart-shopping{font-size:20px;color:inherit}
+.trend-icon{position:absolute;top:-5px;right:-7px;font-size:13px;color:var(--g);background:#fff;border-radius:50%;padding:1px;display:flex}
+.hdr-logo span{color:var(--g)}
+.hdr-right{display:flex;gap:6px}
+.hbtn{
+  width:40px;height:36px;
+  border-radius:10px;
+  border:1.5px solid var(--border2);
+  background:var(--white);
+  color:var(--ink2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;cursor:pointer;
+  transition:all .12s;
+  -webkit-user-select:none;user-select:none;
+}
+.hbtn-wide{
+  width:auto;min-width:70px;padding:0 12px;
+}
+.hbtn:active{background:var(--bg);transform:scale(.95)}
+
+/* ─── VIEWS ─── */
+/* single-page — content slides horizontally */
+.views-wrap{
+  flex:1;
+  overflow:hidden;
+  position:relative;
+}
+.views-track{
+  display:flex;
+  height:100%;
+  transition:transform .35s cubic-bezier(.4,0,.2,1);
+  will-change:transform;
+}
+.view{
+  min-width:100%;
+  height:100%;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  scroll-behavior:smooth;
+}
+
+/* ═══════════════════════════════
+   VIEW 0 — NOTEPAD
+═══════════════════════════════ */
+#v0{
+  display:flex;
+  flex-direction:column;
+  padding:20px 20px 0;
+}
+
+.v0-label{
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--g);
+  margin-bottom:8px;
+}
+.v0-title{
+  font-size:28px;
+  font-weight:800;
+  letter-spacing:-0.5px;
+  line-height:1.15;
+  margin-bottom:20px;
+  color:var(--ink);
+  width:100%;
+}
+.v0-subtitle{
+  font-size:14px;
+  color:#6b7280;
+  margin-bottom:16px;
+  margin-top:-12px;
+}
+
+/* NOTEPAD */
+.pad-box{
+  background:var(--white);
+  border:1.5px solid var(--border2);
+  border-radius:16px;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+  transition:border-color .2s,box-shadow .2s;
+  flex-shrink:0;
+}
+.pad-box:focus-within{
+  border-color:var(--g);
+  box-shadow:0 0 0 4px rgba(34,197,94,.1);
+}
+#pad{
+  width:100%;
+  min-height:180px;
+  padding:16px 16px 12px;
+  border:none;outline:none;
+  font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+  font-size:16px; /* prevents iOS zoom */
+  line-height:1.9;
+  color:var(--ink);
+  resize:none;
+  background:transparent;
+  caret-color:var(--g);
+}
+#pad::placeholder{color:var(--ink3)}
+.pad-foot{
+  padding:8px 14px 10px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-top:1px solid var(--border);
+}
+.pad-cnt{
+  font-size:11px;font-weight:600;
+  color:var(--ink3);transition:color .2s;
+}
+.pad-cnt.has{color:var(--g)}
+.pad-tip{font-size:11px;color:var(--ink3)}
+
+/* memory pill */
+.mem{
+  display:none;
+  align-items:center;gap:6px;
+  margin-top:10px;
+  padding:9px 14px;
+  background:#f0fdf4;
+  border-radius:10px;
+  font-size:12px;font-weight:500;
+  color:var(--gd);
+  animation:up .2s ease;
+}
+.mem.on{display:flex}
+@keyframes up{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
+
+/* CTA */
+.btn-go{
+  margin-top:14px;
+  width:100%;
+  padding:16px;
+  background:var(--ink);
+  color:var(--white);
+  border:none;border-radius:14px;
+  font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+  font-size:16px;font-weight:700;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:all .15s;
+  -webkit-user-select:none;user-select:none;
+  letter-spacing:-.01em;
+  flex-shrink:0;
+}
+.btn-go:not(:disabled):active{transform:scale(.98);background:#1a1a1a}
+.btn-go:disabled{opacity:.3;cursor:not-allowed}
+.go-arrow{font-size:18px;transition:transform .15s}
+.btn-go:not(:disabled):hover .go-arrow{transform:translateX(3px)}
+
+/* saved lists */
+.saved-wrap{
+  margin-top:24px;
+  padding-bottom:calc(env(safe-area-inset-bottom) + 20px);
+}
+.saved-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:10px;
+}
+.saved-hdr-txt{
+  font-size:11px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink3);
+}
+.saved-cards{display:flex;flex-direction:column;gap:6px}
+.scard{
+  display:flex;align-items:center;gap:12px;
+  padding:13px 14px;
+  background:var(--bg);
+  border:1.5px solid var(--border);
+  border-radius:12px;
+  cursor:pointer;
+  transition:all .12s;
+  -webkit-user-select:none;user-select:none;
+}
+.scard:active{background:var(--border);transform:scale(.99)}
+.sc-icon{font-size:20px;flex-shrink:0}
+.sc-info{flex:1;min-width:0}
+.sc-name{font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc-meta{font-size:11px;color:var(--ink2);margin-top:1px}
+.sc-price{font-size:14px;font-weight:700;color:var(--gd);flex-shrink:0}
+.sc-del{
+  width:30px;height:30px;flex-shrink:0;
+  border:none;background:transparent;
+  color:var(--ink3);cursor:pointer;
+  border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:14px;transition:all .1s;
+}
+.sc-del:active{background:#fee2e2;color:var(--red)}
+
+/* ═══════════════════════════════
+   VIEW 1 — RESULT
+═══════════════════════════════ */
+#v1{
+  padding:0;
+  padding-bottom:calc(env(safe-area-inset-bottom) + 80px);
+}
+
+/* winner card — full bleed */
+.winner{
+  background:linear-gradient(135deg,#131722 0%,#1f2937 100%);
+  padding:24px 20px 22px;
+  position:relative;
+  overflow:hidden;
+  border-radius:16px;
+  margin:16px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.15);
+}
+.winner::after{
+  content:'';
+  position:absolute;
+  right:-40px;top:-40px;
+  width:200px;height:200px;
+  border-radius:50%;
+  background:linear-gradient(135deg,rgba(34,197,94,0.15) 0%,rgba(34,197,94,0.05) 100%);
+  pointer-events:none;
+}
+.w-label{
+  font-size:14px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(255,255,255,.9);
+  margin-bottom:8px;
+}
+.w-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.w-trophy{font-size:56px;animation:bounce 1s infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.w-content{display:flex;justify-content:space-between;align-items:flex-end}
+.w-left{flex:1}
+.w-right{text-align:right}
+.w-super{
+  font-size:28px;font-weight:700;
+  letter-spacing:-.02em;
+  color:#22c55e;
+  line-height:1;
+  text-transform:uppercase;
+}
+.w-winner-label{
+  font-size:12px;font-weight:700;
+  letter-spacing:.1em;
+  color:#f59e0b;
+  margin-top:4px;
+}
+.w-total{
+  font-size:48px;font-weight:800;
+  letter-spacing:-1px;
+  color:var(--white);
+  line-height:1;
+}
+.w-save{
+  display:inline-flex;align-items:center;gap:5px;
+  margin-top:8px;
+  background:rgba(34,197,94,0.2);
+  border-radius:20px;padding:4px 10px;
+  font-size:12px;font-weight:600;
+  color:#22c55e;
+}
+
+/* compare row */
+.compare{
+  display:flex;gap:5px;
+  padding:12px 16px 8px;
+  overflow-x:auto;scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+}
+.compare::-webkit-scrollbar{display:none}
+.cc{
+  flex:1;min-width:68px;
+  background:var(--bg);
+  border:1.5px solid var(--border);
+  border-radius:10px;
+  padding:7px 10px;text-align:center;
+  flex-shrink:0;
+}
+.cc.best{background:#f0fdf4;border-color:#86efac}
+.cc-n{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink)}
+.cc.best .cc-n{color:var(--gd)}
+.cc-v{font-size:14px;font-weight:700;color:var(--ink);margin-top:2px}
+.cc.best .cc-v{color:var(--gd)}
+.cc-d{font-size:9px;color:var(--red);font-weight:600;margin-top:1px}
+.cc-winner{font-size:9px;font-weight:700;color:#f59e0b;margin-top:2px;letter-spacing:.05em}
+
+/* list label */
+.list-label{
+  padding:8px 16px 6px;
+  font-size:11px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink3);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.prog-txt{color:var(--ink2);font-size:12px;font-weight:600;letter-spacing:0;text-transform:none}
+.prog-txt b{color:var(--ink)}
+
+/* ITEMS */
+.items{
+  padding:0 12px;
+  display:flex;flex-direction:column;gap:5px;
+}
+
+.icard{
+  background:var(--white);
+  border:1.5px solid var(--border);
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+  animation:rowIn .25s ease backwards;
+  transition:border-color .15s;
+}
+@keyframes rowIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.icard.done{opacity:.38}
+.icard.done .ic-name{text-decoration:line-through;color:var(--ink2)}
+
+.ic-row{
+  display:flex;align-items:center;
+  gap:10px;padding:12px 12px 12px 10px;
+}
+
+/* checkbox */
+.ic-cb{
+  width:26px;height:26px;flex-shrink:0;
+  border-radius:8px;
+  border:2px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:13px;color:transparent;
+  transition:all .15s;
+  -webkit-user-select:none;user-select:none;
+}
+.ic-cb:active{transform:scale(.9)}
+.icard.done .ic-cb{background:var(--g);border-color:var(--g);color:var(--white)}
+
+.ic-em{font-size:26px;flex-shrink:0;line-height:1}
+.ic-img{width:40px;height:40px;object-fit:contain;border-radius:8px;flex-shrink:0;background:#fff}
+
+.ic-body{flex:1;min-width:0}
+.ic-q{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-bottom:1px}
+.ic-name{font-size:14px;font-weight:600;color:var(--ink);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ic-brand{font-size:11px;color:var(--ink2);margin-top:2px}
+
+.ic-r{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0}
+.ic-price{font-size:16px;font-weight:700;color:var(--ink)}
+.ic-price.na{font-size:12px;color:var(--ink3);font-weight:400}
+.ic-tag{
+  font-size:9px;font-weight:700;
+  color:var(--gd);background:#f0fdf4;
+  padding:2px 7px;border-radius:5px;
+  letter-spacing:.02em;
+}
+.ic-acts{display:flex;gap:4px;align-items:center}
+.ic-qty{display:flex;align-items:center;gap:2px;background:var(--bg);border-radius:8px;padding:2px}
+.qty-btn{width:22px;height:22px;border:none;background:var(--white);border-radius:6px;color:var(--ink);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.qty-btn:active{background:var(--border)}
+.qty-n{min-width:20px;text-align:center;font-size:12px;font-weight:700}
+.ic-vbtn{
+  width:auto;min-width:50px;height:28px;
+  border:1.5px solid var(--border2);border-radius:8px;
+  background:transparent;color:var(--ink3);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:11px;transition:all .12s;padding:0 6px;
+}
+.ic-vbtn:active{background:var(--bg);transform:scale(.9)}
+.ic-xbtn{
+  width:28px;height:28px;
+  border:none;background:transparent;color:var(--ink3);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:14px;border-radius:8px;transition:all .1s;
+}
+.ic-xbtn:active{background:#fee2e2;color:var(--red)}
+
+/* DRAWER */
+.ic-drawer{
+  border-top:1px solid var(--border);
+  background:var(--bg);
+  display:none;flex-direction:column;
+  padding:5px 8px 8px;gap:3px;
+}
+.ic-drawer.on{display:flex}
+
+.prow{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 10px;
+  border-radius:9px;cursor:pointer;
+  border:1.5px solid transparent;
+  background:var(--white);
+  transition:all .12s;
+}
+.prow:active{transform:scale(.99)}
+.prow.sel{background:#f0fdf4;border-color:#86efac}
+.p-radio{
+  width:15px;height:15px;border-radius:50%;
+  border:2px solid var(--border2);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .12s;
+}
+.prow.sel .p-radio{border-color:var(--g);background:var(--g)}
+.prow.sel .p-radio::after{content:'';width:5px;height:5px;border-radius:50%;background:var(--white);display:block}
+.p-em{font-size:15px;flex-shrink:0}
+.p-img{width:24px;height:24px;object-fit:contain;border-radius:4px;flex-shrink:0;background:#fff;margin-right:2px}
+.p-info{flex:1;min-width:0}
+.p-name{font-size:12px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.p-brand{font-size:10px;color:var(--ink2)}
+.p-mem{font-size:10px;color:var(--gd);font-weight:700}
+.p-price{font-size:12px;font-weight:700;flex-shrink:0;text-align:right;color:var(--ink)}
+.p-price small{font-size:9px;color:var(--ink2);display:block;font-weight:400}
+
+/* NOT FOUND */
+.nf-row{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 12px;
+  background:var(--bg);
+  border:1.5px dashed var(--border2);
+  border-radius:12px;
+  opacity:.6;
+}
+.nf-em{font-size:18px}
+.nf-info{flex:1}
+.nf-q{font-size:13px;font-weight:600}
+.nf-msg{font-size:11px;color:var(--ink2)}
+
+/* checked sep */
+.csep{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 0 4px;
+}
+.csep-line{flex:1;height:1px;background:var(--border)}
+.csep-txt{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3)}
+
+/* ─── BOTTOM BAR (fixed) ─── */
+.bottom-bar{
+  position:fixed;
+  bottom:0;left:50%;
+  transform:translateX(-50%);
+  width:100%;max-width:560px;
+  background:var(--white);
+  border-top:1px solid var(--border);
+  padding:10px 16px;
+  padding-bottom:calc(env(safe-area-inset-bottom) + 10px);
+  z-index:100;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+/* progress bar */
+.prog-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:var(--g);border-radius:2px;transition:width .4s ease}
+/* bottom row */
+.bb-row{display:flex;align-items:center;gap:10px}
+.bb-left{flex:1}
+.bb-label{font-size:11px;color:var(--ink2);font-weight:500}
+.bb-total{font-size:20px;font-weight:800;letter-spacing:-.03em;color:var(--ink);line-height:1}
+/* save btn */
+.btn-save{
+  padding:11px 18px;
+  background:var(--g);
+  color:var(--white);
+  border:none;border-radius:12px;
+  font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+  font-size:14px;font-weight:700;
+  cursor:pointer;white-space:nowrap;
+  display:flex;align-items:center;gap:6px;
+  transition:all .12s;
+  -webkit-user-select:none;user-select:none;
+  flex-shrink:0;
+}
+.btn-save:active{background:var(--gd);transform:scale(.97)}
+/* saved state */
+.btn-save.saved{background:#dcfce7;color:var(--gd)}
+
+/* ─── SAVE SHEET ─── */
+.sheet-bg{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.35);
+  z-index:500;display:none;
+  align-items:flex-end;justify-content:center;
+  backdrop-filter:blur(2px);
+}
+.sheet-bg.on{display:flex}
+.sheet{
+  background:var(--white);
+  border-radius:20px 20px 0 0;
+  width:100%;max-width:560px;
+  padding:0 20px;
+  padding-bottom:calc(env(safe-area-inset-bottom) + 20px);
+  animation:sheetUp .22s cubic-bezier(.4,0,.2,1);
+}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:14px auto 18px}
+.sheet-title{font-size:18px;font-weight:800;letter-spacing:-.02em;margin-bottom:16px}
+.sheet.auth-sheet{max-width:360px;margin:0 auto;}
+.sheet.auth-sheet .sheet-title{text-align:center;}
+.sheet-input{
+  width:100%;padding:14px 14px;
+  border:1.5px solid var(--border2);border-radius:12px;
+  font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+  font-size:16px;color:var(--ink);outline:none;
+  transition:border-color .15s;
+  margin-bottom:12px;background:var(--bg);
+}
+.sheet-input:focus{border-color:var(--g);background:var(--white)}
+.sheet-btn{
+  width:100%;padding:15px;
+  background:var(--ink);color:var(--white);
+  border:none;border-radius:12px;
+  font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+  font-size:15px;font-weight:700;
+  cursor:pointer;transition:all .12s;
+}
+.sheet-btn:active{background:#1a1a1a;transform:scale(.99)}
+
+/* ─── LOADER ─── */
+.loader{
+  position:fixed;inset:0;
+  background:rgba(255,255,255,.92);
+  z-index:999;display:none;
+  flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;
+}
+.loader.on{display:flex}
+.ld-ring{
+  width:36px;height:36px;
+  border:3px solid var(--border);
+  border-top-color:var(--g);
+  border-radius:50%;
+  animation:spin .65s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ld-msg{font-size:13px;font-weight:600;color:var(--ink2)}
+
+/* ─── UTILITIES ─── */
+.hidden{display:none!important}
+
+/* Products status indicator */
+.products-status{
+  display:flex;align-items:center;gap:6px;
+  margin-bottom:12px;padding:8px 12px;
+  background:#f0fdf4;border-radius:10px;
+  font-size:12px;font-weight:600;color:#16a34a;
+  animation:fadeIn .3s ease;
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div class="loader" id="loader">
+  <div class="ld-ring"></div>
+  <div class="ld-msg" id="ld-msg">Buscando precios…</div>
+</div>
+
+<!-- SAVE SHEET -->
+<div class="sheet-bg" id="save-bg" onclick="closeSheet(event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Guardar lista</div>
+    <input class="sheet-input" id="save-name" type="text" placeholder="Nombre de la lista…" maxlength="40" autocomplete="off">
+    <button class="sheet-btn" onclick="confirmSave()">Guardar →</button>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="sheet-bg" id="auth-bg" onclick="closeSheet(event)">
+  <div class="sheet auth-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="auth-title">Crear cuenta</div>
+    <p style="margin-bottom:16px;color:#6b7280;font-size:14px">Guardá tus listas y acceder a tu historial desde cualquier dispositivo</p>
+    
+    <form onsubmit="handleAuthSubmit(event)">
+      <div id="auth-name-group" style="margin-bottom:12px">
+        <input class="sheet-input" id="auth-name" type="text" placeholder="Tu nombre" maxlength="30" autocomplete="name">
+      </div>
+      <input class="sheet-input" id="auth-email" type="email" placeholder="Tu email" maxlength="50" autocomplete="email" style="margin-bottom:12px" required>
+      <input class="sheet-input" id="auth-password" type="password" placeholder="Contraseña" minlength="6" style="margin-bottom:12px" required>
+      
+      <div id="auth-error" style="color:#ef4444;font-size:13px;margin-bottom:12px;display:none"></div>
+      
+      <button type="submit" class="sheet-btn" id="auth-submit" style="width:100%">Crear cuenta</button>
+    </form>
+    
+    <p style="text-align:center;margin-top:16px;font-size:14px;color:#6b7280">
+      <a href="#" onclick="toggleAuthMode();return false" id="auth-toggle" style="color:#22c55e;text-decoration:none;font-weight:500">¿Ya tenés cuenta? Iniciá sesión</a>
+    </p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="logo"><div class="logo-icon-wrapper"><i class="fa-solid fa-cart-shopping"></i><i class="fa-solid fa-arrow-trend-up trend-icon-overlay"></i></div><span style="font-family:'Inter',system-ui,sans-serif;color:#131722">TradingChango/<span style="color:#22c55e">Listas</span></span></div>
+    <div class="hdr-right">
+      <button class="hbtn hidden" id="share-btn" onclick="shareList()" title="Compartir"><i class="fa-solid fa-share-nodes"></i></button>
+      <button class="hbtn hidden hbtn-wide" id="back-btn" onclick="goBack()">Editar</button>
+    </div>
+  </div>
+
+  <!-- VIEWS TRACK -->
+  <div class="views-wrap">
+    <div class="views-track" id="track">
+
+      <!-- ─── VIEW 0: NOTEPAD ─── -->
+      <div class="view" id="v0">
+
+        <div class="v0-label">Lista inteligente</div>
+        <div class="v0-title">¿Qué comprás esta semana?</div>
+        <div class="v0-subtitle">Armá tu lista como siempre. Nosotros comparamos los precios por vos y te decimos dónde ahorrar hoy!</div>
+
+        <!-- Products loaded indicator -->
+        <div class="products-status" id="products-status" style="display:none;align-items:center;gap:6px;margin-bottom:12px;padding:8px 12px;background:#f0fdf4;border-radius:10px;font-size:12px;font-weight:600;color:#16a34a;">
+          <span id="products-icon">✓</span>
+          <span id="products-txt">Cargando productos...</span>
+        </div>
+
+        <div class="pad-box">
+          <textarea id="pad" rows="8"
+            placeholder="leche&#10;pan&#10;huevos&#10;coca&#10;carne para asar"
+            oninput="onPad()"
+            autocomplete="off" autocorrect="off"
+            autocapitalize="off" spellcheck="false"></textarea>
+          <div class="pad-foot">
+            <span class="pad-cnt" id="pad-cnt">vacía</span>
+            <span class="pad-tip">↵ una por línea</span>
+          </div>
+        </div>
+
+        <div class="mem" id="mem">
+          <span>🧠</span><span id="mem-txt"></span>
+        </div>
+
+        <button class="btn-go" id="btn-go" onclick="optimize()" disabled>
+          Optimizar compra <span class="go-arrow">→</span>
+        </button>
+        
+        <!-- Botón debug para ver estadísticas de aprendizaje -->
+        
+
+        <!-- saved lists -->
+        <div class="saved-wrap" id="saved-wrap" style="display:none">
+          <div class="saved-hdr">
+            <span class="saved-hdr-txt">Mis listas guardadas</span>
+          </div>
+          <div class="saved-cards" id="saved-cards"></div>
+        </div>
+
+      </div><!-- /v0 -->
+
+      <!-- ─── VIEW 1: RESULT ─── -->
+      <div class="view" id="v1">
+
+        <!-- Winner -->
+        <div class="winner" id="winner">
+          <div class="w-header"><span class="w-label">Mejor precio para tu lista</span><span class="w-trophy">🏆</span></div>
+          <div class="w-content"><div class="w-left"><div class="w-total" id="w-total">$0</div><div class="w-save hidden" id="w-save"><span id="w-save-txt"></span></div></div><div class="w-right"><div class="w-super" id="w-super">—</div></div></div>
+        </div>
+
+        <!-- Compare chips -->
+        <div class="compare" id="compare"></div>
+
+        <!-- List header -->
+        <div class="list-label">
+          <span>Tu lista</span>
+          <span class="prog-txt"><b id="prog-n">0</b> / <span id="prog-t">0</span> en el chango</span>
+        </div>
+
+        <!-- Items -->
+        <div class="items" id="items"></div>
+
+      </div><!-- /v1 -->
+
+    </div><!-- /track -->
+  </div><!-- /views-wrap -->
+
+  <!-- BOTTOM BAR -->
+  <div class="bottom-bar" id="bottom-bar" style="display:none">
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="bb-row">
+      <div class="bb-left">
+        <div class="bb-label" id="bb-label">Total estimado</div>
+        <div class="bb-total" id="bb-total">$0</div>
+      </div>
+      <button class="btn-save" id="btn-save" onclick="openSave()">
+        Guardar
+      </button>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SUPABASE CONFIG
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+let supabaseClient = null;
+try {
+  const SUPABASE_URL = 'https://uginrayldvkhgodvfhta.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVnaW5yYXlsZHZraGdvZHZmaHRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwODEzMzcsImV4cCI6MjA4MTY1NzMzN30.hRp7YjVymPnsqbwh8dJjfgKFg77cdd0A5o-ETWYgeiw';
+  if (window.supabase) {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  }
+} catch(e) {
+  console.warn('Supabase init failed:', e);
+}
+
+// ============================================
+// AUTHENTICATION - Sistema de login/registro
+// ============================================
+
+// Variables para autenticación
+let currentAuthUser = null;
+let pendingSaveAfterAuth = false;
+
+// Actualizar UI según estado de autenticación
+function updateAuthUI() {
+  // Aquí podés agregar lógica para mostrar/ocultar elementos según el usuario
+  console.log('Usuario autenticado:', currentAuthUser?.email);
+}
+
+// Verificar si hay un usuario autenticado
+async function checkAuth() {
+  if (!supabaseClient) return null;
+  
+  try {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session?.user) {
+      currentAuthUser = session.user;
+      return session.user;
+    }
+    
+    // También verificar sesión persistida
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    currentAuthUser = user;
+    return user;
+  } catch(e) {
+    console.warn('checkAuth failed:', e);
+    return null;
+  }
+}
+
+// Mostrar modal de autenticación
+function showAuthModal() {
+  document.getElementById('auth-bg').classList.add('on');
+}
+
+// Ocultar modal de autenticación
+function hideAuthModal() {
+  document.getElementById('auth-bg').classList.remove('on');
+}
+
+// Iniciar sesión con email y contraseña
+async function signIn(email, password) {
+  if (!supabaseClient) return { error: 'Supabase no inicializado' };
+  
+  try {
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email,
+      password
+    });
+    
+    if (error) return { error };
+    
+    currentAuthUser = data.user;
+    hideAuthModal();
+    return { success: true, user: data.user };
+  } catch(e) {
+    return { error: e.message };
+  }
+}
+
+// Registrarse con email y contraseña
+async function signUp(email, password, name) {
+  if (!supabaseClient) return { error: 'Supabase no inicializado' };
+  
+  try {
+    const { data, error } = await supabaseClient.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          nombre: name
+        }
+      }
+    });
+    
+    if (error) return { error };
+    
+    // Si no requiere confirmación, iniciar sesión
+    if (data.session) {
+      currentAuthUser = data.user;
+      hideAuthModal();
+      return { success: true, user: data.user };
+    }
+    
+    return { success: true, needsConfirmation: true };
+  } catch(e) {
+    return { error: e.message };
+  }
+}
+
+// Cerrar sesión
+async function signOut() {
+  if (!supabaseClient) return;
+  
+  await supabaseClient.auth.signOut();
+  currentAuthUser = null;
+}
+
+// Manejar el formulario de login
+async function handleAuthSubmit(e) {
+  e.preventDefault();
+  
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const name = document.getElementById('auth-name')?.value.trim() || '';
+  const isSignUp = document.getElementById('auth-toggle').textContent === '¿Ya tenés cuenta? Iniciá sesión';
+  
+  const btn = document.getElementById('auth-submit');
+  btn.disabled = true;
+  btn.textContent = '...';
+  
+  let result;
+  if (isSignUp) {
+    result = await signUp(email, password, name);
+  } else {
+    result = await signIn(email, password);
+  }
+  
+  btn.disabled = false;
+  btn.textContent = isSignUp ? 'Crear cuenta' : 'Iniciar sesión';
+  
+  if (result.error) {
+    document.getElementById('auth-error').textContent = result.error.message || result.error;
+    document.getElementById('auth-error').style.display = 'block';
+  } else if (result.needsConfirmation) {
+    document.getElementById('auth-error').textContent = 'Te enviamos un email para confirmar tu cuenta.';
+    document.getElementById('auth-error').style.display = 'block';
+  } else if (result.success) {
+    // Éxito - actualizar UI sin recargar página
+    currentAuthUser = result.user;
+    updateAuthUI();
+    hideAuthModal();
+    // Abrir modal de guardar si es que se solicitó
+    if (pendingSaveAfterAuth) {
+      pendingSaveAfterAuth = false;
+      setTimeout(() => openSave(), 300);
+    }
+  }
+}
+
+// Toggle entre login y registro
+function toggleAuthMode() {
+  const toggle = document.getElementById('auth-toggle');
+  const title = document.getElementById('auth-title');
+  const submit = document.getElementById('auth-submit');
+  const nameField = document.getElementById('auth-name-group');
+  
+  if (toggle.textContent === '¿Ya tenés cuenta? Iniciá sesión') {
+    // Cambiar a login
+    toggle.textContent = '¿No tenés cuenta? Registrate';
+    title.textContent = 'Iniciar sesión';
+    submit.textContent = 'Iniciar sesión';
+    nameField.style.display = 'none';
+  } else {
+    // Cambiar a registro
+    toggle.textContent = '¿Ya tenés cuenta? Iniciá sesión';
+    title.textContent = 'Crear cuenta';
+    submit.textContent = 'Crear cuenta';
+    nameField.style.display = 'block';
+  }
+  
+  document.getElementById('auth-error').style.display = 'none';
+}
+
+// ============================================
+// SHARED LISTS - Compartir listas
+// ============================================
+
+// Variable para saber si estamos cargando una lista compartida
+let loadingSharedList = false;
+
+// Compartir la lista actual
+async function shareList() {
+  const res = items.filter(i => i.chosen);
+  if (!res.length) {
+    alert('Agregá productos a tu lista primero');
+    return;
+  }
+  
+  // Si no está guardada, pedir guardar primero
+  if (!currentId) {
+    openSave();
+    return;
+  }
+  
+  // Guardar en tabla pública para compartir
+  if (supabaseClient) {
+    try {
+      // Crear un ID público para compartir
+      const shareId = currentId + '_' + Date.now().toString(36);
+      
+      // Guardar lista compartida
+      const itemsToShare = {};
+      items.forEach(item => {
+        if (item.chosen && item.chosen.id) {
+          itemsToShare[item.chosen.id] = item.qty || 1;
+        }
+      });
+      
+      await supabaseClient.from('listas_compartidas').upsert({
+        id: shareId,
+        user_id: currentAuthUser?.id || null,
+        name: saved.find(l => l.id === currentId)?.name || 'Lista compartida',
+        items: { active: itemsToShare },
+        created_at: new Date().toISOString(),
+        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 días
+      }, { onConflict: 'id' });
+      
+      // Generar URL de compartir
+      const shareUrl = `${window.location.origin}${window.location.pathname}?list=${shareId}`;
+      
+      // Copiar al portapapeles
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        alert('¡Link copiado al portapapeles! 📋\n\nCompartilo con quien quieras');
+      } catch(e) {
+        prompt('Copiá este link para compartir:', shareUrl);
+      }
+      
+      return;
+    } catch(e) {
+      console.warn('Error guardando lista compartida:', e);
+    }
+  }
+  
+  // Fallback: usar el ID interno
+  const shareUrl = `${window.location.origin}${window.location.pathname}?list=${currentId}`;
+  
+  try {
+    await navigator.clipboard.writeText(shareUrl);
+    alert('¡Link copiado al portapapeles! 📋\n\nCompartilo con quien quieras');
+  } catch(e) {
+    prompt('Copiá este link para compartir:', shareUrl);
+  }
+}
+
+// Cargar lista compartida desde URL
+async function loadSharedList(listId) {
+  if (!supabaseClient) return false;
+  
+  try {
+    // Buscar primero en listas compartidas
+    const { data: sharedData, error: sharedError } = await supabaseClient
+      .from('listas_compartidas')
+      .select('items, name, expires_at')
+      .eq('id', listId)
+      .maybeSingle();
+    
+    if (!sharedError && sharedData) {
+      // Verificar si no expiró
+      if (new Date(sharedData.expires_at) < new Date()) {
+        console.log('Lista compartida expirada');
+        return false;
+      }
+      
+      const sharedItems = sharedData.items;
+      if (sharedItems && sharedItems.active) {
+        const convertedItems = [];
+        let uid = 1;
+        
+        Object.entries(sharedItems.active).forEach(([productId, qty]) => {
+          const product = DB.find(p => String(p.id) === String(productId));
+          if (product) {
+            convertedItems.push({
+              id: uid++,
+              q: product.n,
+              qty: qty,
+              matches: [],
+              chosen: product,
+              checked: false,
+              open: false
+            });
+          }
+        });
+        
+        if (convertedItems.length) {
+          items = convertedItems;
+          isSaved = true;
+          currentId = listId;
+          loadingSharedList = true;
+          
+          await optimize();
+          loadingSharedList = false;
+          
+          setTimeout(() => {
+            alert(`Lista "${sharedData.name || 'Compartida'}" cargada!`);
+          }, 500);
+          
+          return true;
+        }
+      }
+      return false;
+    }
+    
+    // Fallback: buscar en carritos_guardados
+    const { data, error } = await supabaseClient
+      .from('carritos_guardados')
+      .select('items, name')
+      .eq('id', listId)
+      .maybeSingle();
+    
+    if (error) throw error;
+    if (!data) {
+      console.log('Lista no encontrada');
+      return false;
+    }
+    
+    const sharedItems = data.items;
+    if (sharedItems && sharedItems.active) {
+      const convertedItems = [];
+      let uid = 1;
+      
+      Object.entries(sharedItems.active).forEach(([productId, qty]) => {
+        const product = DB.find(p => String(p.id) === String(productId));
+        if (product) {
+          convertedItems.push({
+            id: uid++,
+            q: product.n,
+            qty: qty,
+            matches: [],
+            chosen: product,
+            checked: false,
+            open: false
+          });
+        }
+      });
+      
+      if (convertedItems.length) {
+        items = convertedItems;
+        isSaved = true;
+        currentId = listId;
+        loadingSharedList = true;
+        
+        await optimize();
+        loadingSharedList = false;
+        
+        setTimeout(() => {
+          alert(`Lista "${data.name || 'Compartida'}" cargada!`);
+        }, 500);
+        
+        return true;
+      }
+    }
+    
+    return false;
+  } catch(e) {
+    console.warn('loadSharedList failed:', e);
+    return false;
+  }
+}
+
+// Verificar si hay una lista compartida en la URL al cargar
+async function checkForSharedList() {
+  const params = new URLSearchParams(window.location.search);
+  const listId = params.get('list');
+  
+  if (listId) {
+    // Cargar productos primero
+    await loadProducts();
+    if (DB.length) {
+      await loadSharedList(listId);
+    }
+  }
+}
+
+// ============================================
+// SEARCH LEARNING - Aprendizaje de búsquedas
+// Versión optimizada: historial personal en perfiles (JSONB) + comunidad
+// ============================================
+
+// Obtener user_id actual (del localStorage o generar uno)
+function getUserId() {
+  let userId = localStorage.getItem('tradingchango_user_id');
+  if (!userId) {
+    userId = 'user_' + Math.random().toString(36).substring(2, 15);
+    localStorage.setItem('tradingchango_user_id', userId);
+  }
+  return userId;
+}
+
+// Obtener historial personal del usuario desde la tabla perfiles
+async function getPersonalSearchHistory() {
+  // Solo intentar si hay usuario autenticado
+  const authUser = await checkAuth();
+  if (!authUser) {
+    console.log('[Learning] No hay usuario autenticado, usando solo comunidad');
+    return {};
+  }
+  
+  if (!supabaseClient) return {};
+  
+  try {
+    const { data, error } = await supabaseClient
+      .from('perfiles')
+      .select('search_history')
+      .eq('id', authUser.id)
+      .maybeSingle();
+      
+    if (error) {
+      console.warn('[Learning] Error fetching personal history:', error);
+      return {};
+    }
+    return data?.search_history || {};
+  } catch(e) {
+    console.warn('getPersonalSearchHistory failed:', e);
+    return {};
+  }
+}
+
+// Registrar la elección de un producto para una keyword (personal + comunidad)
+async function recordSearchChoice(keyword, productId) {
+  console.log('[Learning] Guardando elección:', keyword, '->', productId);
+  
+  if (!supabaseClient) {
+    console.log('[Learning] No hay supabaseClient');
+    return;
+  }
+  
+  const userId = getUserId();
+  const kw = keyword.toLowerCase().trim();
+  
+  try {
+    // 1. Intentar guardar en comunidad (esto siempre funciona)
+    await supabaseClient.from('search_learning').upsert({
+      keyword: kw,
+      product_id: productId,
+      count: 1
+    }, { onConflict: 'keyword,product_id' });
+    
+    // Incrementar count de comunidad
+    const { data: existing } = await supabaseClient
+      .from('search_learning')
+      .select('count')
+      .eq('keyword', kw)
+      .eq('product_id', productId)
+      .single();
+      
+    if (existing) {
+      await supabaseClient
+        .from('search_learning')
+        .update({ count: existing.count + 1, updated_at: new Date().toISOString() })
+        .eq('keyword', kw)
+        .eq('product_id', productId);
+    }
+    
+    console.log('[Learning] Guardado en comunidad');
+    
+    // 2. Actualizar historial personal del usuario (en perfiles) - solo si está logueado
+    const authUser = await checkAuth();
+    if (authUser) {
+      console.log('[Learning] Usuario autenticado, guardando en perfiles');
+      
+      // Usar el ID de auth en lugar del local
+      const perfilId = authUser.id;
+      
+      const { data: perfil } = await supabaseClient
+        .from('perfiles')
+        .select('search_history')
+        .eq('id', perfilId)
+        .maybeSingle();
+      
+      let history = perfil?.search_history || {};
+      
+      if (!history[kw]) {
+        history[kw] = {};
+      }
+      if (!history[kw][productId]) {
+        history[kw][productId] = 0;
+      }
+      history[kw][productId] = (history[kw][productId] || 0) + 1;
+      
+      await supabaseClient
+        .from('perfiles')
+        .update({ search_history: history })
+        .eq('id', perfilId);
+      
+      console.log('[Learning] Guardado en perfiles');
+    } else {
+      console.log('[Learning] Usuario no autenticado, solo se guarda en comunidad');
+    }
+    
+  } catch(e) {
+    console.warn('[Learning] Error:', e);
+  }
+}
+
+// Cache para historial personal
+let personalHistoryCache = null;
+
+// Obtener productos más elegidos para una keyword (mezcla personal + comunidad)
+async function getTopProductsForKeyword(keyword, limit = 5) {
+  if (!supabaseClient) return [];
+  
+  const kw = keyword.toLowerCase().trim();
+  
+  try {
+    // 1. Obtener elecciones personales del usuario (desde perfiles)
+    let personalData = {};
+    if (!personalHistoryCache) {
+      personalHistoryCache = await getPersonalSearchHistory();
+    }
+    personalData = personalHistoryCache[kw] || {};
+    
+    // 2. Obtener elecciones de la comunidad
+    const { data: communityData } = await supabaseClient
+      .from('search_learning')
+      .select('product_id, count')
+      .eq('keyword', kw)
+      .order('count', { ascending: false })
+      .limit(10);
+    
+    // 3. Combinar: personales primero (con boost x10), luego comunidad
+    const result = [];
+    const seen = new Set();
+    
+    // Agregar personales con boost
+    Object.entries(personalData).forEach(([productId, count]) => {
+      seen.add(productId);
+      result.push({
+        product_id: productId,
+        count: (count * 10), // Boost x10 para decisiones personales
+        isPersonal: true
+      });
+    });
+    
+    // Agregar comunidad (sin boost)
+    if (communityData) {
+      communityData.forEach(item => {
+        if (!seen.has(item.product_id)) {
+          seen.add(item.product_id);
+          result.push({
+            product_id: item.product_id,
+            count: item.count,
+            isPersonal: false
+          });
+        }
+      });
+    }
+    
+    // Ordenar por count
+    result.sort((a, b) => b.count - a.count);
+    
+    return result.slice(0, limit);
+    
+  } catch(e) {
+    console.warn('getTopProductsForKeyword failed:', e);
+    return [];
+  }
+}
+
+// Cache para productos más elegidos
+let searchLearningCache = {};
+
+// Función para obtener productos priorizados por aprendizaje
+async function getLearningBoostedProducts(query) {
+  const firstWord = query.split(' ')[0].toLowerCase();
+  
+  // Usar cache si existe
+  if (searchLearningCache[firstWord]) {
+    return searchLearningCache[firstWord];
+  }
+  
+  const topProducts = await getTopProductsForKeyword(firstWord, 5);
+  searchLearningCache[firstWord] = topProducts;
+  
+  return topProducts;
+}
+
+// Obtener TODOS los datos de aprendizaje (para mostrar en consola o debug)
+async function getAllSearchLearning() {
+  if (!supabaseClient) return [];
+  
+  const userId = getUserId();
+  
+  try {
+    const { data, error } = await supabaseClient
+      .from('search_learning')
+      .select('keyword, product_id, count, user_id, updated_at')
+      .order('updated_at', { ascending: false })
+      .limit(100);
+      
+    if (error) throw error;
+    return data || [];
+  } catch(e) {
+    console.warn('getAllSearchLearning failed:', e);
+    return [];
+  }
+}
+
+// Función para mostrar las estadísticas de aprendizaje
+async function showSearchLearningStats() {
+  const userId = getUserId();
+  
+  // Obtener historial personal
+  const personalHistory = await getPersonalSearchHistory();
+  
+  // Obtener datos de comunidad
+  let communityData = [];
+  if (supabaseClient) {
+    const { data } = await supabaseClient
+      .from('search_learning')
+      .select('keyword, product_id, count')
+      .order('count', { ascending: false })
+      .limit(50);
+    communityData = data || [];
+  }
+  
+  // Mostrar historial personal
+  const personalKeywords = Object.keys(personalHistory);
+  
+  if (!personalKeywords.length && !communityData.length) {
+    alert('No hay datos de aprendizaje aún.\n\nCuando los usuarios busquen productos y los agreguen a su lista, estos datos se registrarán aquí.');
+    return;
+  }
+  
+  let msg = '📊 ESTADÍSTICAS DE BÚSQUEDAS\n\n';
+  msg += `Tu ID: ${userId}\n\n`;
+  
+  // Mostrar historial personal
+  if (personalKeywords.length) {
+    msg += '👤 TU HISTORIAL:\n';
+    personalKeywords.forEach(keyword => {
+      const products = personalHistory[keyword];
+      msg += `\n🔍 "${keyword}"\n`;
+      Object.entries(products).forEach(([productId, count]) => {
+        msg += `   → Product ${productId}: ${count} veces\n`;
+      });
+    });
+    msg += '\n';
+  }
+  
+  // Agrupar comunidad por keyword
+  const communityByKeyword = {};
+  communityData.forEach(item => {
+    if (!communityByKeyword[item.keyword]) communityByKeyword[item.keyword] = [];
+    communityByKeyword[item.keyword].push(item);
+  });
+  
+  if (Object.keys(communityByKeyword).length) {
+    msg += '🌐 TOP COMUNIDAD:\n';
+    Object.keys(communityByKeyword).slice(0, 10).forEach(keyword => {
+      msg += `\n🔍 "${keyword}"\n`;
+      communityByKeyword[keyword].slice(0, 3).forEach((item, i) => {
+        msg += `   ${i+1}. Product ${item.product_id}: ${item.count} veces\n`;
+      });
+    });
+  }
+  
+  console.log(msg);
+  alert(msg);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   DB — loaded from Supabase
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+let DB = [];
+let DB_LOADED = false;
+
+// Emoji mapping for categories
+const EMOJIS = {
+  'leche': '🥛', 'leche entera': '🥛', 'leche descremada': '🥛', 'leche chocolatada': '🍫',
+  'yogur': '🫙', 'yogur Bebible': '🧃', 'dulce de leche': '🍮', 'manteca': '🧈', 'crema': '🧈',
+  'gaseosa': '🥤', 'gaseosa cola': '🥤', 'gaseosa cero': '🥤', 'gaseosa zero': '🥤', 'gaseosa limon': '🍋',
+  'agua': '💧', 'agua con gas': '💧', 'cerveza': '🍺', 'vino': '🍷', 'jugo': '🧃',
+  'aceite': '🫙', 'aceite girasol': '🫙', 'aceite de oliva': '🫙',
+  'arroz': '🍚', 'harina': '🌾', 'yerba': '🧉', 'pan': '🍞', 'pan lactal': '🍞',
+  'galletitas': '🍪', 'galleta': '🍪', 'cereal': '🥣', 'fideos': '🍝', 'pasta': '🍝',
+  'carne': '🥩', 'asado': '🥩', 'carne picada': '🥩', 'pollo': '🍗', 'pescado': '🐟',
+  'huevo': '🥚', 'huevos': '🥚',
+  'fruta': '🍎', 'verdura': '🥬', 'tomate': '🍅', 'lechuga': '🥬', 'cebolla': '🧅',
+  'papa': '🥔', 'papas': '🥔', 'zanahoria': '🥕', 'palta': '🥑', 'banana': '🍌',
+  'papel': '🧻', 'papel higienico': '🧻', 'papel tissue': '🧻',
+  'atun': '🐟', 'atún': '🐟', 'sardina': '🐟',
+  'shampoo': '🧴', 'jabon': '🧼', 'jabón': '🧼', 'dentifrico': '🪥', 'cepillo dental': '🪥',
+  'lavandina': '🧪', 'detergente': '🧴', 'suavizante': '🌸',
+  'helado': '🍦', 'pizza': '🍕', 'hamburguesa': '🍔', 'sanguche': '🥪',
+  'queso': '🧀', 'fiambre': '🥓', 'salchicha': '🌭',
+};
+
+function getEmoji(subcategoria) {
+  const sub = (subcategoria || '').toLowerCase();
+  for (const [key, emoji] of Object.entries(EMOJIS)) {
+    if (sub.includes(key)) return emoji;
+  }
+  return '📦';
+}
+
+// Transform Supabase product to app format
+function transformProduct(p) {
+  const prices = {};
+  if (p.p_jumbo) prices.jumbo = p.p_jumbo;
+  if (p.p_carrefour) prices.carrefour = p.p_carrefour;
+  if (p.p_coto) prices.coto = p.p_coto;
+  if (p.p_dia) prices.dia = p.p_dia;
+  if (p.p_masonline) prices.masonline = p.p_masonline;
+  
+  return {
+    id: p.id,
+    n: p.nombre,
+    brand: p.marca || '',
+    cat: p.categoria || '',
+    sub: p.subcategoria || p.categoria || '',
+    e: getEmoji(p.subcategoria),
+    p: prices,
+    url: p.url_jumbo || p.url_carrefour || p.url_coto || p.url_dia || p.url_masonline || '',
+    ean: p.ean || [],
+    img: p.imagen_url || ''
+  };
+}
+
+// Load products from Supabase
+async function loadProducts() {
+  if (DB_LOADED) return DB;
+  
+  const statusEl = document.getElementById('products-status');
+  const statusIcon = document.getElementById('products-icon');
+  const statusTxt = document.getElementById('products-txt');
+  
+  try {
+    // Show loading status
+    if (statusEl) {
+      statusEl.style.display = 'flex';
+      statusIcon.textContent = '📋';
+      statusTxt.textContent = 'Cargando productos...';
+    }
+    
+    document.getElementById('ld-msg').textContent = 'Cargando productos...';
+    document.getElementById('loader').classList.add('on');
+    
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized');
+      if (statusEl) {
+        statusIcon.textContent = '✗';
+        statusTxt.textContent = 'Error al conectar con la base de datos';
+      }
+      return;
+    }
+    
+    const { data, error } = await supabaseClient
+      .from('productos')
+      .select('id, nombre, marca, categoria, subcategoria, ean, p_jumbo, p_carrefour, p_coto, p_dia, p_masonline, url_jumbo, url_carrefour, url_coto, url_dia, url_masonline, imagen_url')
+      .order('nombre');
+    
+    if (error) throw error;
+    
+    DB = (data || []).map(transformProduct);
+    DB_LOADED = true;
+    
+    console.log(`[Listas] Cargados ${DB.length} productos de Supabase`);
+    
+    // Generate aliases from loaded products
+    generateAliases();
+    
+    // Update status
+    if (statusEl) {
+      statusTxt.textContent = `Más de ${DB.length.toLocaleString('es-AR')} productos cargados para comparar — ¡Escribí tu lista!`;
+    }
+    
+    document.getElementById('loader').classList.remove('on');
+    return DB;
+  } catch (err) {
+    console.error('[Listas] Error cargando productos:', err);
+    
+    // Show error status
+    if (statusEl) {
+      statusIcon.textContent = '⚠️';
+      statusTxt.textContent = 'Error cargando productos';
+      statusEl.style.background = '#fef2f2';
+      statusEl.style.color = '#dc2626';
+    }
+    
+    document.getElementById('loader').classList.remove('on');
+    // Fallback to empty DB
+    DB = [];
+    DB_LOADED = true;
+    return DB;
+  }
+}
+
+// Generate aliases from loaded products
+let A = {};
+function generateAliases() {
+  A = {
+    'leche': ['leche'], 'leche entera': ['leche entera'],
+    'leche descremada': ['leche descremada'], 'leche chocolatada': ['leche chocolatada'],
+    'yogur': ['yogur'], 'dulce de leche': ['dulce de leche'], 'ddl': ['dulce de leche'],
+    'manteca': ['manteca'], 'crema': ['crema'],
+    'coca': ['gaseosa cola'], 'coca cola': ['gaseosa cola'], 'coca zero': ['gaseosa cero'],
+    'pepsi': ['gaseosa cola'], 'sprite': ['gaseosa limon'], 'agua': ['agua'],
+    'cerveza': ['cerveza'], 'jugo': ['jugo'],
+    'aceite': ['aceite'], 'arroz': ['arroz'], 'harina': ['harina'],
+    'yerba': ['yerba'], 'pan': ['pan'], 'pan lactal': ['pan'],
+    'galletitas': ['galletitas'], 'oreo': ['galletitas'],
+    'asado': ['asado'], 'carne para asar': ['asado'],
+    'carne picada': ['carne picada'], 'carne': ['carne'],
+    'pollo': ['pollo'], 'pescado': ['pescado'], 'merluza': ['pescado'],
+    'huevo': ['huevos'], 'huevos': ['huevos'],
+    'tomate': ['tomate'], 'lechuga': ['lechuga'], 'cebolla': ['cebolla'],
+    'papa': ['papa'], 'papas': ['papa'], 'zanahoria': ['zanahoria'],
+    'palta': ['palta'], 'banana': ['banana'],
+    'papel': ['papel'], 'papel higienico': ['papel'],
+    'atun': ['atun'], 'atún': ['atun'],
+  };
+  
+  // Add product names and brands as aliases
+  const seen = new Set();
+  DB.forEach(p => {
+    // Add subcategory
+    if (p.sub && !seen.has(p.sub)) {
+      seen.add(p.sub);
+      const norm = nor(p.sub);
+      if (norm && norm.length > 2) {
+        A[norm] = [p.sub];
+      }
+    }
+    // Add brand as alias
+    if (p.brand && !seen.has(p.brand)) {
+      seen.add(p.brand);
+      const norm = nor(p.brand);
+      if (norm && norm.length > 2) {
+        A[norm] = [p.sub];
+      }
+    }
+  });
+}
+
+const SUPERS = ['coto', 'carrefour', 'dia', 'jumbo', 'mas', 'disco', 'vea', 'laanonima'];
+const SL = {
+  coto: 'Coto', 
+  carrefour: 'Carrefour', 
+  dia: 'Día', 
+  jumbo: 'Jumbo', 
+  mas: 'MasOnline',
+  disco: 'Disco',
+  vea: 'Vea',
+  laanonima: 'La Anónima'
+};
+
+/* utils */
+const nor=s=>(s||'').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,' ').trim();
+const minP=p=>{const v=SUPERS.map(s=>p.p[s]).filter(Boolean);return v.length?Math.min(...v):0;};
+const bestS=p=>{let b=null,bv=Infinity;SUPERS.forEach(s=>{if(p.p[s]&&p.p[s]<bv){bv=p.p[s];b=s;}});return b;};
+const fmt=v=>'$'+Math.round(v).toLocaleString('es-AR');
+
+/* memory — localStorage */
+const mKey = q => 'tc3_' + nor(q);
+const fKey = (q, id) => 'tc3f_' + nor(q) + '_' + id;
+const mGet = q => {
+  if (!DB.length) return null;
+  const id = localStorage.getItem(mKey(q));
+  return id ? DB.find(p => p.id === +id) || null : null;
+};
+const mSet = (q, prod) => {
+  localStorage.setItem(mKey(q), prod.id);
+  const k = fKey(q, prod.id);
+  localStorage.setItem(k, (+(localStorage.getItem(k) || 0)) + 1);
+  for (const alias of Object.keys(A)) {
+    if (nor(alias) === nor(q) || nor(q).startsWith(nor(alias))) {
+      localStorage.setItem(mKey(alias), prod.id);
+      break;
+    }
+  }
+};
+const mCnt = (q, prod) => +(localStorage.getItem(fKey(q, prod.id)) || 0);
+
+/* matching - improved for Supabase data */
+async function doMatch(query) {
+  if (!DB_LOADED || !DB.length) return [];
+  
+  const q = nor(query);
+  if (!q) return [];
+  
+  // Extraer palabras de la query
+  const qWords = q.split(' ');
+  const firstWord = qWords[0];
+  const queryLower = q.toLowerCase();
+  
+  // Obtener productos más elegidos para esta búsqueda (Learning)
+  let learningBoost = {};
+  try {
+    const topProducts = await getTopProductsForKeyword(firstWord, 5);
+    topProducts.forEach((item, index) => {
+      learningBoost[item.product_id] = 5 - index; // 5 puntos para el primero, 4 para el segundo, etc.
+    });
+  } catch(e) {
+    // Silently fail if learning data not available
+  }
+  
+  // Mapeo de palabras a categorías
+  const wordToCat = {
+    // almacen
+    'pan': 'almacen', 'leche': 'almacen', 'huevo': 'almacen', 'azucar': 'almacen', 'sal': 'almacen', 'harina': 'almacen', 'arroz': 'almacen', 'fideo': 'almacen', 'pasta': 'almacen', 'aceite': 'almacen', 'vinagre': 'almacen', 'salsa': 'almacen', 'conserva': 'almacen', 'mermelada': 'almacen', 'dulce': 'almacen', 'cafe': 'almacen', 'te': 'almacen', 'yerba': 'almacen', 'galleta': 'almacen', 'galletita': 'almacen', 'cereal': 'almacen', 'avena': 'almacen', 'quinoa': 'almacen', 'legumbre': 'almacen', 'lenteja': 'almacen', 'poroto': 'almacen', 'garbanzo': 'almacen', 'polenta': 'almacen', 'maiz': 'almacen', 'papa': 'almacen', 'batata': 'almacen', 'cebolla': 'almacen', 'ajo': 'almacen', 'pimienta': 'almacen', 'comino': 'almacen', 'oregano': 'almacen', 'canela': 'almacen',
+    // carnes
+    'carne': 'carnes', 'asado': 'carnes', 'matambre': 'carnes', 'bife': 'carnes', 'costilla': 'carnes', 'hamburguesa': 'carnes', 'salchicha': 'carnes', 'chorizo': 'carnes', 'morcilla': 'carnes', 'pollo': 'carnes', 'pierna': 'carnes', 'muslo': 'carnes', 'pechuga': 'carnes', 'vacuno': 'carnes', 'cerdo': 'carnes', 'pescado': 'carnes', 'merluza': 'carnes', 'salmón': 'carnes', 'atun': 'carnes', 'caballa': 'carnes',
+    // verduras
+    'verdura': 'verdu', 'verduras': 'verdu', 'lechuga': 'verdu', 'tomate': 'verdu', 'zanahoria': 'verdu', 'brócoli': 'verdu', 'coliflor': 'verdu', 'acelga': 'verdu', 'espinaca': 'verdu', 'papa': 'verdu', 'batata': 'verdu', 'zucchini': 'verdu', 'berenjena': 'verdu', 'pimiento': 'verdu', 'pepino': 'verdu', 'rabanito': 'verdu', 'remolacha': 'verdu', 'apio': 'verdu', 'puerro': 'verdu', 'champignon': 'verdu', 'naranja': 'verdu', 'manzana': 'verdu', 'platano': 'verdu', 'banana': 'verdu', 'pera': 'verdu', 'uva': 'verdu', 'limon': 'verdu', 'pomelo': 'verdu', 'sandia': 'verdu', 'melon': 'verdu', 'kiwi': 'verdu', 'mango': 'verdu', 'palta': 'verdu', 'aguacate': 'verdu',
+    // mascotas
+    'perro': 'mascotas', 'gato': 'mascotas', 'mascota': 'mascotas', 'alimento': 'mascotas', 'balanceado': 'mascotas', 'pedigree': 'mascotas', 'purina': 'mascotas', 'whiskas': 'mascotas', 'catchow': 'mascotas', 'racion': 'mascotas',
+    // limpieza
+    'lavandina': 'limpieza', 'detergente': 'limpieza', 'jabon': 'limpieza', 'jabón': 'limpieza', 'suavizante': 'limpieza', 'cloro': 'limpieza', 'limpia': 'limpieza', 'paño': 'limpieza', 'trapo': 'limpieza', 'esponja': 'limpieza', 'balde': 'limpieza', 'escoba': 'limpieza', 'trapeador': 'limpieza', 'papel': 'limpieza', 'servilleta': 'limpieza', 'toalla': 'limpieza',
+    // bebidas
+    'bebida': 'bebidas', 'gaseosa': 'bebidas', 'coca': 'bebidas', 'coca-cola': 'bebidas', 'pepsi': 'bebidas', 'sprite': 'bebidas', 'fanta': 'bebidas', 'agua': 'bebidas', 'cerveza': 'bebidas', 'vino': 'bebidas', 'jugo': 'bebidas', 'juguito': 'bebidas', 'zumo': 'bebidas', 'licuadora': 'bebidas', 'batido': 'bebidas', 'malta': 'bebidas', 'tonica': 'bebidas', '速度': 'bebidas',
+    // perfumeria
+    'shampoo': 'perfumeria', 'jabon': 'perfumeria', 'jabón': 'perfumeria', 'desodorante': 'perfumeria', 'perfume': 'perfumeria', 'crema': 'perfumeria', 'protector': 'perfumeria', 'protector solar': 'perfumeria', 'bloqueador': 'perfumeria', 'pasta': 'perfumeria', 'cepillo': 'perfumeria', 'dentifrico': 'perfumeria', 'enjuague': 'perfumeria', 'toalla': 'perfumeria', 'tampon': 'perfumeria', 'preservativo': 'perfumeria', 'copa': 'perfumeria',
+    // lacteos
+    'yogur': 'lacteos', 'yoghurt': 'lacteos', 'leche': 'lacteos', 'manteca': 'lacteos', 'queso': 'lacteos', 'ricota': 'lacteos', 'crema': 'lacteos', 'dulce de leche': 'lacteos', 'ddl': 'lacteos', 'flan': 'lacteos', 'postre': 'lacteos', 'cuajada': 'lacteos', 'kefir': 'lacteos', 'chocolate': 'lacteos'
+  };
+  
+  // Determinar la categoría objetivo
+  const targetCat = wordToCat[firstWord] || null;
+  
+  // Palabras a excluir para búsquedas específicas
+  const exclusionKeywords = {
+    'leche': ['chocolatada', 'chocolate', 'cocoa', 'cacao'],
+    'yogur': ['chocolatada', 'chocolate'],
+    'queso': ['chocolate']
+  };
+  
+  // Obtener las palabras de exclusión para esta primera palabra
+  const potentialExcludes = exclusionKeywords[firstWord] || [];
+  
+  // Si hay más de una palabra en la búsqueda, no aplicar exclusiones
+  // (priorizamos productos que matchean más palabras)
+  const isMultiWordSearch = qWords.length > 1;
+  
+  // Si la búsqueda explícitamente contiene palabras de exclusión, no aplicar el filtro
+  const searchIncludesExclusion = potentialExcludes.some(exc => queryLower.includes(exc));
+  
+  // Solo excluir si:
+  // - Es una búsqueda de una sola palabra
+  // - Y hay palabras de exclusión definidas
+  // - Y la búsqueda no contiene ninguna de las palabras de exclusión
+  const excludeWords = (!isMultiWordSearch && potentialExcludes.length > 0 && !searchIncludesExclusion) ? potentialExcludes : [];
+  
+  const res = [];
+  const seen = new Set();
+  const scores = {};
+  
+  const add = (p, score) => {
+    if (!seen.has(p.id)) {
+      seen.add(p.id);
+      scores[p.id] = score;
+      res.push(p);
+    } else if (scores[p.id] > score) {
+      scores[p.id] = score;
+    }
+  };
+  
+  DB.forEach(p => {
+    const pn = nor(p.n);
+    const pbrand = p.brand ? nor(p.brand) : '';
+    const pcat = p.cat ? nor(p.cat) : '';
+    const psub = p.sub ? nor(p.sub) : '';
+    const pnWords = pn.split(' ');
+    const firstPnWord = pnWords[0];
+    
+    let score = 100; // Default score (lower is better)
+    
+    // Learning Boost: reducir score si el producto está en la lista de más elegidos
+    const productId = String(p.id);
+    if (learningBoost[productId]) {
+      score -= learningBoost[productId] * 10; // 50 puntos menos para el primero, 40 para el segundo, etc.
+    }
+    
+    // Verificar si la primera palabra del producto es exactamente igual a la primera palabra de la query
+    const isExactFirstWordMatch = (firstPnWord === firstWord);
+    const isAlmacen = (pcat === 'almacen');
+    
+    // Si hay una categoría objetivo, solo mostrar productos de esa categoría
+    if (targetCat && pcat !== targetCat) {
+      return; // Skip productos de otras categorías
+    }
+    
+    // Verificar si el producto contiene palabras excluidas para esta búsqueda
+    if (excludeWords.length > 0) {
+      const lowerPn = pn.toLowerCase();
+      for (const excludeWord of excludeWords) {
+        if (lowerPn.includes(excludeWord)) {
+          return; // Skip productos que contienen palabras excluidas
+        }
+      }
+    }
+    
+    // 0. Exact match del nombre completo
+    if (pn === q) { score = 0; }
+    // 1. Query es prefijo del nombre completo
+    else if (pn.startsWith(q)) { score = 1; }
+    // 2. Primera palabra EXACTA del nombre = primera palabra de query
+    else if (isExactFirstWordMatch) { score = 2; }
+    // 3. Query con más palabras: "pan lactal" matchea productos que empiezan con "pan "
+    else if (qWords.length > 1 && pn.startsWith(firstWord + ' ')) { score = 3; }
+    // 4. Coincidencia exacta de marca
+    else if (pbrand && pbrand === firstWord) { score = 4; }
+    // 5. Categoría coincide exactamente
+    else if (pcat && pcat === firstWord) { score = 6; }
+    // 6. Subcategoría exacta
+    else if (psub && psub === firstWord) { score = 10; }
+    
+    if (score < 100) add(p, score);
+  });
+  
+  // Sort by score, then by price
+  res.sort((a, b) => {
+    const sa = scores[a.id] || 50;
+    const sb = scores[b.id] || 50;
+    if (sa !== sb) return sa - sb;
+    return minP(a) - minP(b);
+  });
+  
+  return res.slice(0, 8);
+}
+
+/* ── STATE ── */
+let items=[];
+let saved=JSON.parse(localStorage.getItem('tc3_saved')||'[]');
+let uid=Date.now();
+let currentId=null;
+let isSaved=false;
+
+const saveAll=()=>localStorage.setItem('tc3_saved',JSON.stringify(saved));
+
+/* ── SCREEN 0 ── */
+function onPad(){
+  const val=document.getElementById('pad').value;
+  const lines=val.split('\n').map(l=>l.trim()).filter(Boolean);
+  const n=lines.length;
+  const el=document.getElementById('pad-cnt');
+  el.textContent=n===0?'vacía':n===1?'1 producto':`${n} productos`;
+  el.className='pad-cnt'+(n>0?' has':'');
+  document.getElementById('btn-go').disabled=n===0;
+  // memory
+  const memEl=document.getElementById('mem');
+  if(lines.length){
+    const last=lines[lines.length-1];
+    const rem=mGet(last);
+    if(rem){document.getElementById('mem-txt').textContent=`"${last}" → ${rem.n}`;memEl.classList.add('on');}
+    else memEl.classList.remove('on');
+  } else memEl.classList.remove('on');
+}
+
+async function optimize() {
+  const val = document.getElementById('pad').value;
+  const lines = val.split('\n').map(l => l.trim()).filter(Boolean);
+  if (!lines.length) return;
+  
+  document.getElementById('ld-msg').textContent = `Buscando ${lines.length} producto${lines.length !== 1 ? 's' : ''}…`;
+  document.getElementById('loader').classList.add('on');
+  
+  // Wait for products to load from Supabase
+  await loadProducts();
+  
+  if (!DB.length) {
+    alert('No se pudieron cargar los productos. Por favor, intentá de nuevo.');
+    document.getElementById('loader').classList.remove('on');
+    return;
+  }
+  
+  // Precargar datos de aprendizaje para las keywords de la lista
+  const uniqueKeywords = [...new Set(lines.map(line => {
+    const match = line.match(/^(\d+)\s+(.+)$/);
+    const query = match ? match[2] : line;
+    return query.split(' ')[0].toLowerCase();
+  }))];
+  
+  // Cargar datos de aprendizaje en paralelo
+  await Promise.all(uniqueKeywords.map(keyword => getTopProductsForKeyword(keyword, 5)));
+  
+  setTimeout(async () => {
+    // Función async para procesar cada línea
+    const processLine = async (line) => {
+      // Extraer cantidad si existe (ej: "2 leche" -> qty=2, query="leche")
+      const match = line.match(/^(\d+)\s+(.+)$/);
+      const qty = match ? parseInt(match[1]) : 1;
+      const query = match ? match[2] : line;
+      
+      const matches = await doMatch(query);
+      const rem = mGet(query);
+      let chosen = null;
+      if (rem && matches.find(m => m.id === rem.id)) chosen = rem;
+      else if (matches.length) chosen = matches[0];
+      return { id: uid++, q: query, qty: qty, matches, chosen, checked: false, open: false };
+    };
+    
+    // Procesar todas las líneas en paralelo
+    items = await Promise.all(lines.map(processLine));
+    isSaved = false;
+    currentId = null;
+    document.getElementById('loader').classList.remove('on');
+    goResult();
+  }, 300);
+}
+
+/* ── NAVIGATION ── */
+function goResult(){
+  document.getElementById('track').style.transform='translateX(-100%)';
+  document.getElementById('back-btn').classList.remove('hidden');
+  document.getElementById('share-btn').classList.remove('hidden');
+  document.getElementById('bottom-bar').style.display='flex';
+  resetSaveBtn();
+  renderResult();
+}
+function goBack(){
+  document.getElementById('track').style.transform='translateX(0)';
+  document.getElementById('back-btn').classList.add('hidden');
+  document.getElementById('share-btn').classList.add('hidden');
+  document.getElementById('bottom-bar').style.display='none';
+}
+
+/* ── RESULT RENDER ── */
+function renderResult(){
+  // Calcular el total de todos los productos con precio elegido (sin importar si están marcados)
+  const resolved=items.filter(i=>i.chosen);
+  const totalItems = resolved.length;
+  const totals={};
+  SUPERS.forEach(s=>{
+    // Solo incluir el super si tiene TODOS los productos
+    const superItems = resolved.filter(i=>i.chosen.p[s] && i.chosen.p[s] > 0);
+    if (superItems.length === totalItems && totalItems > 0) {
+      const t=resolved.reduce((sum,i)=>sum+((i.chosen.p[s]||0)*(i.qty||1)),0);
+      if(t>0)totals[s]=t;
+    }
+  });
+  const sk=Object.keys(totals).sort((a,b)=>totals[a]-totals[b]);
+  const winner=sk[0],worst=sk[sk.length-1];
+  const wt=winner?totals[winner]:0;
+  const savings=worst&&worst!==winner?totals[worst]-wt:0;
+
+  document.getElementById('w-super').textContent=winner?SL[winner]:'Sin precios';
+  document.getElementById('w-total').textContent=wt>0?fmt(wt):'—';
+  const saveEl=document.getElementById('w-save');
+  if(savings>0){saveEl.classList.remove('hidden');document.getElementById('w-save-txt').textContent=`Ahorrás ${fmt(savings)} vs ${SL[worst]}`;}
+  else saveEl.classList.add('hidden');
+
+  // compare
+  document.getElementById('compare').innerHTML=sk.map(s=>{
+    const diff=s!==winner?`+${fmt(totals[s]-wt)}`:null;
+    const winnerLabel=s===winner?'<div class="cc-winner">GANADOR</div>':'';
+    return`<div class="cc ${s===winner?'best':''}">
+      <div class="cc-n">${SL[s]}</div>
+      <div class="cc-v">${fmt(totals[s])}</div>
+      ${winnerLabel}
+      ${diff?`<div class="cc-d">${diff}</div>`:''}
+    </div>`;
+  }).join('');
+
+  renderItems(winner);
+  renderFooter(winner);
+}
+
+function renderItems(winner){
+  const unc=items.filter(i=>!i.checked);
+  const chk=items.filter(i=>i.checked);
+  let html='';
+  unc.forEach((it,i)=>{html+=itemHTML(it,winner,i*0.04);});
+  if(chk.length){
+    html+=`<div class="csep"><div class="csep-line"></div><div class="csep-txt">En el carro</div><div class="csep-line"></div></div>`;
+    chk.forEach((it,i)=>{html+=itemHTML(it,winner,i*0.02);});
+  }
+  document.getElementById('items').innerHTML=html;
+  document.getElementById('prog-n').textContent=chk.length;
+  document.getElementById('prog-t').textContent=items.length;
+}
+
+function itemHTML(item,winner,delay){
+  const prod=item.chosen;
+  if(!prod&&!item.matches.length){
+    return`<div class="nf-row" style="animation-delay:${delay}s">
+      <div class="nf-em">❓</div>
+      <div class="nf-info">
+        <div class="nf-q">${item.q}</div>
+        <div class="nf-msg">No encontramos precio — queda en tu lista</div>
+      </div>
+      <button class="ic-xbtn" onclick="delItem(${item.id})">✕</button>
+    </div>`;
+  }
+  const basePrice=prod?(winner&&prod.p[winner]?prod.p[winner]:minP(prod)):null;
+  const price = basePrice !== null && item.qty > 1 ? basePrice * item.qty : basePrice;
+  const bs=prod?bestS(prod):null;
+  const mem=prod&&mCnt(item.q,prod)>1;
+  const drawer=item.matches.length>1?`
+    <div class="ic-drawer ${item.open?'on':''}" id="dr-${item.id}">
+      ${item.matches.map(m=>{
+        const mp=winner&&m.p[winner]?m.p[winner]:minP(m);
+        const ms=bestS(m);
+        const sel=prod&&m.id===prod.id;
+        const isMem=mCnt(item.q,m)>1;
+        return`<div class="prow ${sel?'sel':''}" onclick="pick(${item.id},${m.id})">
+          <div class="p-radio"></div>
+          ${m.img ? `<img class="p-img" src="${m.img}" alt="${m.n}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" /><div class="p-em" style="display:none">${m.e}</div>` : `<div class="p-em">${m.e}</div>`}
+          <div class="p-info">
+            <div class="p-name">${m.n}</div>
+            <div class="p-brand">${m.brand||m.sub}</div>
+            ${isMem?'<div class="p-mem">✓ habitual</div>':''}
+          </div>
+          <div class="p-price">${fmt(mp)}</div>
+        </div>`;
+      }).join('')}
+    </div>`:'';
+  return`<div class="icard ${item.checked?'done':''}" id="ic-${item.id}" style="animation-delay:${delay}s">
+    <div class="ic-row">
+      <div class="ic-cb" onclick="toggleChk(${item.id})">✓</div>
+      ${prod && prod.img ? `<img class="ic-img" src="${prod.img}" alt="${prod.n}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" /><div class="ic-em" style="display:none">${prod.e}</div>` : `<div class="ic-em">${prod?prod.e:'❓'}</div>`}
+      <div class="ic-body">
+        <div class="ic-q">${item.q}</div>
+        <div class="ic-name">${prod?prod.n:'Sin precio'}</div>
+      </div>
+      <div class="ic-r">
+        <div class="ic-price ${!price?'na':''}">${price?fmt(price):'—'}</div>
+        <div class="ic-qty">
+          <button class="qty-btn" onclick="changeQty(${item.id},-1)">−</button>
+          <span class="qty-n">${item.qty||1}</span>
+          <button class="qty-btn" onclick="changeQty(${item.id},1)">+</button>
+        </div>
+        <div class="ic-acts">
+          ${item.matches.length>1?`<button class="ic-vbtn" onclick="toggleDrawer(${item.id})">Cambiar</button>`:''}
+          <button class="ic-xbtn" onclick="delItem(${item.id})">✕</button>
+        </div>
+      </div>
+    </div>
+    ${drawer}
+  </div>`;
+}
+
+function renderFooter(winner){
+  const chk=items.filter(i=>i.checked);
+  const pct=items.length?Math.round((chk.length/items.length)*100):0;
+  document.getElementById('prog-fill').style.width=pct+'%';
+  // Calcular el total de todos los productos con precio elegido (sin importar si están marcados)
+  const tot=items.filter(i=>i.chosen).reduce((s,i)=>{
+    const pr=winner&&i.chosen.p[winner]?i.chosen.p[winner]:minP(i.chosen);
+    return s+((pr||0)*(i.qty||1));
+  },0);
+  document.getElementById('bb-label').textContent=
+    pct===0?'Total estimado en '+( winner?SL[winner]:'el super'):
+    `Llevás ${chk.length} de ${items.length}`;
+  document.getElementById('bb-total').textContent=
+    tot>0?fmt(tot):(()=>{
+      const res=items.filter(i=>i.chosen);
+      const totals={};
+      SUPERS.forEach(s=>{const t=res.reduce((sum,i)=>sum+((i.chosen.p[s]||0)*(i.qty||1)),0);if(t>0)totals[s]=t;});
+      const sk=Object.keys(totals).sort((a,b)=>totals[a]-totals[b]);
+      return sk[0]?fmt(totals[sk[0]]):'$0';
+    })();
+}
+
+function getWinner(){
+  // Obtener todos los productos con precio elegido (sin importar si están marcados)
+  const res=items.filter(i=>i.chosen);
+  const totalItems = res.length;
+  const t={};
+  SUPERS.forEach(s=>{
+    // Solo considerar el super si tiene TODOS los productos
+    const superItems = res.filter(i=>i.chosen.p[s] && i.chosen.p[s] > 0);
+    if (superItems.length === totalItems && totalItems > 0) {
+      const v=res.reduce((s2,i)=>s2+((i.chosen.p[s]||0)*(i.qty||1)),0);
+      if(v>0)t[s]=v;
+    }
+  });
+  const sk=Object.keys(t).sort((a,b)=>t[a]-t[b]);return sk[0]||null;
+}
+
+/* ── ITEM ACTIONS ── */
+function toggleChk(id){
+  const it=items.find(i=>i.id===id);if(!it)return;
+  it.checked=!it.checked;
+  // Actualizar solo el checkbox sin re-renderizar todo
+  const ic=document.getElementById('ic-'+id);
+  if(ic){
+    if(it.checked)ic.classList.add('done');
+    else ic.classList.remove('done');
+  }
+  // Actualizar totales
+  const chk=items.filter(i=>i.checked);
+  const pct=items.length?Math.round((chk.length/items.length)*100):0;
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-n').textContent=chk.length;
+  document.getElementById('bb-label').textContent=
+    pct===0?'Total estimado en el super':
+    `Llevás ${chk.length} de ${items.length}`;
+  markDirty();
+}
+function toggleDrawer(id){
+  const it=items.find(i=>i.id===id);if(!it)return;
+  it.open=!it.open;renderItems(getWinner());
+}
+function pick(itemId,prodId){
+  const it=items.find(i=>i.id===itemId);
+  const prod=DB.find(p=>p.id===prodId);
+  if(!it||!prod)return;
+  it.chosen=prod;it.open=false;
+  mSet(it.q,prod);
+  
+  // Registrar la elección para aprendizaje de búsquedas
+  const firstWord = it.q.split(' ')[0].toLowerCase();
+  recordSearchChoice(firstWord, String(prod.id)); // No await para no bloquear UI
+  
+  renderResult();markDirty();
+}
+function changeQty(id, delta){
+  const it=items.find(i=>i.id===id);if(!it)return;
+  it.qty = Math.max(1, (it.qty||1) + delta);
+  // Actualizar solo el precio y cantidad sin re-renderizar todo
+  updateItemDisplay(id);
+  updateTotals();
+  markDirty();
+}
+function updateItemDisplay(id){
+  const it=items.find(i=>i.id===id);if(!it)return;
+  const ic=document.getElementById('ic-'+id);if(!ic)return;
+  const w=getWinner();
+  const prod=it.chosen;
+  const priceEl=ic.querySelector('.ic-price');
+  const qtyEl=ic.querySelector('.qty-n');
+  if(qtyEl) qtyEl.textContent=it.qty||1;
+  if(priceEl && prod){
+    const basePrice=w&&prod.p[w]?prod.p[w]:minP(prod);
+    const price=(basePrice||0)*(it.qty||1);
+    priceEl.textContent=price?fmt(price):'—';
+  }
+}
+function updateTotals(){
+  const w=getWinner();
+  const resolved=items.filter(i=>i.chosen);
+  const totalItems = resolved.length;
+  const totals={};
+  SUPERS.forEach(s=>{
+    const superItems = resolved.filter(i=>i.chosen.p[s] && i.chosen.p[s] > 0);
+    if (superItems.length === totalItems && totalItems > 0) {
+      const t=resolved.reduce((sum,i)=>sum+((i.chosen.p[s]||0)*(i.qty||1)),0);
+      if(t>0)totals[s]=t;
+    }
+  });
+  const sk=Object.keys(totals).sort((a,b)=>totals[a]-totals[b]);
+  const winner=sk[0],worst=sk[sk.length-1];
+  const wt=winner?totals[winner]:0;
+  const savings=worst&&worst!==winner?totals[worst]-wt:0;
+  document.getElementById('w-super').textContent=winner?SL[winner]:'Sin precios';
+  document.getElementById('w-total').textContent=wt>0?fmt(wt):'—';
+  const saveEl=document.getElementById('w-save');
+  if(savings>0){saveEl.classList.remove('hidden');document.getElementById('w-save-txt').textContent=`Ahorrás ${fmt(savings)} vs ${SL[worst]}`;}
+  else saveEl.classList.add('hidden');
+  // Update compare row
+  document.getElementById('compare').innerHTML=sk.map(s=>{
+    const diff=s!==winner?`+${fmt(totals[s]-wt)}`:null;
+    const winnerLabel=s===winner?'<div class="cc-winner">GANADOR</div>':'';
+    return`<div class="cc ${s===winner?'best':''}">
+      <div class="cc-n">${SL[s]}</div>
+      <div class="cc-v">${fmt(totals[s])}</div>
+      ${winnerLabel}
+      ${diff?`<div class="cc-d">${diff}</div>`:''}
+    </div>`;
+  }).join('');
+  // Update footer
+  const chk=items.filter(i=>i.checked);
+  const pct=items.length?Math.round((chk.length/items.length)*100):0;
+  document.getElementById('prog-fill').style.width=pct+'%';
+  const tot=items.filter(i=>i.chosen).reduce((s,i)=>{
+    const pr=w&&i.chosen.p[w]?i.chosen.p[w]:minP(i.chosen);
+    return s+((pr||0)*(i.qty||1));
+  },0);
+  document.getElementById('bb-label').textContent=
+    pct===0?'Total estimado en '+( w?SL[w]:'el super'):
+    `Llevás ${chk.length} de ${items.length}`;
+  document.getElementById('bb-total').textContent=tot>0?fmt(tot):'$0';
+}
+function delItem(id){
+  items=items.filter(i=>i.id!==id);
+  renderResult();markDirty();
+}
+
+/* ── SAVE ── */
+function markDirty(){
+  isSaved=false;
+  resetSaveBtn();
+}
+function resetSaveBtn(){
+  const btn=document.getElementById('btn-save');
+  btn.classList.remove('saved');
+  btn.textContent='Guardar';
+}
+
+async function openSave(){
+  // Verificar autenticación primero
+  const user = await checkAuth();
+  if (!user) {
+    pendingSaveAfterAuth = true;
+    showAuthModal();
+    return;
+  }
+  
+  pendingSaveAfterAuth = false;
+  const d=new Date();
+  document.getElementById('save-name').value=
+    currentId?(saved.find(l=>l.id===currentId)?.name||''): `Lista del ${d.getDate()}/${d.getMonth()+1}`;
+  document.getElementById('save-bg').classList.add('on');
+  setTimeout(()=>{
+    document.getElementById('save-name').focus();
+    document.getElementById('save-name').select();
+  },200);
+}
+function closeSheet(e){
+  if(e&&e.target!==document.getElementById('save-bg'))return;
+  document.getElementById('save-bg').classList.remove('on');
+}
+async function confirmSave(){
+  // Verificar autenticación primero
+  const user = await checkAuth();
+  if (!user) {
+    // Cerrar el modal de guardar y abrir el de autenticación
+    document.getElementById('save-bg').classList.remove('on');
+    setTimeout(() => {
+      showAuthModal();
+    }, 300);
+    return;
+  }
+  
+  const name=(document.getElementById('save-name').value||'').trim()||'Mi lista';
+  const now=new Date();
+  const res=items.filter(i=>i.chosen);
+  const totals={};SUPERS.forEach(s=>{const t=res.reduce((sum,i)=>sum+((i.chosen.p[s]||0)*(i.qty||1)),0);if(t>0)totals[s]=t;});
+  const sk=Object.keys(totals).sort((a,b)=>totals[a]-totals[b]);
+  const entry={
+    id:currentId||uid++,
+    name,
+    date:`${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()}`,
+    items:items.map(i=>({...i})),
+    winner:sk[0]||null,
+    winnerTotal:sk[0]?totals[sk[0]]:0,
+  };
+  if(currentId){
+    const idx=saved.findIndex(l=>l.id===currentId);
+    if(idx>-1)saved[idx]=entry;else saved.unshift(entry);
+  }else{
+    saved.unshift(entry);
+    currentId=entry.id;
+  }
+  isSaved=true;
+  saveAll();
+  document.getElementById('save-bg').classList.remove('on');
+  // feedback
+  const btn=document.getElementById('btn-save');
+  btn.classList.add('saved');
+  btn.textContent='✓ Guardada';
+  renderSaved();
+}
+
+/* ── SAVED LISTS ── */
+function renderSaved(){
+  const wrap=document.getElementById('saved-wrap');
+  if(!saved.length){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  document.getElementById('saved-cards').innerHTML=saved.map(l=>`
+    <div class="scard" onclick="loadSaved(${l.id})">
+      <div class="sc-icon">📋</div>
+      <div class="sc-info">
+        <div class="sc-name">${l.name}</div>
+        <div class="sc-meta">${l.items.length} productos · ${l.date}${l.winner?' · '+SL[l.winner]:''}</div>
+      </div>
+      ${l.winnerTotal>0?`<div class="sc-price">${fmt(l.winnerTotal)}</div>`:''}
+      <button class="sc-del" onclick="event.stopPropagation();delSaved(${l.id})">✕</button>
+    </div>
+  `).join('');
+}
+
+function loadSaved(id){
+  const l=saved.find(li=>li.id===id);if(!l)return;
+  items=l.items.map(i=>({...i,open:false}));
+  currentId=id;isSaved=true;
+  // Mostrar con cantidad si es mayor a 1
+  document.getElementById('pad').value=l.items.map(i=>i.qty > 1 ? i.qty + ' ' + i.q : i.q).join('\n');
+  onPad();
+  goResult();
+  // update save btn
+  const btn=document.getElementById('btn-save');
+  btn.classList.add('saved');btn.textContent='✓ Guardada';
+}
+
+function delSaved(id){
+  saved=saved.filter(l=>l.id!==id);
+  saveAll();renderSaved();
+}
+
+/* ── SHARE ── */
+function shareList(){
+  const res=items.filter(i=>i.chosen);
+  const totals={};SUPERS.forEach(s=>{totals[s]=res.reduce((sum,i)=>sum+((i.chosen.p[s]||0)*(i.qty||1)),0);});
+  const sk=SUPERS.filter(s=>totals[s]>0).sort((a,b)=>totals[a]-totals[b]);
+  const lines=['🛒 Lista del super — TradingChango',''];
+  items.forEach(i=>{lines.push(`${i.checked?'✅':'•'} ${i.q}${i.chosen?' ('+fmt(minP(i.chosen))+')':''}`)});
+  if(sk.length)lines.push('',`🏆 Mejor precio: ${SL[sk[0]]} ${fmt(totals[sk[0]])}`);
+  lines.push('','listas.tradingchango.com');
+  const txt=lines.join('\n');
+  if(navigator.share)navigator.share({title:'Mi lista',text:txt});
+  else navigator.clipboard.writeText(txt).then(()=>alert('Lista copiada ✓'));
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   INIT - Load products from Supabase on startup
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+// Make functions globally accessible for onclick handlers
+window.onPad = onPad;
+window.optimize = optimize;
+window.goBack = goBack;
+window.shareList = shareList;
+window.toggleChk = toggleChk;
+window.toggleDrawer = toggleDrawer;
+window.pick = pick;
+window.delItem = delItem;
+window.changeQty = changeQty;
+window.openSave = openSave;
+window.closeSheet = closeSheet;
+window.confirmSave = confirmSave;
+window.loadSaved = loadSaved;
+window.delSaved = delSaved;
+
+// Init
+document.addEventListener('DOMContentLoaded', async () => {
+  console.log('[Listas] Iniciando app...');
+  
+  // Verificar si hay una lista compartida en la URL
+  checkForSharedList();
+  
+  // Attach onPad to the textarea
+  const padEl = document.getElementById('pad');
+  if (padEl) {
+    padEl.addEventListener('input', function() {
+      onPad();
+    });
+    // Also run onPad on load to set initial button state
+    onPad();
+  }
+  
+  renderSaved();
+  
+  // Preload products silently in background
+  loadProducts().then(() => {
+    if (DB.length) {
+      console.log(`[Listas] ${DB.length} productos disponibles`);
+    }
+  }).catch(err => {
+    console.error('[Listas] Error en inicialización:', err);
+  });
+});
+
+// Fallback: also call onPad on load if DOM already loaded
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  setTimeout(() => {
+    const padEl = document.getElementById('pad');
+    if (padEl) {
+      padEl.addEventListener('input', function() {
+        onPad();
+      });
+      onPad();
+    }
+  }, 100);
+}
+</script>
+</body>
+</html>

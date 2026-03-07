@@ -274,3 +274,51 @@ export const getConfig = async () => {
   
   return config;
 };
+
+// =====================
+// SEARCH LEARNING - Aprendizaje de búsquedas
+// =====================
+
+export interface SearchLearning {
+  id: string;
+  keyword: string;
+  product_id: string;
+  count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// Registrar la elección de un producto para una keyword
+export const recordSearchChoice = async (keyword: string, productId: string): Promise<void> => {
+  const { error } = await supabase.rpc('record_search_choice', {
+    p_keyword: keyword.toLowerCase().trim(),
+    p_product_id: productId
+  });
+  
+  if (error) {
+    console.error('[SearchLearning] Error recording choice:', error);
+    // Fallback: insert directo si RPC falla
+    await supabase.from('search_learning').upsert({
+      keyword: keyword.toLowerCase().trim(),
+      product_id: productId,
+      count: 1
+    }, { onConflict: 'keyword,product_id' });
+  }
+};
+
+// Obtener los productos más elegidos para una keyword
+export const getTopProductsForKeyword = async (keyword: string, limit: number = 5): Promise<SearchLearning[]> => {
+  const { data, error } = await supabase
+    .from('search_learning')
+    .select('*')
+    .ilike('keyword', keyword.toLowerCase().trim())
+    .order('count', { ascending: false })
+    .limit(limit);
+    
+  if (error) {
+    console.error('[SearchLearning] Error fetching top products:', error);
+    return [];
+  }
+  
+  return data || [];
+};
