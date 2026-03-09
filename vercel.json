@@ -185,6 +185,11 @@
       "destination": "/listas.html"
     },
     {
+      "source": "/listas/",
+      "destination": "/listas.html",
+      "preserveQueryString": true
+    },
+    {
       "source": "/:path((?!sitemap.xml|sw.js|listas).*)",
       "destination": "/index.html",
       "statusCode": 200

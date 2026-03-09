@@ -216,8 +216,8 @@ const AuthModal: React.FC<AuthModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-primary/80">
-      <div ref={modalRef} className="bg-white dark:bg-primary w-full max-w-sm rounded-[1.5rem] p-6 relative shadow-2xl border border-neutral-200 dark:border-neutral-800 max-h-[85vh] overflow-y-auto no-scrollbar">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-primary/80" onClick={resetAndClose}>
+      <div ref={modalRef} className="bg-white dark:bg-primary w-full max-w-sm rounded-[1.5rem] p-6 relative shadow-2xl border border-neutral-200 dark:border-neutral-800 max-h-[85vh] overflow-y-auto no-scrollbar" onClick={(e) => e.stopPropagation()}>
         <button onClick={resetAndClose} className="absolute top-5 right-5 text-neutral-400 text-xl">&times;</button>
         
         {success && <div className="mb-4 p-3 bg-green-500/10 text-green-500 text-[11px] font-bold rounded-xl text-center">{success}</div>}

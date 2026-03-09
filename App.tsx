@@ -1115,13 +1115,28 @@ const App: React.FC = () => {
         totalSavings
       );
       
-      const shareUrl = `${window.location.origin}/chango/${shareId}`;
+      const shareUrl = `${window.location.origin}/listas.html?lista=${shareId}`;
+      
+      // Calcular total del chango para el mensaje
+      let cartTotal = 0;
+      const productsListForMsg = processProducts(products, history, STORES);
+      for (const [productId, qty] of Object.entries(favorites)) {
+        const product = productsListForMsg.find(p => p.id === parseInt(productId));
+        if (product) {
+          // Obtener el precio mínimo entre todos los supermercados
+          const prices = [product.p_jumbo, product.p_carrefour, product.p_coto, product.p_dia, product.p_disco, product.p_vea, product.p_laanonima].filter(p => p > 0);
+          const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+          cartTotal += minPrice * qty;
+        }
+      }
+      
+      // Generar mensaje detallado
+      const itemCount = Object.keys(favorites).length;
+      const message = encodeURIComponent(`🛒 Mi lista de compras — TradingChango\n\n📦 ${itemCount} producto${itemCount !== 1 ? 's' : ''}\n💰 Total estimado: ${cartTotal.toLocaleString('es-AR')}\n\n¡Mirá mi lista completa aquí:`);
       
       // Copiar al portapapeles
       await navigator.clipboard.writeText(shareUrl);
       
-      // También abrir WhatsApp
-      const message = encodeURIComponent(`¡Mirá cuánto ahorré en mi Chango de TradingChango! 🛒💰`);
       window.open(`https://wa.me/?text=${message}%20${encodeURIComponent(shareUrl)}`, '_blank');
       
       alert('¡Link copiado y WhatsApp abierto! Compartilo con tus amigos');

@@ -6,7 +6,14 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#ffffff">
-<title>Lista — TradingChango</title>
+<meta name="description" content="Crea y comparte listas de compras. Compara precios en Jumbo, Coto, Carrefour, Disco, Día y más. Ahorrá dinero en tu Supermercado">
+<meta property="og:title" content="Listas l Compará precios y ahorrá en tus compras - Tradingchango">
+<meta property="og:description" content="Crea y comparte listas de compras. Compara precios en los principales supermercados y ahorrá">
+<meta property="og:type" content="website">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/png" href="/logo192.png">
+<link rel="apple-touch-icon" href="/logo192.png">
+<title>Listas - Compará precios y ahorrá en tus compras!</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -43,7 +50,7 @@ html,body{
   height:100%;
   display:flex;
   flex-direction:column;
-  max-width:560px;
+  max-width:500px;
   margin:0 auto;
   position:relative;
 }
@@ -62,7 +69,7 @@ html,body{
 .logo {
   font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
   font-weight: 800 !important;
-  font-size: 22px !important;
+  font-size: 18px !important;
   letter-spacing: -1px !important;
   display: flex !important;
   align-items: center !important;
@@ -78,7 +85,7 @@ html,body{
   justify-content: center !important;
 }
 .logo .fa-cart-shopping {
-  font-size: 20px !important;
+  font-size: 16px !important;
   color: inherit !important;
 }
 .trend-icon-overlay {
@@ -236,16 +243,16 @@ html,body{
 
 /* CTA */
 .btn-go{
-  margin-top:14px;
+  margin-top:12px;
   width:100%;
-  padding:16px;
+  padding:12px;
   background:var(--ink);
   color:var(--white);
-  border:none;border-radius:14px;
+  border:none;border-radius:12px;
   font-family:'Plus Jakarta Sans',system-ui,sans-serif;
-  font-size:16px;font-weight:700;
+  font-size:14px;font-weight:700;
   cursor:pointer;
-  display:flex;align-items:center;justify-content:center;gap:8px;
+  display:flex;align-items:center;justify-content:center;gap:6px;
   transition:all .15s;
   -webkit-user-select:none;user-select:none;
   letter-spacing:-.01em;
@@ -253,7 +260,7 @@ html,body{
 }
 .btn-go:not(:disabled):active{transform:scale(.98);background:#1a1a1a}
 .btn-go:disabled{opacity:.3;cursor:not-allowed}
-.go-arrow{font-size:18px;transition:transform .15s}
+.go-arrow{font-size:14px;transition:transform .15s}
 .btn-go:not(:disabled):hover .go-arrow{transform:translateX(3px)}
 
 /* saved lists */
@@ -307,11 +314,11 @@ html,body{
 /* winner card — full bleed */
 .winner{
   background:linear-gradient(135deg,#131722 0%,#1f2937 100%);
-  padding:24px 20px 22px;
+  padding:16px;
   position:relative;
   overflow:hidden;
-  border-radius:16px;
-  margin:16px;
+  border-radius:14px;
+  margin:12px;
   box-shadow:0 4px 20px rgba(0,0,0,0.15);
 }
 .winner::after{
@@ -324,39 +331,39 @@ html,body{
   pointer-events:none;
 }
 .w-label{
-  font-size:14px;font-weight:700;
+  font-size:12px;font-weight:700;
   letter-spacing:.1em;text-transform:uppercase;
   color:rgba(255,255,255,.9);
-  margin-bottom:8px;
+  margin-bottom:6px;
 }
-.w-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-.w-trophy{font-size:56px;animation:bounce 1s infinite}
+.w-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.w-trophy{font-size:36px;animation:bounce 1s infinite}
 @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 .w-content{display:flex;justify-content:space-between;align-items:flex-end}
 .w-left{flex:1}
 .w-right{text-align:right}
 .w-super{
-  font-size:28px;font-weight:700;
+  font-size:20px;font-weight:700;
   letter-spacing:-.02em;
   color:#22c55e;
   line-height:1;
   text-transform:uppercase;
 }
 .w-winner-label{
-  font-size:12px;font-weight:700;
+  font-size:11px;font-weight:700;
   letter-spacing:.1em;
   color:#f59e0b;
-  margin-top:4px;
+  margin-top:3px;
 }
 .w-total{
-  font-size:48px;font-weight:800;
+  font-size:32px;font-weight:800;
   letter-spacing:-1px;
   color:var(--white);
   line-height:1;
 }
 .w-save{
   display:inline-flex;align-items:center;gap:5px;
-  margin-top:8px;
+  margin-top:6px;
   background:rgba(34,197,94,0.2);
   border-radius:20px;padding:4px 10px;
   font-size:12px;font-weight:600;
@@ -536,7 +543,7 @@ html,body{
   position:fixed;
   bottom:0;left:50%;
   transform:translateX(-50%);
-  width:100%;max-width:560px;
+  width:100%;max-width:500px;
   background:var(--white);
   border-top:1px solid var(--border);
   padding:10px 16px;
@@ -584,7 +591,7 @@ html,body{
 .sheet{
   background:var(--white);
   border-radius:20px 20px 0 0;
-  width:100%;max-width:560px;
+  width:100%;max-width:500px;
   padding:0 20px;
   padding-bottom:calc(env(safe-area-inset-bottom) + 20px);
   animation:sheetUp .22s cubic-bezier(.4,0,.2,1);
@@ -708,7 +715,7 @@ html,body{
       <!-- ─── VIEW 0: NOTEPAD ─── -->
       <div class="view" id="v0">
 
-        <div class="v0-label">Lista inteligente</div>
+        <div class="v0-label">Lista Inteligente</div>
         <div class="v0-title">¿Qué comprás esta semana?</div>
         <div class="v0-subtitle">Armá tu lista como siempre. Nosotros comparamos los precios por vos y te decimos dónde ahorrar hoy!</div>
 
@@ -984,7 +991,9 @@ function toggleAuthMode() {
 // Variable para saber si estamos cargando una lista compartida
 let loadingSharedList = false;
 
-// Compartir la lista actual
+// ============================================
+// SHARE - Compartir lista
+// ============================================
 async function shareList() {
   const res = items.filter(i => i.chosen);
   if (!res.length) {
@@ -992,76 +1001,131 @@ async function shareList() {
     return;
   }
   
-  // Si no está guardada, pedir guardar primero
-  if (!currentId) {
-    openSave();
-    return;
-  }
+  // Calcular totales
+  const totals = {};
+  SUPERS.forEach(s => {
+    totals[s] = res.reduce((sum, i) => sum + ((i.chosen.p[s] || 0) * (i.qty || 1)), 0);
+  });
+  const sk = SUPERS.filter(s => totals[s] > 0).sort((a, b) => totals[a] - totals[b]);
+  
+  // Calcular total general
+  let granTotal = 0;
+  res.forEach(i => {
+    granTotal += minP(i.chosen) * (i.qty || 1);
+  });
+  
+  // Generar ID para compartir (sin necesidad de cuenta)
+  const shareId = 'lista_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 8);
   
   // Guardar en tabla pública para compartir
+  let shareUrl = '';
   if (supabaseClient) {
     try {
-      // Crear un ID público para compartir
-      const shareId = currentId + '_' + Date.now().toString(36);
-      
-      // Guardar lista compartida
+      // Preparar items para compartir (guardar ID del producto, cantidad y búsqueda original)
       const itemsToShare = {};
       items.forEach(item => {
         if (item.chosen && item.chosen.id) {
-          itemsToShare[item.chosen.id] = item.qty || 1;
+          itemsToShare[item.chosen.id] = {
+            qty: item.qty || 1,
+            search: item.q // Guardar la búsqueda original del usuario
+          };
         }
       });
       
       await supabaseClient.from('listas_compartidas').upsert({
         id: shareId,
-        user_id: currentAuthUser?.id || null,
-        name: saved.find(l => l.id === currentId)?.name || 'Lista compartida',
+        user_id: null, // Sin cuenta
+        name: 'Lista compartida',
         items: { active: itemsToShare },
         created_at: new Date().toISOString(),
         expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 días
       }, { onConflict: 'id' });
       
       // Generar URL de compartir
-      const shareUrl = `${window.location.origin}${window.location.pathname}?list=${shareId}`;
-      
-      // Copiar al portapapeles
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        alert('¡Link copiado al portapapeles! 📋\n\nCompartilo con quien quieras');
-      } catch(e) {
-        prompt('Copiá este link para compartir:', shareUrl);
-      }
-      
-      return;
+      const currentOrigin = window.location.origin;
+      shareUrl = `${currentOrigin}/listas.html?lista=${shareId}`;
     } catch(e) {
       console.warn('Error guardando lista compartida:', e);
     }
   }
   
-  // Fallback: usar el ID interno
-  const shareUrl = `${window.location.origin}${window.location.pathname}?list=${currentId}`;
+  // Fallback: usar el ID generado
+  if (!shareUrl) {
+    const currentOrigin = window.location.origin;
+    shareUrl = `${currentOrigin}/listas.html?lista=${shareId}`;
+  }
   
-  try {
-    await navigator.clipboard.writeText(shareUrl);
-    alert('¡Link copiado al portapapeles! 📋\n\nCompartilo con quien quieras');
-  } catch(e) {
-    prompt('Copiá este link para compartir:', shareUrl);
+  // Generar mensaje de texto
+  const lines = ['🛒 Lista del super — TradingChango', ''];
+  
+  // Agregar cada item - búsqueda arriba del producto
+  res.forEach(i => {
+    const busqueda = i.q;
+    const producto = i.chosen.n;
+    const cantidad = i.qty || 1;
+    const precio = minP(i.chosen);
+    const subtotal = precio * cantidad;
+    lines.push(`• ${busqueda}`);
+    lines.push(`  ${producto} (${cantidad} x ${fmt(precio)} = ${fmt(subtotal)})`);
+  });
+  
+  // Agregar total general
+  if (granTotal > 0) {
+    lines.push('');
+    lines.push(`💰 TOTAL: ${fmt(granTotal)}`);
+  }
+  
+  if (sk.length) {
+    lines.push('');
+    lines.push(`🏆 Mejor precio: ${SL[sk[0]]} ${fmt(totals[sk[0]])}`);
+  }
+  
+  lines.push('');
+  lines.push(`👉 ${shareUrl}`);
+  
+  const txt = lines.join('\n');
+  
+  // Compartir usando el menú nativo del sistema
+  const shareData = {
+    title: 'Mi lista de compras - TradingChango',
+    text: txt
+  };
+  
+  if (navigator.share) {
+    // Usar API nativa de compartir (abre menú del sistema)
+    navigator.share(shareData).catch(err => {
+      console.log('Share cancelled or failed:', err);
+      // Si falla, copiar al portapapeles
+      fallbackCopy();
+    });
+  } else {
+    // Si no hay API de share, copiar al portapapeles
+    fallbackCopy();
   }
 }
 
 // Cargar lista compartida desde URL
 async function loadSharedList(listId) {
-  if (!supabaseClient) return false;
+  console.log('Loading shared list:', listId);
+  if (!supabaseClient) {
+    console.warn('No Supabase client');
+    return false;
+  }
   
   try {
     // Buscar primero en listas compartidas
+    console.log('Fetching from listas_compartidas with id:', listId);
     const { data: sharedData, error: sharedError } = await supabaseClient
       .from('listas_compartidas')
       .select('items, name, expires_at')
       .eq('id', listId)
       .maybeSingle();
     
-    if (!sharedError && sharedData) {
+    console.log('Shared data:', sharedData, 'Error:', sharedError);
+    
+    if (sharedError) {
+      console.error('Error loading shared list:', sharedError);
+    } else if (sharedData) {
       // Verificar si no expiró
       if (new Date(sharedData.expires_at) < new Date()) {
         console.log('Lista compartida expirada');
@@ -1073,12 +1137,17 @@ async function loadSharedList(listId) {
         const convertedItems = [];
         let uid = 1;
         
-        Object.entries(sharedItems.active).forEach(([productId, qty]) => {
+        Object.entries(sharedItems.active).forEach(([productId, data]) => {
+          console.log('Looking for product:', productId);
+          // Soportar formato nuevo (objeto con qty y search) y formato viejo (solo qty)
+          const qty = typeof data === 'object' ? data.qty : data;
+          const searchTerm = typeof data === 'object' ? data.search : null;
           const product = DB.find(p => String(p.id) === String(productId));
+          console.log('Found product:', product);
           if (product) {
             convertedItems.push({
               id: uid++,
-              q: product.n,
+              q: searchTerm || product.n, // Usar la búsqueda original o el nombre del producto
               qty: qty,
               matches: [],
               chosen: product,
@@ -1088,78 +1157,36 @@ async function loadSharedList(listId) {
           }
         });
         
+        console.log('Converted items:', convertedItems);
+        
         if (convertedItems.length) {
           items = convertedItems;
           isSaved = true;
           currentId = listId;
           loadingSharedList = true;
           
-          await optimize();
+          // No necesitamos optimize() para listas compartidas, solo renderizar
+          // await optimize();
           loadingSharedList = false;
           
-          setTimeout(() => {
-            alert(`Lista "${sharedData.name || 'Compartida'}" cargada!`);
-          }, 500);
+          console.log('Calling renderResult...');
+          console.log('items:', items);
+          renderResult();
+          console.log('After renderResult');
+          
+          // Cambiar a la vista de resultados
+          goResult();
+          
+          // No mostrar mensaje de alerta
           
           return true;
         }
-      }
-      return false;
-    }
-    
-    // Fallback: buscar en carritos_guardados
-    const { data, error } = await supabaseClient
-      .from('carritos_guardados')
-      .select('items, name')
-      .eq('id', listId)
-      .maybeSingle();
-    
-    if (error) throw error;
-    if (!data) {
-      console.log('Lista no encontrada');
-      return false;
-    }
-    
-    const sharedItems = data.items;
-    if (sharedItems && sharedItems.active) {
-      const convertedItems = [];
-      let uid = 1;
-      
-      Object.entries(sharedItems.active).forEach(([productId, qty]) => {
-        const product = DB.find(p => String(p.id) === String(productId));
-        if (product) {
-          convertedItems.push({
-            id: uid++,
-            q: product.n,
-            qty: qty,
-            matches: [],
-            chosen: product,
-            checked: false,
-            open: false
-          });
-        }
-      });
-      
-      if (convertedItems.length) {
-        items = convertedItems;
-        isSaved = true;
-        currentId = listId;
-        loadingSharedList = true;
-        
-        await optimize();
-        loadingSharedList = false;
-        
-        setTimeout(() => {
-          alert(`Lista "${data.name || 'Compartida'}" cargada!`);
-        }, 500);
-        
-        return true;
       }
     }
     
     return false;
   } catch(e) {
-    console.warn('loadSharedList failed:', e);
+    console.error('Exception loading shared list:', e);
     return false;
   }
 }
@@ -1167,13 +1194,22 @@ async function loadSharedList(listId) {
 // Verificar si hay una lista compartida en la URL al cargar
 async function checkForSharedList() {
   const params = new URLSearchParams(window.location.search);
-  const listId = params.get('list');
+  const listId = params.get('lista');
+  
+  console.log('URL actual:', window.location.href);
+  console.log('Search params:', window.location.search);
+  console.log('Checking for shared list, listId:', listId);
   
   if (listId) {
     // Cargar productos primero
     await loadProducts();
+    console.log('Products loaded, DB length:', DB.length);
+    
     if (DB.length) {
-      await loadSharedList(listId);
+      const loaded = await loadSharedList(listId);
+      console.log('Shared list loaded:', loaded);
+    } else {
+      console.warn('No products loaded, cannot display shared list');
     }
   }
 }
@@ -1685,6 +1721,9 @@ async function doMatch(query) {
   const q = nor(query);
   if (!q) return [];
   
+  // IDs para debug
+  const debugIds = [892, 167, 1043];
+  
   // Extraer palabras de la query
   const qWords = q.split(' ');
   const firstWord = qWords[0];
@@ -1692,10 +1731,21 @@ async function doMatch(query) {
   
   // Obtener productos más elegidos para esta búsqueda (Learning)
   let learningBoost = {};
+  let maxCount = 0;
+  console.log('Buscando learning para:', firstWord);
   try {
     const topProducts = await getTopProductsForKeyword(firstWord, 5);
+    console.log('Top products para', firstWord, ':', topProducts);
+    // Encontrar el máximo count para normalizar
+    topProducts.forEach(item => {
+      if (item.count > maxCount) maxCount = item.count;
+    });
+    console.log('Max count:', maxCount);
     topProducts.forEach((item, index) => {
-      learningBoost[item.product_id] = 5 - index; // 5 puntos para el primero, 4 para el segundo, etc.
+      // Usar el count real normalizado + bonus por posición
+      const normalizedCount = maxCount > 0 ? (item.count / maxCount) * 10 : 0;
+      learningBoost[item.product_id] = normalizedCount + (5 - index); // Normalizado + posición
+      console.log('Product', item.product_id, 'boost:', learningBoost[item.product_id]);
     });
   } catch(e) {
     // Silently fail if learning data not available
@@ -1771,10 +1821,19 @@ async function doMatch(query) {
     
     let score = 100; // Default score (lower is better)
     
-    // Learning Boost: reducir score si el producto está en la lista de más elegidos
+    // Learning Boost: productos con más count aparecen primero (prioridad máxima)
     const productId = String(p.id);
+    let learningBonus = 0;
     if (learningBoost[productId]) {
-      score -= learningBoost[productId] * 10; // 50 puntos menos para el primero, 40 para el segundo, etc.
+      const boostValue = learningBoost[productId];
+      const minPrice = minP(p);
+      // Guardamos el bonus del learning boost
+      learningBonus = (boostValue * 100) + (minPrice > 0 ? Math.max(0, 100 - minPrice / 10) : 0);
+      if (boostValue > 12 || debugIds.includes(p.id)) {
+        console.log('CON vote:', p.id, 'learningBonus:', learningBonus);
+      }
+    } else if (debugIds.includes(p.id)) {
+      console.log('SIN vote:', p.id);
     }
     
     // Verificar si la primera palabra del producto es exactamente igual a la primera palabra de la query
@@ -1811,7 +1870,18 @@ async function doMatch(query) {
     // 6. Subcategoría exacta
     else if (psub && psub === firstWord) { score = 10; }
     
+    // Aplicar learning bonus DESPUÉS del matching
+    if (learningBonus > 0) {
+      score -= learningBonus;
+    }
+    
     if (score < 100) add(p, score);
+  });
+  
+  console.log('Scores de productos clave:');
+  debugIds.forEach(id => {
+    const p = res.find(x => x.id === id);
+    if (p) console.log('Producto', id, ':', p.n.substring(0,30), 'score:', scores[p.id] || 50);
   });
   
   // Sort by score, then by price
@@ -1820,6 +1890,11 @@ async function doMatch(query) {
     const sb = scores[b.id] || 50;
     if (sa !== sb) return sa - sb;
     return minP(a) - minP(b);
+  });
+  
+  console.log('=== RESULTADOS FINALES ===');
+  res.slice(0, 3).forEach((p, i) => {
+    console.log(i+1 + '. ID:', p.id, 'Nombre:', p.n.substring(0,40), 'Score:', scores[p.id] || 50);
   });
   
   return res.slice(0, 8);
@@ -2214,8 +2289,10 @@ async function openSave(){
   },200);
 }
 function closeSheet(e){
-  if(e&&e.target!==document.getElementById('save-bg'))return;
-  document.getElementById('save-bg').classList.remove('on');
+  const targetId = e ? e.target.id : null;
+  if (e && targetId !== 'save-bg' && targetId !== 'auth-bg') return;
+  if (targetId === 'save-bg') document.getElementById('save-bg').classList.remove('on');
+  if (targetId === 'auth-bg') document.getElementById('auth-bg').classList.remove('on');
 }
 async function confirmSave(){
   // Verificar autenticación primero
@@ -2295,20 +2372,6 @@ function delSaved(id){
   saveAll();renderSaved();
 }
 
-/* ── SHARE ── */
-function shareList(){
-  const res=items.filter(i=>i.chosen);
-  const totals={};SUPERS.forEach(s=>{totals[s]=res.reduce((sum,i)=>sum+((i.chosen.p[s]||0)*(i.qty||1)),0);});
-  const sk=SUPERS.filter(s=>totals[s]>0).sort((a,b)=>totals[a]-totals[b]);
-  const lines=['🛒 Lista del super — TradingChango',''];
-  items.forEach(i=>{lines.push(`${i.checked?'✅':'•'} ${i.q}${i.chosen?' ('+fmt(minP(i.chosen))+')':''}`)});
-  if(sk.length)lines.push('',`🏆 Mejor precio: ${SL[sk[0]]} ${fmt(totals[sk[0]])}`);
-  lines.push('','listas.tradingchango.com');
-  const txt=lines.join('\n');
-  if(navigator.share)navigator.share({title:'Mi lista',text:txt});
-  else navigator.clipboard.writeText(txt).then(()=>alert('Lista copiada ✓'));
-}
-
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    INIT - Load products from Supabase on startup
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -2368,6 +2431,15 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
       onPad();
     }
   }, 100);
+}
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').then(reg => {
+      console.log('SW registered:', reg.scope);
+    }).catch(err => console.log('SW registration failed:', err));
+  });
 }
 </script>
 </body>
