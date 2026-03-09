@@ -73,10 +73,24 @@ const Header: React.FC<HeaderProps> = memo(({
 
         <div className="flex items-center gap-3">
           <div className="hidden md:flex items-center gap-4 mr-2">
+            <a 
+              href="/listas.html" 
+              className="bg-green-500 hover:bg-green-600 text-white text-center py-1.5 px-3 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+            >
+              Listas
+            </a>
             <Link to="/acerca-de" className="text-[11px] font-bold uppercase tracking-widest text-black dark:text-[#e9edef] hover:opacity-70 transition-colors">Acerca de</Link>
             <Link to="/terminos" className="text-[11px] font-bold uppercase tracking-widest text-black dark:text-[#e9edef] hover:opacity-70 transition-colors">Terminos</Link>
             <Link to="/contacto" className="text-[11px] font-bold uppercase tracking-widest text-black dark:text-[#e9edef] hover:opacity-70 transition-colors">Contacto</Link>
           </div>
+
+          <a 
+            href="/listas.html" 
+            className="md:hidden w-8 h-8 flex items-center justify-center text-green-500 hover:text-green-600 transition-colors" 
+            aria-label="Ir a Listas"
+          >
+            <i className="fa-solid fa-list-check text-xl"></i>
+          </a>
 
           <div className="relative md:hidden" ref={menuRef}>
             <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="w-8 h-8 flex items-center justify-center text-black dark:text-[#e9edef]" aria-label="Menu de informacion">

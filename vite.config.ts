@@ -8,7 +8,8 @@ function cleanUrlPlugin(): Plugin {
     name: 'clean-url-plugin',
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
-        if (req.url === '/listas' || req.url === '/listas/') {
+        // Rewrite /listas -> /listas.html para que sea servido como archivo estático
+        if (req.url === '/listas' || req.url === '/listas/' || req.url === '/listas.html') {
           req.url = '/listas.html';
         }
         next();
@@ -31,7 +32,7 @@ export default defineConfig({
   server: {
     port: 3000,
     fs: {
-      allow: ['..'],
+      allow: ['..', 'public'],
     },
     middlewareMode: false,
   },

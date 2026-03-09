@@ -1341,6 +1341,7 @@ const App: React.FC = () => {
           <Route path="/update-password" element={ <MemoizedProductList products={filteredProducts as any} onProductClick={handleProductClick} onFavoriteToggle={handleToggleFavoriteWithAuth} favorites={favorites} isCartView={false} quantities={favorites} onUpdateQuantity={handleFavoriteChangeInCart} searchTerm={searchTerm} purchasedItems={purchasedItems} onTogglePurchased={togglePurchased} /> } />
           <Route path="/varios" element={<Navigate to="/" replace />} />
           <Route path="/buscar" element={<Navigate to="/" replace />} />
+          <Route path="/listas" element={<Navigate to="/listas.html" replace />} />
         </Routes>
       </Suspense>
 
