@@ -1691,6 +1691,16 @@ const SL = {
 const nor=s=>(s||'').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,' ').trim();
 const minP=p=>{const v=SUPERS.map(s=>p.p[s]).filter(Boolean);return v.length?Math.min(...v):0;};
 const bestS=p=>{let b=null,bv=Infinity;SUPERS.forEach(s=>{if(p.p[s]&&p.p[s]<bv){bv=p.p[s];b=s;}});return b;};
+
+// Función para verificar si el precio mínimo es outlier (desviación > 50%)
+const isMinPriceOutlier = (p) => {
+  const prices = SUPERS.map(s => p.p[s]).filter(Boolean);
+  if (prices.length < 2) return false; // No es outlier si hay menos de 2 precios
+  const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
+  const minPrice = Math.min(...prices);
+  const deviation = Math.abs((minPrice - avg) / avg);
+  return deviation > 0.5; // Es outlier si la desviación es mayor al 50%
+};
 const fmt=v=>'$'+Math.round(v).toLocaleString('es-AR');
 
 /* memory — localStorage */
@@ -1873,6 +1883,11 @@ async function doMatch(query) {
     // Aplicar learning bonus DESPUÉS del matching
     if (learningBonus > 0) {
       score -= learningBonus;
+    }
+    
+    // Filtrar outliers: si el precio mínimo es outlier, no mostrar el producto
+    if (minP(p) > 0 && isMinPriceOutlier(p)) {
+      return; // Skip productos con precio mínimo outlier
     }
     
     if (score < 100) add(p, score);
