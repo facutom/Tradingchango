@@ -744,7 +744,7 @@ html,body{
     <div class="logo"><a href="/listas" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:10px"><div class="logo-icon-wrapper"><i class="fa-solid fa-cart-shopping"></i><i class="fa-solid fa-arrow-trend-up trend-icon-overlay"></i></div><span style="font-family:'Inter',system-ui,sans-serif;color:#131722">TradingChango/<span style="color:#22c55e">Listas</span></span></a></div>
     <div class="hdr-right">
       <button class="hbtn hidden" id="share-btn" onclick="shareList()" title="Compartir"><i class="fa-solid fa-share-nodes"></i></button>
-      <button class="hbtn hidden hbtn-wide" id="back-btn" onclick="goBack()">Editar</button>
+      <button class="hbtn hidden hbtn-wide" id="back-btn" onclick="goBack()">Volver</button>
     </div>
   </div>
   <!-- VIEWS TRACK -->
@@ -828,21 +828,53 @@ html,body{
       <div class="app-banner-title">¡Usá la app!</div>
       <div class="app-banner-sub">Experiencia más rápida</div>
     </div>
-    <a href="/listas" class="app-banner-btn" target="_blank">Descargar</a>
+    <button onclick="installApp()" class="app-banner-btn">Descargar</button>
     <button class="app-banner-close" onclick="closeAppBanner()"><i class="fa-solid fa-xmark"></i></button>
   </div>
 </div><!-- /app -->
 <script>
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   APP BANNER - Descargar app
+   APP BANNER - Descargar app / Instalar PWA
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+let deferredPrompt;
+
+// Escuchar el evento beforeinstallprompt
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Mostrar el banner si no se cerró antes
+  if (localStorage.getItem('appBannerClosed') !== 'true') {
+    document.getElementById('app-banner').style.display = 'flex';
+  }
+});
+
+// Función para instalar la PWA
+async function installApp() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      document.getElementById('app-banner').style.display = 'none';
+      localStorage.setItem('appBannerClosed', 'true');
+    }
+    deferredPrompt = null;
+  } else {
+    // Si no hay deferredPrompt, abrir la URL de la app
+    window.open('https://tradingchango.com', '_blank');
+  }
+}
+
 function closeAppBanner() {
   document.getElementById('app-banner').style.display = 'none';
   localStorage.setItem('appBannerClosed', 'true');
 }
-// Mostrar banner solo si no se cerró antes
-if (localStorage.getItem('appBannerClosed') !== 'true') {
-  document.getElementById('app-banner').style.display = 'flex';
+
+// Mostrar banner solo si no se cerró antes (para navegadores sin beforeinstallprompt)
+if (localStorage.getItem('appBannerClosed') !== 'true' && !window.matchMedia('(display-mode: standalone)').matches) {
+  // Verificar si es un dispositivo móvil
+  if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+    document.getElementById('app-banner').style.display = 'flex';
+  }
 } else {
   document.getElementById('app-banner').style.display = 'none';
 }
@@ -1595,7 +1627,29 @@ const SL = {
   laanonima: 'La Anónima'
 };
 /* utils */
-const nor=s=>(s||'').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,' ').trim();
+// Normalizar texto: lowercase, quitar acentos, quitar caracteres especiales, y plurales a singulares
+const toSingular = (s) => {
+  if (s.endsWith('es')) {
+    if (s.endsWith('les')) return s.slice(0, -2); // muebles -> muebl
+    if (s.endsWith('nes')) return s.slice(0, -2); // huevos -> huev
+    if (s.endsWith('ses')) return s.slice(0, -2); // casas -> cas
+    return s.slice(0, -1); // noches -> noch
+  }
+  if (s.endsWith('s')) return s.slice(0, -1); // carro -> carr
+  return s;
+};
+const nor = (s) => {
+  const normalized = (s || '').toLowerCase().trim()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, ' ').trim();
+  // Convertir primera palabra a singular
+  const words = normalized.split(' ');
+  if (words.length > 0) {
+    words[0] = toSingular(words[0]);
+  }
+  return words.join(' ');
+};
 const minP=p=>{const v=SUPERS.map(s=>p.p[s]).filter(Boolean);return v.length?Math.min(...v):0;};
 const bestS=p=>{let b=null,bv=Infinity;SUPERS.forEach(s=>{if(p.p[s]&&p.p[s]<bv){bv=p.p[s];b=s;}});return b;};
 // Función para verificar si el precio mínimo es outlier (desviación > 50%)
@@ -1663,23 +1717,23 @@ async function doMatch(query) {
   // Mapeo de palabras a categorías
   const wordToCat = {
     // almacen
-    'pan': 'almacen', 'leche': 'almacen', 'huevo': 'almacen', 'azucar': 'almacen', 'sal': 'almacen', 'harina': 'almacen', 'arroz': 'almacen', 'fideo': 'almacen', 'pasta': 'almacen', 'aceite': 'almacen', 'vinagre': 'almacen', 'salsa': 'almacen', 'conserva': 'almacen', 'mermelada': 'almacen', 'dulce': 'almacen', 'cafe': 'almacen', 'te': 'almacen', 'yerba': 'almacen', 'galleta': 'almacen', 'galletita': 'almacen', 'cereal': 'almacen', 'avena': 'almacen', 'quinoa': 'almacen', 'legumbre': 'almacen', 'lenteja': 'almacen', 'poroto': 'almacen', 'garbanzo': 'almacen', 'polenta': 'almacen', 'maiz': 'almacen', 'papa': 'almacen', 'batata': 'almacen', 'cebolla': 'almacen', 'ajo': 'almacen', 'pimienta': 'almacen', 'comino': 'almacen', 'oregano': 'almacen', 'canela': 'almacen',
+    'pan': 'almacen', 'leche': 'almacen', 'huevo': 'almacen', 'huevos': 'almacen', 'azucar': 'almacen', 'sal': 'almacen', 'harina': 'almacen', 'arroz': 'almacen', 'fideo': 'almacen', 'pasta': 'almacen', 'aceite': 'almacen', 'vinagre': 'almacen', 'salsa': 'almacen', 'conserva': 'almacen', 'mermelada': 'almacen', 'dulce': 'almacen', 'cafe': 'almacen', 'te': 'almacen', 'yerba': 'almacen', 'galleta': 'almacen', 'galletita': 'almacen', 'cereal': 'almacen', 'avena': 'almacen', 'quinoa': 'almacen', 'legumbre': 'almacen', 'lenteja': 'almacen', 'poroto': 'almacen', 'garbanzo': 'almacen', 'polenta': 'almacen', 'maiz': 'almacen', 'papa': 'almacen', 'batata': 'almacen', 'cebolla': 'almacen', 'ajo': 'almacen', 'pimienta': 'almacen', 'comino': 'almacen', 'oregano': 'almacen', 'canela': 'almacen',
     // carnes
-    'carne': 'carnes', 'asado': 'carnes', 'matambre': 'carnes', 'bife': 'carnes', 'costilla': 'carnes', 'hamburguesa': 'carnes', 'salchicha': 'carnes', 'chorizo': 'carnes', 'morcilla': 'carnes', 'pollo': 'carnes', 'pierna': 'carnes', 'muslo': 'carnes', 'pechuga': 'carnes', 'vacuno': 'carnes', 'cerdo': 'carnes', 'pescado': 'carnes', 'merluza': 'carnes', 'salmón': 'carnes', 'atun': 'carnes', 'caballa': 'carnes',
+    'carne': 'carnes', 'asado': 'carnes', 'matambre': 'carnes', 'bife': 'carnes', 'costilla': 'carnes', 'hamburguesa': 'carnes', 'salchicha': 'carnes', 'chorizo': 'carnes', 'morcilla': 'carnes', 'pollo': 'carnes', 'pierna': 'carnes', 'muslo': 'carnes', 'pechuga': 'carnes', 'vacuno': 'carnes', 'cerdo': 'carnes', 'pescado': 'carnes', 'merluza': 'carnes', 'salmón': 'carnes', 'atun': 'carnes', 'caballa': 'carnes', 'huevo': 'carnes', 'huevos': 'carnes', 'huevo duro': 'carnes', 'omelette': 'carnes', 'tortilla': 'carnes', 'huevox': 'carnes',
     // verduras
     'verdura': 'verdu', 'verduras': 'verdu', 'lechuga': 'verdu', 'tomate': 'verdu', 'zanahoria': 'verdu', 'brócoli': 'verdu', 'coliflor': 'verdu', 'acelga': 'verdu', 'espinaca': 'verdu', 'papa': 'verdu', 'batata': 'verdu', 'zucchini': 'verdu', 'berenjena': 'verdu', 'pimiento': 'verdu', 'pepino': 'verdu', 'rabanito': 'verdu', 'remolacha': 'verdu', 'apio': 'verdu', 'puerro': 'verdu', 'champignon': 'verdu', 'naranja': 'verdu', 'manzana': 'verdu', 'platano': 'verdu', 'banana': 'verdu', 'pera': 'verdu', 'uva': 'verdu', 'limon': 'verdu', 'pomelo': 'verdu', 'sandia': 'verdu', 'melon': 'verdu', 'kiwi': 'verdu', 'mango': 'verdu', 'palta': 'verdu', 'aguacate': 'verdu',
     // mascotas
     'perro': 'mascotas', 'gato': 'mascotas', 'mascota': 'mascotas', 'alimento': 'mascotas', 'balanceado': 'mascotas', 'pedigree': 'mascotas', 'purina': 'mascotas', 'whiskas': 'mascotas', 'catchow': 'mascotas', 'racion': 'mascotas',
     // limpieza
-    'lavandina': 'limpieza', 'detergente': 'limpieza', 'jabon': 'limpieza', 'jabón': 'limpieza', 'suavizante': 'limpieza', 'cloro': 'limpieza', 'limpia': 'limpieza', 'paño': 'limpieza', 'trapo': 'limpieza', 'esponja': 'limpieza', 'balde': 'limpieza', 'escoba': 'limpieza', 'trapeador': 'limpieza', 'papel': 'limpieza', 'servilleta': 'limpieza', 'toalla': 'limpieza',
+    'lavandina': 'limpieza', 'detergente': 'limpieza', 'jabon': 'limpieza', 'jabón': 'limpieza', 'suavizante': 'limpieza', 'cloro': 'limpieza', 'limpia': 'limpieza', 'paño': 'limpieza', 'paños': 'limpieza', 'pañuelos': 'limpieza', 'trapo': 'limpieza', 'esponja': 'limpieza', 'balde': 'limpieza', 'escoba': 'limpieza', 'trapeador': 'limpieza', 'papel': 'limpieza', 'servilleta': 'limpieza', 'toalla': 'limpieza',
     // bebidas
     'bebida': 'bebidas', 'gaseosa': 'bebidas', 'coca': 'bebidas', 'coca-cola': 'bebidas', 'pepsi': 'bebidas', 'sprite': 'bebidas', 'fanta': 'bebidas', 'agua': 'bebidas', 'cerveza': 'bebidas', 'vino': 'bebidas', 'jugo': 'bebidas', 'juguito': 'bebidas', 'zumo': 'bebidas', 'licuadora': 'bebidas', 'batido': 'bebidas', 'malta': 'bebidas', 'tonica': 'bebidas', '速度': 'bebidas',
     // perfumeria
     'shampoo': 'perfumeria', 'jabon': 'perfumeria', 'jabón': 'perfumeria', 'desodorante': 'perfumeria', 'perfume': 'perfumeria', 'crema': 'perfumeria', 'protector': 'perfumeria', 'protector solar': 'perfumeria', 'bloqueador': 'perfumeria', 'pasta': 'perfumeria', 'cepillo': 'perfumeria', 'dentifrico': 'perfumeria', 'enjuague': 'perfumeria', 'toalla': 'perfumeria', 'tampon': 'perfumeria', 'preservativo': 'perfumeria', 'copa': 'perfumeria',
     // lacteos
-    'yogur': 'lacteos', 'yoghurt': 'lacteos', 'leche': 'lacteos', 'manteca': 'lacteos', 'queso': 'lacteos', 'ricota': 'lacteos', 'crema': 'lacteos', 'dulce de leche': 'lacteos', 'ddl': 'lacteos', 'flan': 'lacteos', 'postre': 'lacteos', 'cuajada': 'lacteos', 'kefir': 'lacteos', 'chocolate': 'lacteos'
+    'yogur': 'lacteos', 'yoghurt': 'lacteos', 'leche': 'lacteos', 'manteca': 'lacteos', 'queso': 'lacteos', 'ricota': 'lacteos', 'crema': 'lacteos', 'dulce de leche': 'lacteos', 'ddl': 'lacteos', 'flan': 'lacteos', 'postre': 'lacteos', 'cuajada': 'lacteos', 'kefir': 'lacteos', 'chocolate': 'lacteos', 'huevo': 'lacteos', 'huevos': 'lacteos', 'clara': 'lacteos', 'yema': 'lacteos'
   };
-  // Determinar la categoría objetivo
+  // Determinar la categoría objetivo para filtrar
   const targetCat = wordToCat[firstWord] || null;
   // Palabras a excluir para búsquedas específicas
   const exclusionKeywords = {
@@ -1699,95 +1753,134 @@ async function doMatch(query) {
   // - Y hay palabras de exclusión definidas
   // - Y la búsqueda no contiene ninguna de las palabras de exclusión
   const excludeWords = (!isMultiWordSearch && potentialExcludes.length > 0 && !searchIncludesExclusion) ? potentialExcludes : [];
-  const res = [];
-  const seen = new Set();
-  const scores = {};
-  const add = (p, score) => {
-    if (!seen.has(p.id)) {
-      seen.add(p.id);
-      scores[p.id] = score;
-      res.push(p);
-    } else if (scores[p.id] > score) {
-      scores[p.id] = score;
-    }
-  };
-  DB.forEach(p => {
-    const pn = nor(p.n);
-    const pbrand = p.brand ? nor(p.brand) : '';
-    const pcat = p.cat ? nor(p.cat) : '';
-    const psub = p.sub ? nor(p.sub) : '';
-    const pnWords = pn.split(' ');
-    const firstPnWord = pnWords[0];
-    let score = 100; // Default score (lower is better)
-    // Learning Boost: productos con más count aparecen primero (prioridad máxima)
-    const productId = String(p.id);
-    let learningBonus = 0;
-    if (learningBoost[productId]) {
-      const boostValue = learningBoost[productId];
-      const minPrice = minP(p);
-      // Guardamos el bonus del learning boost
-      learningBonus = (boostValue * 100) + (minPrice > 0 ? Math.max(0, 100 - minPrice / 10) : 0);
-      if (boostValue > 12 || debugIds.includes(p.id)) {
-        console.log('CON vote:', p.id, 'learningBonus:', learningBonus);
+  
+  // Función interna para buscar productos
+  const searchProducts = (categoryFilter) => {
+    const results = [];
+    const seen = new Set();
+    const localScores = {};
+    const add = (p, score) => {
+      if (!seen.has(p.id)) {
+        seen.add(p.id);
+        localScores[p.id] = score;
+        results.push(p);
+      } else if (localScores[p.id] > score) {
+        localScores[p.id] = score;
       }
-    } else if (debugIds.includes(p.id)) {
-      console.log('SIN vote:', p.id);
-    }
-    // Verificar si la primera palabra del producto es exactamente igual a la primera palabra de la query
-    const isExactFirstWordMatch = (firstPnWord === firstWord);
-    const isAlmacen = (pcat === 'almacen');
-    // Si hay una categoría objetivo, solo mostrar productos de esa categoría
-    if (targetCat && pcat !== targetCat) {
-      return; // Skip productos de otras categorías
-    }
-    // Verificar si el producto contiene palabras excluidas para esta búsqueda
-    if (excludeWords.length > 0) {
-      const lowerPn = pn.toLowerCase();
-      for (const excludeWord of excludeWords) {
-        if (lowerPn.includes(excludeWord)) {
-          return; // Skip productos que contienen palabras excluidas
+    };
+    
+    DB.forEach(p => {
+      const pn = nor(p.n);
+      const pbrand = p.brand ? nor(p.brand) : '';
+      const pcat = p.cat ? nor(p.cat) : '';
+      const psub = p.sub ? nor(p.sub) : '';
+      const pnWords = pn.split(' ');
+      const firstPnWord = pnWords[0];
+      let score = 100; // Default score (lower is better)
+      // Learning Boost: productos con más count aparecen primero (prioridad máxima)
+      // Solo aplicar boost si la PRIMERA PALABRA del producto coincide exactamente con la búsqueda
+      const productId = String(p.id);
+      let learningBonus = 0;
+      if (learningBoost[productId]) {
+        const boostValue = learningBoost[productId];
+        const minPrice = minP(p);
+        // Solo aplicar el boost si la primera palabra del producto coincide exactamente con la primera palabra de la búsqueda
+        // Esto evita que "pan" apply learning a "pañuelos"
+        const firstWordMatch = firstPnWord === firstWord;
+        if (firstWordMatch) {
+          learningBonus = (boostValue * 50) + (minPrice > 0 ? Math.max(0, 50 - minPrice / 10) : 0);
         }
       }
+      // Verificar si la primera palabra del producto es exactamente igual a la primera palabra de la query
+      const isExactFirstWordMatch = (firstPnWord === firstWord);
+      const isAlmacen = (pcat === 'almacen');
+      // Si hay una categoría objetivo y estamos aplicando filtro, solo mostrar productos de esa categoría
+      if (categoryFilter && pcat !== categoryFilter) {
+        return; // Skip productos de otras categorías
+      }
+      // Verificar si el producto contiene palabras excluidas para esta búsqueda
+      if (excludeWords.length > 0) {
+        const lowerPn = pn.toLowerCase();
+        for (const excludeWord of excludeWords) {
+          if (lowerPn.includes(excludeWord)) {
+            return; // Skip productos que contienen palabras excluidas
+          }
+        }
+      }
+      // 0. Exact match del nombre completo
+      if (pn === q) { score = 0; }
+      // 1. Primera palabra EXACTA del nombre = primera palabra de query (máxima prioridad)
+      else if (isExactFirstWordMatch) { score = 1; }
+      // 2. Query con más palabras: "pan lactal" matchea productos que empiezan con "pan "
+      else if (qWords.length > 1 && pn.startsWith(firstWord + ' ')) { score = 2; }
+      // 3. El nombre del producto contiene la búsqueda (coca -> "Gaseosa Coca Cola")
+      else if (pn.includes(firstWord)) { score = 3; }
+      // 4. Query es prefijo del nombre completo PERO la primera palabra no coincide exactamente
+      // Esto evita que "pan" matchee "pañuelos" antes que "pan lactal"
+      else if (pn.startsWith(q)) { score = 15; }
+      // 5. Coincidencia exacta de marca
+      else if (pbrand && pbrand === firstWord) { score = 4; }
+      // 6. Categoría coincide exactamente
+      else if (pcat && pcat === firstWord) { score = 6; }
+      // 7. Subcategoría exacta
+      else if (psub && psub === firstWord) { score = 10; }
+      // 8. La primera palabra del producto contiene la búsqueda (para palabras muy cortas)
+      else if (firstPnWord.includes(firstWord) && firstWord.length >= 4) { score = 20; }
+      // Aplicar learning bonus DESPUÉS del matching
+      if (learningBonus > 0) {
+        score -= learningBonus;
+      }
+      // Filtrar outliers: si el precio mínimo es outlier, no mostrar el producto
+      if (minP(p) > 0 && isMinPriceOutlier(p)) {
+        return; // Skip productos con precio mínimo outlier
+      }
+      if (score < 100) add(p, score);
+    });
+    
+    // Ordenar resultados por score (menor es mejor)
+    results.sort((a, b) => (localScores[a.id] || 100) - (localScores[b.id] || 100));
+    return { results, scores: localScores };
+  };
+  
+  // Buscar primero en la categoría correcta, luego en todas las categorías si no hay resultados
+  let searchResult;
+  let res;
+  let lastScores;
+  
+  if (targetCat) {
+    // Primero buscar en la categoría objetivo
+    searchResult = searchProducts(targetCat);
+    res = searchResult.results;
+    lastScores = searchResult.scores;
+    
+    // Si no hay resultados, buscar en todas las categorías
+    if (res.length === 0) {
+      console.log('Sin resultados en categoría', targetCat, ', buscando en todas las categorías');
+      searchResult = searchProducts(null);
+      res = searchResult.results;
+      lastScores = searchResult.scores;
     }
-    // 0. Exact match del nombre completo
-    if (pn === q) { score = 0; }
-    // 1. Query es prefijo del nombre completo
-    else if (pn.startsWith(q)) { score = 1; }
-    // 2. Primera palabra EXACTA del nombre = primera palabra de query
-    else if (isExactFirstWordMatch) { score = 2; }
-    // 3. Query con más palabras: "pan lactal" matchea productos que empiezan con "pan "
-    else if (qWords.length > 1 && pn.startsWith(firstWord + ' ')) { score = 3; }
-    // 4. Coincidencia exacta de marca
-    else if (pbrand && pbrand === firstWord) { score = 4; }
-    // 5. Categoría coincide exactamente
-    else if (pcat && pcat === firstWord) { score = 6; }
-    // 6. Subcategoría exacta
-    else if (psub && psub === firstWord) { score = 10; }
-    // Aplicar learning bonus DESPUÉS del matching
-    if (learningBonus > 0) {
-      score -= learningBonus;
-    }
-    // Filtrar outliers: si el precio mínimo es outlier, no mostrar el producto
-    if (minP(p) > 0 && isMinPriceOutlier(p)) {
-      return; // Skip productos con precio mínimo outlier
-    }
-    if (score < 100) add(p, score);
-  });
+  } else {
+    // Si no hay categoría objetivo, buscar en todas
+    searchResult = searchProducts(null);
+    res = searchResult.results;
+    lastScores = searchResult.scores;
+  }
   console.log('Scores de productos clave:');
   debugIds.forEach(id => {
     const p = res.find(x => x.id === id);
-    if (p) console.log('Producto', id, ':', p.n.substring(0,30), 'score:', scores[p.id] || 50);
+    if (p) console.log('Producto', id, ':', p.n.substring(0,30), 'score:', lastScores[p.id] || 50);
   });
   // Sort by score, then by price
   res.sort((a, b) => {
-    const sa = scores[a.id] || 50;
-    const sb = scores[b.id] || 50;
+    const sa = lastScores[a.id] || 50;
+    const sb = lastScores[b.id] || 50;
     if (sa !== sb) return sa - sb;
     return minP(a) - minP(b);
   });
   console.log('=== RESULTADOS FINALES ===');
   res.slice(0, 3).forEach((p, i) => {
-    console.log(i+1 + '. ID:', p.id, 'Nombre:', p.n.substring(0,40), 'Score:', scores[p.id] || 50);
+    console.log(i+1 + '. ID:', p.id, 'Nombre:', p.n.substring(0,40), 'Score:', lastScores[p.id] || 50);
   });
   return res.slice(0, 8);
 }
