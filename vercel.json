@@ -186,8 +186,7 @@
     },
     {
       "source": "/listas/",
-      "destination": "/listas.html",
-      "preserveQueryString": true
+      "destination": "/listas.html"
     },
     {
       "source": "/:path((?!sitemap.xml|sw.js|listas).*)",
