@@ -19,7 +19,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-
 :root{
   --g: #22c55e;
   --gd:#16a34a;
@@ -34,7 +33,6 @@
   --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
   --shadow-lg:0 10px 40px rgba(0,0,0,.10);
 }
-
 html,body{
   height:100%;
   font-family:'Inter',system-ui,-apple-system,sans-serif;
@@ -44,7 +42,6 @@ html,body{
   overscroll-behavior:none;
   touch-action:manipulation;
 }
-
 /* ─── APP SHELL ─── */
 #app{
   height:100%;
@@ -54,16 +51,96 @@ html,body{
   margin:0 auto;
   position:relative;
 }
-
 /* ─── HEADER ─── */
 .hdr{
   display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:12px 16px;
+  background:var(--white);
+}
+/* Banner descargar app */
+.app-banner {
+  display:none;
+  position:fixed;
+  bottom:20px;
+  left:16px;
+  right:16px;
+  align-items:center;
+  gap:12px;
+  padding:12px 16px;
+  background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%);
+  color:white;
+  font-size:14px;
+  font-weight:500;
+  border-radius:16px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.15);
+  z-index:1000;
+}
+.app-banner-icon {
+  width:40px;
+  height:40px;
+  background:white;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+  color:#22c55e;
+  flex-shrink:0;
+}
+.app-banner-text {
+  flex:1;
+}
+.app-banner-title {
+  font-weight:700;
+  font-size:15px;
+  margin-bottom:2px;
+}
+.app-banner-sub {
+  font-size:12px;
+  opacity:0.9;
+}
+.app-banner-btn {
+  background:white;
+  color:#16a34a;
+  border:none;
+  padding:8px 16px;
+  border-radius:8px;
+  font-weight:700;
+  font-size:13px;
+  cursor:pointer;
+  text-decoration:none;
+  white-space:nowrap;
+}
+.app-banner-close {
+  background:none;
+  border:none;
+  color:white;
+  opacity:0.7;
+  cursor:pointer;
+  font-size:18px;
+  padding:4px;
+}
+.hdr{
   align-items:center;
   justify-content:space-between;
+  gap:12px;
   padding:env(safe-area-inset-top,12px) 20px 0;
   padding-top:calc(env(safe-area-inset-top) + 12px);
   background:var(--white);
   flex-shrink:0;
+}
+/* Disclaimer */
+.disclaimer {
+  padding:12px 16px;
+  font-size:10px;
+  color:var(--ink3);
+  text-align:center;
+  line-height:1.4;
+  background:var(--bg);
+  border-top:1px solid var(--border);
 }
 /* Logo - igual que en tradingchango.com */
 .logo {
@@ -73,7 +150,7 @@ html,body{
   letter-spacing: -1px !important;
   display: flex !important;
   align-items: center !important;
-  gap: 8px !important;
+  gap: 10px !important;
   text-decoration: none !important;
   user-select: none;
   color: #131722 !important;
@@ -98,7 +175,6 @@ html,body{
   border-radius: 50% !important;
   padding: 1px !important;
 }
-
 .hdr-logo{
   font-size:18px;
   display:flex;
@@ -129,7 +205,6 @@ html,body{
   width:auto;min-width:70px;padding:0 12px;
 }
 .hbtn:active{background:var(--bg);transform:scale(.95)}
-
 /* ─── VIEWS ─── */
 /* single-page — content slides horizontally */
 .views-wrap{
@@ -150,7 +225,6 @@ html,body{
   -webkit-overflow-scrolling:touch;
   scroll-behavior:smooth;
 }
-
 /* ═══════════════════════════════
    VIEW 0 — NOTEPAD
 ═══════════════════════════════ */
@@ -159,7 +233,6 @@ html,body{
   flex-direction:column;
   padding:20px 20px 0;
 }
-
 .v0-label{
   font-size:11px;
   font-weight:700;
@@ -183,7 +256,6 @@ html,body{
   margin-bottom:16px;
   margin-top:-12px;
 }
-
 /* NOTEPAD */
 .pad-box{
   background:var(--white);
@@ -225,7 +297,6 @@ html,body{
 }
 .pad-cnt.has{color:var(--g)}
 .pad-tip{font-size:11px;color:var(--ink3)}
-
 /* memory pill */
 .mem{
   display:none;
@@ -240,7 +311,6 @@ html,body{
 }
 .mem.on{display:flex}
 @keyframes up{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
-
 /* CTA */
 .btn-go{
   margin-top:12px;
@@ -262,7 +332,6 @@ html,body{
 .btn-go:disabled{opacity:.3;cursor:not-allowed}
 .go-arrow{font-size:14px;transition:transform .15s}
 .btn-go:not(:disabled):hover .go-arrow{transform:translateX(3px)}
-
 /* saved lists */
 .saved-wrap{
   margin-top:24px;
@@ -302,7 +371,6 @@ html,body{
   font-size:14px;transition:all .1s;
 }
 .sc-del:active{background:#fee2e2;color:var(--red)}
-
 /* ═══════════════════════════════
    VIEW 1 — RESULT
 ═══════════════════════════════ */
@@ -310,7 +378,6 @@ html,body{
   padding:0;
   padding-bottom:calc(env(safe-area-inset-bottom) + 80px);
 }
-
 /* winner card — full bleed */
 .winner{
   background:linear-gradient(135deg,#131722 0%,#1f2937 100%);
@@ -369,7 +436,6 @@ html,body{
   font-size:12px;font-weight:600;
   color:#22c55e;
 }
-
 /* compare row */
 .compare{
   display:flex;gap:5px;
@@ -393,7 +459,6 @@ html,body{
 .cc.best .cc-v{color:var(--gd)}
 .cc-d{font-size:9px;color:var(--red);font-weight:600;margin-top:1px}
 .cc-winner{font-size:9px;font-weight:700;color:#f59e0b;margin-top:2px;letter-spacing:.05em}
-
 /* list label */
 .list-label{
   padding:8px 16px 6px;
@@ -404,13 +469,11 @@ html,body{
 }
 .prog-txt{color:var(--ink2);font-size:12px;font-weight:600;letter-spacing:0;text-transform:none}
 .prog-txt b{color:var(--ink)}
-
 /* ITEMS */
 .items{
   padding:0 12px;
   display:flex;flex-direction:column;gap:5px;
 }
-
 .icard{
   background:var(--white);
   border:1.5px solid var(--border);
@@ -423,12 +486,10 @@ html,body{
 @keyframes rowIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .icard.done{opacity:.38}
 .icard.done .ic-name{text-decoration:line-through;color:var(--ink2)}
-
 .ic-row{
   display:flex;align-items:center;
   gap:10px;padding:12px 12px 12px 10px;
 }
-
 /* checkbox */
 .ic-cb{
   width:26px;height:26px;flex-shrink:0;
@@ -441,15 +502,12 @@ html,body{
 }
 .ic-cb:active{transform:scale(.9)}
 .icard.done .ic-cb{background:var(--g);border-color:var(--g);color:var(--white)}
-
 .ic-em{font-size:26px;flex-shrink:0;line-height:1}
 .ic-img{width:40px;height:40px;object-fit:contain;border-radius:8px;flex-shrink:0;background:#fff}
-
 .ic-body{flex:1;min-width:0}
 .ic-q{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-bottom:1px}
 .ic-name{font-size:14px;font-weight:600;color:var(--ink);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ic-brand{font-size:11px;color:var(--ink2);margin-top:2px}
-
 .ic-r{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0}
 .ic-price{font-size:16px;font-weight:700;color:var(--ink)}
 .ic-price.na{font-size:12px;color:var(--ink3);font-weight:400}
@@ -479,7 +537,6 @@ html,body{
   font-size:14px;border-radius:8px;transition:all .1s;
 }
 .ic-xbtn:active{background:#fee2e2;color:var(--red)}
-
 /* DRAWER */
 .ic-drawer{
   border-top:1px solid var(--border);
@@ -488,7 +545,6 @@ html,body{
   padding:5px 8px 8px;gap:3px;
 }
 .ic-drawer.on{display:flex}
-
 .prow{
   display:flex;align-items:center;gap:8px;
   padding:9px 10px;
@@ -515,7 +571,6 @@ html,body{
 .p-mem{font-size:10px;color:var(--gd);font-weight:700}
 .p-price{font-size:12px;font-weight:700;flex-shrink:0;text-align:right;color:var(--ink)}
 .p-price small{font-size:9px;color:var(--ink2);display:block;font-weight:400}
-
 /* NOT FOUND */
 .nf-row{
   display:flex;align-items:center;gap:10px;
@@ -529,7 +584,6 @@ html,body{
 .nf-info{flex:1}
 .nf-q{font-size:13px;font-weight:600}
 .nf-msg{font-size:11px;color:var(--ink2)}
-
 /* checked sep */
 .csep{
   display:flex;align-items:center;gap:8px;
@@ -537,7 +591,6 @@ html,body{
 }
 .csep-line{flex:1;height:1px;background:var(--border)}
 .csep-txt{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3)}
-
 /* ─── BOTTOM BAR (fixed) ─── */
 .bottom-bar{
   position:fixed;
@@ -578,7 +631,6 @@ html,body{
 .btn-save:active{background:var(--gd);transform:scale(.97)}
 /* saved state */
 .btn-save.saved{background:#dcfce7;color:var(--gd)}
-
 /* ─── SAVE SHEET ─── */
 .sheet-bg{
   position:fixed;inset:0;
@@ -619,7 +671,6 @@ html,body{
   cursor:pointer;transition:all .12s;
 }
 .sheet-btn:active{background:#1a1a1a;transform:scale(.99)}
-
 /* ─── LOADER ─── */
 .loader{
   position:fixed;inset:0;
@@ -638,10 +689,8 @@ html,body{
 }
 @keyframes spin{to{transform:rotate(360deg)}}
 .ld-msg{font-size:13px;font-weight:600;color:var(--ink2)}
-
 /* ─── UTILITIES ─── */
 .hidden{display:none!important}
-
 /* Products status indicator */
 .products-status{
   display:flex;align-items:center;gap:6px;
@@ -654,13 +703,11 @@ html,body{
 </style>
 </head>
 <body>
-
 <!-- LOADER -->
 <div class="loader" id="loader">
   <div class="ld-ring"></div>
   <div class="ld-msg" id="ld-msg">Buscando precios…</div>
 </div>
-
 <!-- SAVE SHEET -->
 <div class="sheet-bg" id="save-bg" onclick="closeSheet(event)">
   <div class="sheet">
@@ -670,64 +717,52 @@ html,body{
     <button class="sheet-btn" onclick="confirmSave()">Guardar →</button>
   </div>
 </div>
-
 <!-- AUTH MODAL -->
 <div class="sheet-bg" id="auth-bg" onclick="closeSheet(event)">
   <div class="sheet auth-sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="auth-title">Crear cuenta</div>
     <p style="margin-bottom:16px;color:#6b7280;font-size:14px">Guardá tus listas y acceder a tu historial desde cualquier dispositivo</p>
-    
     <form onsubmit="handleAuthSubmit(event)">
       <div id="auth-name-group" style="margin-bottom:12px">
         <input class="sheet-input" id="auth-name" type="text" placeholder="Tu nombre" maxlength="30" autocomplete="name">
       </div>
       <input class="sheet-input" id="auth-email" type="email" placeholder="Tu email" maxlength="50" autocomplete="email" style="margin-bottom:12px" required>
       <input class="sheet-input" id="auth-password" type="password" placeholder="Contraseña" minlength="6" style="margin-bottom:12px" required>
-      
       <div id="auth-error" style="color:#ef4444;font-size:13px;margin-bottom:12px;display:none"></div>
-      
       <button type="submit" class="sheet-btn" id="auth-submit" style="width:100%">Crear cuenta</button>
     </form>
-    
     <p style="text-align:center;margin-top:16px;font-size:14px;color:#6b7280">
       <a href="#" onclick="toggleAuthMode();return false" id="auth-toggle" style="color:#22c55e;text-decoration:none;font-weight:500">¿Ya tenés cuenta? Iniciá sesión</a>
     </p>
   </div>
 </div>
-
 <!-- APP -->
 <div id="app">
-
   <!-- HEADER -->
   <div class="hdr">
-    <div class="logo"><div class="logo-icon-wrapper"><i class="fa-solid fa-cart-shopping"></i><i class="fa-solid fa-arrow-trend-up trend-icon-overlay"></i></div><span style="font-family:'Inter',system-ui,sans-serif;color:#131722">TradingChango/<span style="color:#22c55e">Listas</span></span></div>
+    <div class="logo"><a href="/listas.html" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:10px"><div class="logo-icon-wrapper"><i class="fa-solid fa-cart-shopping"></i><i class="fa-solid fa-arrow-trend-up trend-icon-overlay"></i></div><span style="font-family:'Inter',system-ui,sans-serif;color:#131722">TradingChango/<span style="color:#22c55e">Listas</span></span></a></div>
     <div class="hdr-right">
       <button class="hbtn hidden" id="share-btn" onclick="shareList()" title="Compartir"><i class="fa-solid fa-share-nodes"></i></button>
       <button class="hbtn hidden hbtn-wide" id="back-btn" onclick="goBack()">Editar</button>
     </div>
   </div>
-
   <!-- VIEWS TRACK -->
   <div class="views-wrap">
     <div class="views-track" id="track">
-
       <!-- ─── VIEW 0: NOTEPAD ─── -->
       <div class="view" id="v0">
-
         <div class="v0-label">Lista Inteligente</div>
         <div class="v0-title">¿Qué comprás esta semana?</div>
         <div class="v0-subtitle">Armá tu lista como siempre. Nosotros comparamos los precios por vos y te decimos dónde ahorrar hoy!</div>
-
         <!-- Products loaded indicator -->
         <div class="products-status" id="products-status" style="display:none;align-items:center;gap:6px;margin-bottom:12px;padding:8px 12px;background:#f0fdf4;border-radius:10px;font-size:12px;font-weight:600;color:#16a34a;">
           <span id="products-icon">✓</span>
           <span id="products-txt">Cargando productos...</span>
         </div>
-
         <div class="pad-box">
           <textarea id="pad" rows="8"
-            placeholder="leche&#10;pan&#10;huevos&#10;coca&#10;carne para asar"
+            placeholder="leche&#10;pan&#10;huevos&#10;coca cola&#10;asado"
             oninput="onPad()"
             autocomplete="off" autocorrect="off"
             autocapitalize="off" spellcheck="false"></textarea>
@@ -736,18 +771,13 @@ html,body{
             <span class="pad-tip">↵ una por línea</span>
           </div>
         </div>
-
         <div class="mem" id="mem">
           <span>🧠</span><span id="mem-txt"></span>
         </div>
-
         <button class="btn-go" id="btn-go" onclick="optimize()" disabled>
           Optimizar compra <span class="go-arrow">→</span>
         </button>
-        
         <!-- Botón debug para ver estadísticas de aprendizaje -->
-        
-
         <!-- saved lists -->
         <div class="saved-wrap" id="saved-wrap" style="display:none">
           <div class="saved-hdr">
@@ -755,52 +785,67 @@ html,body{
           </div>
           <div class="saved-cards" id="saved-cards"></div>
         </div>
-
       </div><!-- /v0 -->
-
       <!-- ─── VIEW 1: RESULT ─── -->
       <div class="view" id="v1">
-
         <!-- Winner -->
         <div class="winner" id="winner">
           <div class="w-header"><span class="w-label">Mejor precio para tu lista</span><span class="w-trophy">🏆</span></div>
-          <div class="w-content"><div class="w-left"><div class="w-total" id="w-total">$0</div><div class="w-save hidden" id="w-save"><span id="w-save-txt"></span></div></div><div class="w-right"><div class="w-super" id="w-super">—</div></div></div>
+          <div class="w-content"><div class="w-left"><div class="w-total" id="w-total">$0*</div><div class="w-save hidden" id="w-save"><span id="w-save-txt"></span></div></div><div class="w-right"><div class="w-super" id="w-super">—</div></div></div>
         </div>
-
+        <!-- Disclaimer -->
+        <div class="disclaimer" id="disclaimer">*Valores estimados. La aplicación de beneficios y el precio final en caja dependen exclusivamente de las condiciones vigentes de cada comercio y entidad emisora.</div>
         <!-- Compare chips -->
         <div class="compare" id="compare"></div>
-
         <!-- List header -->
         <div class="list-label">
           <span>Tu lista</span>
           <span class="prog-txt"><b id="prog-n">0</b> / <span id="prog-t">0</span> en el chango</span>
         </div>
-
         <!-- Items -->
         <div class="items" id="items"></div>
-
       </div><!-- /v1 -->
-
     </div><!-- /track -->
   </div><!-- /views-wrap -->
-
   <!-- BOTTOM BAR -->
   <div class="bottom-bar" id="bottom-bar" style="display:none">
     <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
     <div class="bb-row">
       <div class="bb-left">
         <div class="bb-label" id="bb-label">Total estimado</div>
-        <div class="bb-total" id="bb-total">$0</div>
+        <div class="bb-total" id="bb-total">$0*</div>
       </div>
       <button class="btn-save" id="btn-save" onclick="openSave()">
         Guardar
       </button>
     </div>
   </div>
-
+  <!-- Banner descargar app -->
+  <!-- Banner descargar app -->
+  <div class="app-banner" id="app-banner">
+    <div class="app-banner-icon"><i class="fa-solid fa-mobile-screen"></i></div>
+    <div class="app-banner-text">
+      <div class="app-banner-title">¡Usá la app!</div>
+      <div class="app-banner-sub">Experiencia más rápida</div>
+    </div>
+    <a href="https://tradingchango.com" class="app-banner-btn" target="_blank">Descargar</a>
+    <button class="app-banner-close" onclick="closeAppBanner()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
 </div><!-- /app -->
-
 <script>
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   APP BANNER - Descargar app
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function closeAppBanner() {
+  document.getElementById('app-banner').style.display = 'none';
+  localStorage.setItem('appBannerClosed', 'true');
+}
+// Mostrar banner solo si no se cerró antes
+if (localStorage.getItem('appBannerClosed') !== 'true') {
+  document.getElementById('app-banner').style.display = 'flex';
+} else {
+  document.getElementById('app-banner').style.display = 'none';
+}
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    SUPABASE CONFIG
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -814,32 +859,26 @@ try {
 } catch(e) {
   console.warn('Supabase init failed:', e);
 }
-
 // ============================================
 // AUTHENTICATION - Sistema de login/registro
 // ============================================
-
 // Variables para autenticación
 let currentAuthUser = null;
 let pendingSaveAfterAuth = false;
-
 // Actualizar UI según estado de autenticación
 function updateAuthUI() {
   // Aquí podés agregar lógica para mostrar/ocultar elementos según el usuario
   console.log('Usuario autenticado:', currentAuthUser?.email);
 }
-
 // Verificar si hay un usuario autenticado
 async function checkAuth() {
   if (!supabaseClient) return null;
-  
   try {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (session?.user) {
       currentAuthUser = session.user;
       return session.user;
     }
-    
     // También verificar sesión persistida
     const { data: { user } } = await supabaseClient.auth.getUser();
     currentAuthUser = user;
@@ -849,29 +888,23 @@ async function checkAuth() {
     return null;
   }
 }
-
 // Mostrar modal de autenticación
 function showAuthModal() {
   document.getElementById('auth-bg').classList.add('on');
 }
-
 // Ocultar modal de autenticación
 function hideAuthModal() {
   document.getElementById('auth-bg').classList.remove('on');
 }
-
 // Iniciar sesión con email y contraseña
 async function signIn(email, password) {
   if (!supabaseClient) return { error: 'Supabase no inicializado' };
-  
   try {
     const { data, error } = await supabaseClient.auth.signInWithPassword({
       email,
       password
     });
-    
     if (error) return { error };
-    
     currentAuthUser = data.user;
     hideAuthModal();
     return { success: true, user: data.user };
@@ -879,11 +912,9 @@ async function signIn(email, password) {
     return { error: e.message };
   }
 }
-
 // Registrarse con email y contraseña
 async function signUp(email, password, name) {
   if (!supabaseClient) return { error: 'Supabase no inicializado' };
-  
   try {
     const { data, error } = await supabaseClient.auth.signUp({
       email,
@@ -894,53 +925,42 @@ async function signUp(email, password, name) {
         }
       }
     });
-    
     if (error) return { error };
-    
     // Si no requiere confirmación, iniciar sesión
     if (data.session) {
       currentAuthUser = data.user;
       hideAuthModal();
       return { success: true, user: data.user };
     }
-    
     return { success: true, needsConfirmation: true };
   } catch(e) {
     return { error: e.message };
   }
 }
-
 // Cerrar sesión
 async function signOut() {
   if (!supabaseClient) return;
-  
   await supabaseClient.auth.signOut();
   currentAuthUser = null;
 }
-
 // Manejar el formulario de login
 async function handleAuthSubmit(e) {
   e.preventDefault();
-  
   const email = document.getElementById('auth-email').value.trim();
   const password = document.getElementById('auth-password').value;
   const name = document.getElementById('auth-name')?.value.trim() || '';
   const isSignUp = document.getElementById('auth-toggle').textContent === '¿Ya tenés cuenta? Iniciá sesión';
-  
   const btn = document.getElementById('auth-submit');
   btn.disabled = true;
   btn.textContent = '...';
-  
   let result;
   if (isSignUp) {
     result = await signUp(email, password, name);
   } else {
     result = await signIn(email, password);
   }
-  
   btn.disabled = false;
   btn.textContent = isSignUp ? 'Crear cuenta' : 'Iniciar sesión';
-  
   if (result.error) {
     document.getElementById('auth-error').textContent = result.error.message || result.error;
     document.getElementById('auth-error').style.display = 'block';
@@ -959,14 +979,12 @@ async function handleAuthSubmit(e) {
     }
   }
 }
-
 // Toggle entre login y registro
 function toggleAuthMode() {
   const toggle = document.getElementById('auth-toggle');
   const title = document.getElementById('auth-title');
   const submit = document.getElementById('auth-submit');
   const nameField = document.getElementById('auth-name-group');
-  
   if (toggle.textContent === '¿Ya tenés cuenta? Iniciá sesión') {
     // Cambiar a login
     toggle.textContent = '¿No tenés cuenta? Registrate';
@@ -980,17 +998,13 @@ function toggleAuthMode() {
     submit.textContent = 'Crear cuenta';
     nameField.style.display = 'block';
   }
-  
   document.getElementById('auth-error').style.display = 'none';
 }
-
 // ============================================
 // SHARED LISTS - Compartir listas
 // ============================================
-
 // Variable para saber si estamos cargando una lista compartida
 let loadingSharedList = false;
-
 // ============================================
 // SHARE - Compartir lista
 // ============================================
@@ -1000,23 +1014,19 @@ async function shareList() {
     alert('Agregá productos a tu lista primero');
     return;
   }
-  
   // Calcular totales
   const totals = {};
   SUPERS.forEach(s => {
     totals[s] = res.reduce((sum, i) => sum + ((i.chosen.p[s] || 0) * (i.qty || 1)), 0);
   });
   const sk = SUPERS.filter(s => totals[s] > 0).sort((a, b) => totals[a] - totals[b]);
-  
   // Calcular total general
   let granTotal = 0;
   res.forEach(i => {
     granTotal += minP(i.chosen) * (i.qty || 1);
   });
-  
   // Generar ID para compartir (sin necesidad de cuenta)
   const shareId = 'lista_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 8);
-  
   // Guardar en tabla pública para compartir
   let shareUrl = '';
   if (supabaseClient) {
@@ -1031,7 +1041,6 @@ async function shareList() {
           };
         }
       });
-      
       await supabaseClient.from('listas_compartidas').upsert({
         id: shareId,
         user_id: null, // Sin cuenta
@@ -1040,7 +1049,6 @@ async function shareList() {
         created_at: new Date().toISOString(),
         expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 días
       }, { onConflict: 'id' });
-      
       // Generar URL de compartir
       const currentOrigin = window.location.origin;
       shareUrl = `${currentOrigin}/listas.html?lista=${shareId}`;
@@ -1048,16 +1056,13 @@ async function shareList() {
       console.warn('Error guardando lista compartida:', e);
     }
   }
-  
   // Fallback: usar el ID generado
   if (!shareUrl) {
     const currentOrigin = window.location.origin;
     shareUrl = `${currentOrigin}/listas.html?lista=${shareId}`;
   }
-  
   // Generar mensaje de texto
   const lines = ['🛒 Lista del super — TradingChango', ''];
-  
   // Agregar cada item - búsqueda arriba del producto
   res.forEach(i => {
     const busqueda = i.q;
@@ -1068,29 +1073,23 @@ async function shareList() {
     lines.push(`• ${busqueda}`);
     lines.push(`  ${producto} (${cantidad} x ${fmt(precio)} = ${fmt(subtotal)})`);
   });
-  
   // Agregar total general
   if (granTotal > 0) {
     lines.push('');
     lines.push(`💰 TOTAL: ${fmt(granTotal)}`);
   }
-  
   if (sk.length) {
     lines.push('');
     lines.push(`🏆 Mejor precio: ${SL[sk[0]]} ${fmt(totals[sk[0]])}`);
   }
-  
   lines.push('');
   lines.push(`👉 ${shareUrl}`);
-  
   const txt = lines.join('\n');
-  
   // Compartir usando el menú nativo del sistema
   const shareData = {
     title: 'Mi lista de compras - TradingChango',
     text: txt
   };
-  
   if (navigator.share) {
     // Usar API nativa de compartir (abre menú del sistema)
     navigator.share(shareData).catch(err => {
@@ -1103,7 +1102,6 @@ async function shareList() {
     fallbackCopy();
   }
 }
-
 // Cargar lista compartida desde URL
 async function loadSharedList(listId) {
   console.log('Loading shared list:', listId);
@@ -1111,7 +1109,6 @@ async function loadSharedList(listId) {
     console.warn('No Supabase client');
     return false;
   }
-  
   try {
     // Buscar primero en listas compartidas
     console.log('Fetching from listas_compartidas with id:', listId);
@@ -1120,9 +1117,7 @@ async function loadSharedList(listId) {
       .select('items, name, expires_at')
       .eq('id', listId)
       .maybeSingle();
-    
     console.log('Shared data:', sharedData, 'Error:', sharedError);
-    
     if (sharedError) {
       console.error('Error loading shared list:', sharedError);
     } else if (sharedData) {
@@ -1131,12 +1126,10 @@ async function loadSharedList(listId) {
         console.log('Lista compartida expirada');
         return false;
       }
-      
       const sharedItems = sharedData.items;
       if (sharedItems && sharedItems.active) {
         const convertedItems = [];
         let uid = 1;
-        
         Object.entries(sharedItems.active).forEach(([productId, data]) => {
           console.log('Looking for product:', productId);
           // Soportar formato nuevo (objeto con qty y search) y formato viejo (solo qty)
@@ -1156,55 +1149,43 @@ async function loadSharedList(listId) {
             });
           }
         });
-        
         console.log('Converted items:', convertedItems);
-        
         if (convertedItems.length) {
           items = convertedItems;
           isSaved = true;
           currentId = listId;
           loadingSharedList = true;
-          
           // No necesitamos optimize() para listas compartidas, solo renderizar
           // await optimize();
           loadingSharedList = false;
-          
           console.log('Calling renderResult...');
           console.log('items:', items);
           renderResult();
           console.log('After renderResult');
-          
           // Cambiar a la vista de resultados
           goResult();
-          
           // No mostrar mensaje de alerta
-          
           return true;
         }
       }
     }
-    
     return false;
   } catch(e) {
     console.error('Exception loading shared list:', e);
     return false;
   }
 }
-
 // Verificar si hay una lista compartida en la URL al cargar
 async function checkForSharedList() {
   const params = new URLSearchParams(window.location.search);
   const listId = params.get('lista');
-  
   console.log('URL actual:', window.location.href);
   console.log('Search params:', window.location.search);
   console.log('Checking for shared list, listId:', listId);
-  
   if (listId) {
     // Cargar productos primero
     await loadProducts();
     console.log('Products loaded, DB length:', DB.length);
-    
     if (DB.length) {
       const loaded = await loadSharedList(listId);
       console.log('Shared list loaded:', loaded);
@@ -1213,12 +1194,10 @@ async function checkForSharedList() {
     }
   }
 }
-
 // ============================================
 // SEARCH LEARNING - Aprendizaje de búsquedas
 // Versión optimizada: historial personal en perfiles (JSONB) + comunidad
 // ============================================
-
 // Obtener user_id actual (del localStorage o generar uno)
 function getUserId() {
   let userId = localStorage.getItem('tradingchango_user_id');
@@ -1228,7 +1207,6 @@ function getUserId() {
   }
   return userId;
 }
-
 // Obtener historial personal del usuario desde la tabla perfiles
 async function getPersonalSearchHistory() {
   // Solo intentar si hay usuario autenticado
@@ -1237,16 +1215,13 @@ async function getPersonalSearchHistory() {
     console.log('[Learning] No hay usuario autenticado, usando solo comunidad');
     return {};
   }
-  
   if (!supabaseClient) return {};
-  
   try {
     const { data, error } = await supabaseClient
       .from('perfiles')
       .select('search_history')
       .eq('id', authUser.id)
       .maybeSingle();
-      
     if (error) {
       console.warn('[Learning] Error fetching personal history:', error);
       return {};
@@ -1257,19 +1232,15 @@ async function getPersonalSearchHistory() {
     return {};
   }
 }
-
 // Registrar la elección de un producto para una keyword (personal + comunidad)
 async function recordSearchChoice(keyword, productId) {
   console.log('[Learning] Guardando elección:', keyword, '->', productId);
-  
   if (!supabaseClient) {
     console.log('[Learning] No hay supabaseClient');
     return;
   }
-  
   const userId = getUserId();
   const kw = keyword.toLowerCase().trim();
-  
   try {
     // 1. Intentar guardar en comunidad (esto siempre funciona)
     await supabaseClient.from('search_learning').upsert({
@@ -1277,7 +1248,6 @@ async function recordSearchChoice(keyword, productId) {
       product_id: productId,
       count: 1
     }, { onConflict: 'keyword,product_id' });
-    
     // Incrementar count de comunidad
     const { data: existing } = await supabaseClient
       .from('search_learning')
@@ -1285,7 +1255,6 @@ async function recordSearchChoice(keyword, productId) {
       .eq('keyword', kw)
       .eq('product_id', productId)
       .single();
-      
     if (existing) {
       await supabaseClient
         .from('search_learning')
@@ -1293,25 +1262,19 @@ async function recordSearchChoice(keyword, productId) {
         .eq('keyword', kw)
         .eq('product_id', productId);
     }
-    
     console.log('[Learning] Guardado en comunidad');
-    
     // 2. Actualizar historial personal del usuario (en perfiles) - solo si está logueado
     const authUser = await checkAuth();
     if (authUser) {
       console.log('[Learning] Usuario autenticado, guardando en perfiles');
-      
       // Usar el ID de auth en lugar del local
       const perfilId = authUser.id;
-      
       const { data: perfil } = await supabaseClient
         .from('perfiles')
         .select('search_history')
         .eq('id', perfilId)
         .maybeSingle();
-      
       let history = perfil?.search_history || {};
-      
       if (!history[kw]) {
         history[kw] = {};
       }
@@ -1319,31 +1282,24 @@ async function recordSearchChoice(keyword, productId) {
         history[kw][productId] = 0;
       }
       history[kw][productId] = (history[kw][productId] || 0) + 1;
-      
       await supabaseClient
         .from('perfiles')
         .update({ search_history: history })
         .eq('id', perfilId);
-      
       console.log('[Learning] Guardado en perfiles');
     } else {
       console.log('[Learning] Usuario no autenticado, solo se guarda en comunidad');
     }
-    
   } catch(e) {
     console.warn('[Learning] Error:', e);
   }
 }
-
 // Cache para historial personal
 let personalHistoryCache = null;
-
 // Obtener productos más elegidos para una keyword (mezcla personal + comunidad)
 async function getTopProductsForKeyword(keyword, limit = 5) {
   if (!supabaseClient) return [];
-  
   const kw = keyword.toLowerCase().trim();
-  
   try {
     // 1. Obtener elecciones personales del usuario (desde perfiles)
     let personalData = {};
@@ -1351,7 +1307,6 @@ async function getTopProductsForKeyword(keyword, limit = 5) {
       personalHistoryCache = await getPersonalSearchHistory();
     }
     personalData = personalHistoryCache[kw] || {};
-    
     // 2. Obtener elecciones de la comunidad
     const { data: communityData } = await supabaseClient
       .from('search_learning')
@@ -1359,11 +1314,9 @@ async function getTopProductsForKeyword(keyword, limit = 5) {
       .eq('keyword', kw)
       .order('count', { ascending: false })
       .limit(10);
-    
     // 3. Combinar: personales primero (con boost x10), luego comunidad
     const result = [];
     const seen = new Set();
-    
     // Agregar personales con boost
     Object.entries(personalData).forEach(([productId, count]) => {
       seen.add(productId);
@@ -1373,7 +1326,6 @@ async function getTopProductsForKeyword(keyword, limit = 5) {
         isPersonal: true
       });
     });
-    
     // Agregar comunidad (sin boost)
     if (communityData) {
       communityData.forEach(item => {
@@ -1387,49 +1339,37 @@ async function getTopProductsForKeyword(keyword, limit = 5) {
         }
       });
     }
-    
     // Ordenar por count
     result.sort((a, b) => b.count - a.count);
-    
     return result.slice(0, limit);
-    
   } catch(e) {
     console.warn('getTopProductsForKeyword failed:', e);
     return [];
   }
 }
-
 // Cache para productos más elegidos
 let searchLearningCache = {};
-
 // Función para obtener productos priorizados por aprendizaje
 async function getLearningBoostedProducts(query) {
   const firstWord = query.split(' ')[0].toLowerCase();
-  
   // Usar cache si existe
   if (searchLearningCache[firstWord]) {
     return searchLearningCache[firstWord];
   }
-  
   const topProducts = await getTopProductsForKeyword(firstWord, 5);
   searchLearningCache[firstWord] = topProducts;
-  
   return topProducts;
 }
-
 // Obtener TODOS los datos de aprendizaje (para mostrar en consola o debug)
 async function getAllSearchLearning() {
   if (!supabaseClient) return [];
-  
   const userId = getUserId();
-  
   try {
     const { data, error } = await supabaseClient
       .from('search_learning')
       .select('keyword, product_id, count, user_id, updated_at')
       .order('updated_at', { ascending: false })
       .limit(100);
-      
     if (error) throw error;
     return data || [];
   } catch(e) {
@@ -1437,14 +1377,11 @@ async function getAllSearchLearning() {
     return [];
   }
 }
-
 // Función para mostrar las estadísticas de aprendizaje
 async function showSearchLearningStats() {
   const userId = getUserId();
-  
   // Obtener historial personal
   const personalHistory = await getPersonalSearchHistory();
-  
   // Obtener datos de comunidad
   let communityData = [];
   if (supabaseClient) {
@@ -1455,18 +1392,14 @@ async function showSearchLearningStats() {
       .limit(50);
     communityData = data || [];
   }
-  
   // Mostrar historial personal
   const personalKeywords = Object.keys(personalHistory);
-  
   if (!personalKeywords.length && !communityData.length) {
     alert('No hay datos de aprendizaje aún.\n\nCuando los usuarios busquen productos y los agreguen a su lista, estos datos se registrarán aquí.');
     return;
   }
-  
   let msg = '📊 ESTADÍSTICAS DE BÚSQUEDAS\n\n';
   msg += `Tu ID: ${userId}\n\n`;
-  
   // Mostrar historial personal
   if (personalKeywords.length) {
     msg += '👤 TU HISTORIAL:\n';
@@ -1479,14 +1412,12 @@ async function showSearchLearningStats() {
     });
     msg += '\n';
   }
-  
   // Agrupar comunidad por keyword
   const communityByKeyword = {};
   communityData.forEach(item => {
     if (!communityByKeyword[item.keyword]) communityByKeyword[item.keyword] = [];
     communityByKeyword[item.keyword].push(item);
   });
-  
   if (Object.keys(communityByKeyword).length) {
     msg += '🌐 TOP COMUNIDAD:\n';
     Object.keys(communityByKeyword).slice(0, 10).forEach(keyword => {
@@ -1496,17 +1427,14 @@ async function showSearchLearningStats() {
       });
     });
   }
-  
   console.log(msg);
   alert(msg);
 }
-
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    DB — loaded from Supabase
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 let DB = [];
 let DB_LOADED = false;
-
 // Emoji mapping for categories
 const EMOJIS = {
   'leche': '🥛', 'leche entera': '🥛', 'leche descremada': '🥛', 'leche chocolatada': '🍫',
@@ -1527,7 +1455,6 @@ const EMOJIS = {
   'helado': '🍦', 'pizza': '🍕', 'hamburguesa': '🍔', 'sanguche': '🥪',
   'queso': '🧀', 'fiambre': '🥓', 'salchicha': '🌭',
 };
-
 function getEmoji(subcategoria) {
   const sub = (subcategoria || '').toLowerCase();
   for (const [key, emoji] of Object.entries(EMOJIS)) {
@@ -1535,7 +1462,6 @@ function getEmoji(subcategoria) {
   }
   return '📦';
 }
-
 // Transform Supabase product to app format
 function transformProduct(p) {
   const prices = {};
@@ -1544,7 +1470,6 @@ function transformProduct(p) {
   if (p.p_coto) prices.coto = p.p_coto;
   if (p.p_dia) prices.dia = p.p_dia;
   if (p.p_masonline) prices.masonline = p.p_masonline;
-  
   return {
     id: p.id,
     n: p.nombre,
@@ -1558,15 +1483,12 @@ function transformProduct(p) {
     img: p.imagen_url || ''
   };
 }
-
 // Load products from Supabase
 async function loadProducts() {
   if (DB_LOADED) return DB;
-  
   const statusEl = document.getElementById('products-status');
   const statusIcon = document.getElementById('products-icon');
   const statusTxt = document.getElementById('products-txt');
-  
   try {
     // Show loading status
     if (statusEl) {
@@ -1574,10 +1496,8 @@ async function loadProducts() {
       statusIcon.textContent = '📋';
       statusTxt.textContent = 'Cargando productos...';
     }
-    
     document.getElementById('ld-msg').textContent = 'Cargando productos...';
     document.getElementById('loader').classList.add('on');
-    
     if (!supabaseClient) {
       console.error('Supabase client not initialized');
       if (statusEl) {
@@ -1586,32 +1506,24 @@ async function loadProducts() {
       }
       return;
     }
-    
     const { data, error } = await supabaseClient
       .from('productos')
       .select('id, nombre, marca, categoria, subcategoria, ean, p_jumbo, p_carrefour, p_coto, p_dia, p_masonline, url_jumbo, url_carrefour, url_coto, url_dia, url_masonline, imagen_url')
       .order('nombre');
-    
     if (error) throw error;
-    
     DB = (data || []).map(transformProduct);
     DB_LOADED = true;
-    
     console.log(`[Listas] Cargados ${DB.length} productos de Supabase`);
-    
     // Generate aliases from loaded products
     generateAliases();
-    
     // Update status
     if (statusEl) {
       statusTxt.textContent = `Más de ${DB.length.toLocaleString('es-AR')} productos cargados para comparar — ¡Escribí tu lista!`;
     }
-    
     document.getElementById('loader').classList.remove('on');
     return DB;
   } catch (err) {
     console.error('[Listas] Error cargando productos:', err);
-    
     // Show error status
     if (statusEl) {
       statusIcon.textContent = '⚠️';
@@ -1619,7 +1531,6 @@ async function loadProducts() {
       statusEl.style.background = '#fef2f2';
       statusEl.style.color = '#dc2626';
     }
-    
     document.getElementById('loader').classList.remove('on');
     // Fallback to empty DB
     DB = [];
@@ -1627,7 +1538,6 @@ async function loadProducts() {
     return DB;
   }
 }
-
 // Generate aliases from loaded products
 let A = {};
 function generateAliases() {
@@ -1652,7 +1562,6 @@ function generateAliases() {
     'papel': ['papel'], 'papel higienico': ['papel'],
     'atun': ['atun'], 'atún': ['atun'],
   };
-  
   // Add product names and brands as aliases
   const seen = new Set();
   DB.forEach(p => {
@@ -1674,7 +1583,6 @@ function generateAliases() {
     }
   });
 }
-
 const SUPERS = ['coto', 'carrefour', 'dia', 'jumbo', 'mas', 'disco', 'vea', 'laanonima'];
 const SL = {
   coto: 'Coto', 
@@ -1686,12 +1594,10 @@ const SL = {
   vea: 'Vea',
   laanonima: 'La Anónima'
 };
-
 /* utils */
 const nor=s=>(s||'').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,' ').trim();
 const minP=p=>{const v=SUPERS.map(s=>p.p[s]).filter(Boolean);return v.length?Math.min(...v):0;};
 const bestS=p=>{let b=null,bv=Infinity;SUPERS.forEach(s=>{if(p.p[s]&&p.p[s]<bv){bv=p.p[s];b=s;}});return b;};
-
 // Función para verificar si el precio mínimo es outlier (desviación > 50%)
 const isMinPriceOutlier = (p) => {
   const prices = SUPERS.map(s => p.p[s]).filter(Boolean);
@@ -1702,7 +1608,6 @@ const isMinPriceOutlier = (p) => {
   return deviation > 0.5; // Es outlier si la desviación es mayor al 50%
 };
 const fmt=v=>'$'+Math.round(v).toLocaleString('es-AR');
-
 /* memory — localStorage */
 const mKey = q => 'tc3_' + nor(q);
 const fKey = (q, id) => 'tc3f_' + nor(q) + '_' + id;
@@ -1723,22 +1628,17 @@ const mSet = (q, prod) => {
   }
 };
 const mCnt = (q, prod) => +(localStorage.getItem(fKey(q, prod.id)) || 0);
-
 /* matching - improved for Supabase data */
 async function doMatch(query) {
   if (!DB_LOADED || !DB.length) return [];
-  
   const q = nor(query);
   if (!q) return [];
-  
   // IDs para debug
   const debugIds = [892, 167, 1043];
-  
   // Extraer palabras de la query
   const qWords = q.split(' ');
   const firstWord = qWords[0];
   const queryLower = q.toLowerCase();
-  
   // Obtener productos más elegidos para esta búsqueda (Learning)
   let learningBoost = {};
   let maxCount = 0;
@@ -1760,7 +1660,6 @@ async function doMatch(query) {
   } catch(e) {
     // Silently fail if learning data not available
   }
-  
   // Mapeo de palabras a categorías
   const wordToCat = {
     // almacen
@@ -1780,37 +1679,29 @@ async function doMatch(query) {
     // lacteos
     'yogur': 'lacteos', 'yoghurt': 'lacteos', 'leche': 'lacteos', 'manteca': 'lacteos', 'queso': 'lacteos', 'ricota': 'lacteos', 'crema': 'lacteos', 'dulce de leche': 'lacteos', 'ddl': 'lacteos', 'flan': 'lacteos', 'postre': 'lacteos', 'cuajada': 'lacteos', 'kefir': 'lacteos', 'chocolate': 'lacteos'
   };
-  
   // Determinar la categoría objetivo
   const targetCat = wordToCat[firstWord] || null;
-  
   // Palabras a excluir para búsquedas específicas
   const exclusionKeywords = {
     'leche': ['chocolatada', 'chocolate', 'cocoa', 'cacao'],
     'yogur': ['chocolatada', 'chocolate'],
     'queso': ['chocolate']
   };
-  
   // Obtener las palabras de exclusión para esta primera palabra
   const potentialExcludes = exclusionKeywords[firstWord] || [];
-  
   // Si hay más de una palabra en la búsqueda, no aplicar exclusiones
   // (priorizamos productos que matchean más palabras)
   const isMultiWordSearch = qWords.length > 1;
-  
   // Si la búsqueda explícitamente contiene palabras de exclusión, no aplicar el filtro
   const searchIncludesExclusion = potentialExcludes.some(exc => queryLower.includes(exc));
-  
   // Solo excluir si:
   // - Es una búsqueda de una sola palabra
   // - Y hay palabras de exclusión definidas
   // - Y la búsqueda no contiene ninguna de las palabras de exclusión
   const excludeWords = (!isMultiWordSearch && potentialExcludes.length > 0 && !searchIncludesExclusion) ? potentialExcludes : [];
-  
   const res = [];
   const seen = new Set();
   const scores = {};
-  
   const add = (p, score) => {
     if (!seen.has(p.id)) {
       seen.add(p.id);
@@ -1820,7 +1711,6 @@ async function doMatch(query) {
       scores[p.id] = score;
     }
   };
-  
   DB.forEach(p => {
     const pn = nor(p.n);
     const pbrand = p.brand ? nor(p.brand) : '';
@@ -1828,9 +1718,7 @@ async function doMatch(query) {
     const psub = p.sub ? nor(p.sub) : '';
     const pnWords = pn.split(' ');
     const firstPnWord = pnWords[0];
-    
     let score = 100; // Default score (lower is better)
-    
     // Learning Boost: productos con más count aparecen primero (prioridad máxima)
     const productId = String(p.id);
     let learningBonus = 0;
@@ -1845,16 +1733,13 @@ async function doMatch(query) {
     } else if (debugIds.includes(p.id)) {
       console.log('SIN vote:', p.id);
     }
-    
     // Verificar si la primera palabra del producto es exactamente igual a la primera palabra de la query
     const isExactFirstWordMatch = (firstPnWord === firstWord);
     const isAlmacen = (pcat === 'almacen');
-    
     // Si hay una categoría objetivo, solo mostrar productos de esa categoría
     if (targetCat && pcat !== targetCat) {
       return; // Skip productos de otras categorías
     }
-    
     // Verificar si el producto contiene palabras excluidas para esta búsqueda
     if (excludeWords.length > 0) {
       const lowerPn = pn.toLowerCase();
@@ -1864,7 +1749,6 @@ async function doMatch(query) {
         }
       }
     }
-    
     // 0. Exact match del nombre completo
     if (pn === q) { score = 0; }
     // 1. Query es prefijo del nombre completo
@@ -1879,26 +1763,21 @@ async function doMatch(query) {
     else if (pcat && pcat === firstWord) { score = 6; }
     // 6. Subcategoría exacta
     else if (psub && psub === firstWord) { score = 10; }
-    
     // Aplicar learning bonus DESPUÉS del matching
     if (learningBonus > 0) {
       score -= learningBonus;
     }
-    
     // Filtrar outliers: si el precio mínimo es outlier, no mostrar el producto
     if (minP(p) > 0 && isMinPriceOutlier(p)) {
       return; // Skip productos con precio mínimo outlier
     }
-    
     if (score < 100) add(p, score);
   });
-  
   console.log('Scores de productos clave:');
   debugIds.forEach(id => {
     const p = res.find(x => x.id === id);
     if (p) console.log('Producto', id, ':', p.n.substring(0,30), 'score:', scores[p.id] || 50);
   });
-  
   // Sort by score, then by price
   res.sort((a, b) => {
     const sa = scores[a.id] || 50;
@@ -1906,24 +1785,19 @@ async function doMatch(query) {
     if (sa !== sb) return sa - sb;
     return minP(a) - minP(b);
   });
-  
   console.log('=== RESULTADOS FINALES ===');
   res.slice(0, 3).forEach((p, i) => {
     console.log(i+1 + '. ID:', p.id, 'Nombre:', p.n.substring(0,40), 'Score:', scores[p.id] || 50);
   });
-  
   return res.slice(0, 8);
 }
-
 /* ── STATE ── */
 let items=[];
 let saved=JSON.parse(localStorage.getItem('tc3_saved')||'[]');
 let uid=Date.now();
 let currentId=null;
 let isSaved=false;
-
 const saveAll=()=>localStorage.setItem('tc3_saved',JSON.stringify(saved));
-
 /* ── SCREEN 0 ── */
 function onPad(){
   const val=document.getElementById('pad').value;
@@ -1942,34 +1816,27 @@ function onPad(){
     else memEl.classList.remove('on');
   } else memEl.classList.remove('on');
 }
-
 async function optimize() {
   const val = document.getElementById('pad').value;
   const lines = val.split('\n').map(l => l.trim()).filter(Boolean);
   if (!lines.length) return;
-  
   document.getElementById('ld-msg').textContent = `Buscando ${lines.length} producto${lines.length !== 1 ? 's' : ''}…`;
   document.getElementById('loader').classList.add('on');
-  
   // Wait for products to load from Supabase
   await loadProducts();
-  
   if (!DB.length) {
     alert('No se pudieron cargar los productos. Por favor, intentá de nuevo.');
     document.getElementById('loader').classList.remove('on');
     return;
   }
-  
   // Precargar datos de aprendizaje para las keywords de la lista
   const uniqueKeywords = [...new Set(lines.map(line => {
     const match = line.match(/^(\d+)\s+(.+)$/);
     const query = match ? match[2] : line;
     return query.split(' ')[0].toLowerCase();
   }))];
-  
   // Cargar datos de aprendizaje en paralelo
   await Promise.all(uniqueKeywords.map(keyword => getTopProductsForKeyword(keyword, 5)));
-  
   setTimeout(async () => {
     // Función async para procesar cada línea
     const processLine = async (line) => {
@@ -1977,7 +1844,6 @@ async function optimize() {
       const match = line.match(/^(\d+)\s+(.+)$/);
       const qty = match ? parseInt(match[1]) : 1;
       const query = match ? match[2] : line;
-      
       const matches = await doMatch(query);
       const rem = mGet(query);
       let chosen = null;
@@ -1985,7 +1851,6 @@ async function optimize() {
       else if (matches.length) chosen = matches[0];
       return { id: uid++, q: query, qty: qty, matches, chosen, checked: false, open: false };
     };
-    
     // Procesar todas las líneas en paralelo
     items = await Promise.all(lines.map(processLine));
     isSaved = false;
@@ -1994,7 +1859,6 @@ async function optimize() {
     goResult();
   }, 300);
 }
-
 /* ── NAVIGATION ── */
 function goResult(){
   document.getElementById('track').style.transform='translateX(-100%)';
@@ -2010,7 +1874,6 @@ function goBack(){
   document.getElementById('share-btn').classList.add('hidden');
   document.getElementById('bottom-bar').style.display='none';
 }
-
 /* ── RESULT RENDER ── */
 function renderResult(){
   // Calcular el total de todos los productos con precio elegido (sin importar si están marcados)
@@ -2029,13 +1892,11 @@ function renderResult(){
   const winner=sk[0],worst=sk[sk.length-1];
   const wt=winner?totals[winner]:0;
   const savings=worst&&worst!==winner?totals[worst]-wt:0;
-
   document.getElementById('w-super').textContent=winner?SL[winner]:'Sin precios';
-  document.getElementById('w-total').textContent=wt>0?fmt(wt):'—';
+  document.getElementById('w-total').textContent=wt>0?fmt(wt)+'*':'—';
   const saveEl=document.getElementById('w-save');
   if(savings>0){saveEl.classList.remove('hidden');document.getElementById('w-save-txt').textContent=`Ahorrás ${fmt(savings)} vs ${SL[worst]}`;}
   else saveEl.classList.add('hidden');
-
   // compare
   document.getElementById('compare').innerHTML=sk.map(s=>{
     const diff=s!==winner?`+${fmt(totals[s]-wt)}`:null;
@@ -2047,11 +1908,9 @@ function renderResult(){
       ${diff?`<div class="cc-d">${diff}</div>`:''}
     </div>`;
   }).join('');
-
   renderItems(winner);
   renderFooter(winner);
 }
-
 function renderItems(winner){
   const unc=items.filter(i=>!i.checked);
   const chk=items.filter(i=>i.checked);
@@ -2065,7 +1924,6 @@ function renderItems(winner){
   document.getElementById('prog-n').textContent=chk.length;
   document.getElementById('prog-t').textContent=items.length;
 }
-
 function itemHTML(item,winner,delay){
   const prod=item.chosen;
   if(!prod&&!item.matches.length){
@@ -2125,7 +1983,6 @@ function itemHTML(item,winner,delay){
     ${drawer}
   </div>`;
 }
-
 function renderFooter(winner){
   const chk=items.filter(i=>i.checked);
   const pct=items.length?Math.round((chk.length/items.length)*100):0;
@@ -2139,7 +1996,7 @@ function renderFooter(winner){
     pct===0?'Total estimado en '+( winner?SL[winner]:'el super'):
     `Llevás ${chk.length} de ${items.length}`;
   document.getElementById('bb-total').textContent=
-    tot>0?fmt(tot):(()=>{
+    tot>0?fmt(tot)+'*':(()=>{
       const res=items.filter(i=>i.chosen);
       const totals={};
       SUPERS.forEach(s=>{const t=res.reduce((sum,i)=>sum+((i.chosen.p[s]||0)*(i.qty||1)),0);if(t>0)totals[s]=t;});
@@ -2147,7 +2004,6 @@ function renderFooter(winner){
       return sk[0]?fmt(totals[sk[0]]):'$0';
     })();
 }
-
 function getWinner(){
   // Obtener todos los productos con precio elegido (sin importar si están marcados)
   const res=items.filter(i=>i.chosen);
@@ -2163,7 +2019,6 @@ function getWinner(){
   });
   const sk=Object.keys(t).sort((a,b)=>t[a]-t[b]);return sk[0]||null;
 }
-
 /* ── ITEM ACTIONS ── */
 function toggleChk(id){
   const it=items.find(i=>i.id===id);if(!it)return;
@@ -2194,11 +2049,9 @@ function pick(itemId,prodId){
   if(!it||!prod)return;
   it.chosen=prod;it.open=false;
   mSet(it.q,prod);
-  
   // Registrar la elección para aprendizaje de búsquedas
   const firstWord = it.q.split(' ')[0].toLowerCase();
   recordSearchChoice(firstWord, String(prod.id)); // No await para no bloquear UI
-  
   renderResult();markDirty();
 }
 function changeQty(id, delta){
@@ -2240,7 +2093,7 @@ function updateTotals(){
   const wt=winner?totals[winner]:0;
   const savings=worst&&worst!==winner?totals[worst]-wt:0;
   document.getElementById('w-super').textContent=winner?SL[winner]:'Sin precios';
-  document.getElementById('w-total').textContent=wt>0?fmt(wt):'—';
+  document.getElementById('w-total').textContent=wt>0?fmt(wt)+'*':'—';
   const saveEl=document.getElementById('w-save');
   if(savings>0){saveEl.classList.remove('hidden');document.getElementById('w-save-txt').textContent=`Ahorrás ${fmt(savings)} vs ${SL[worst]}`;}
   else saveEl.classList.add('hidden');
@@ -2266,13 +2119,12 @@ function updateTotals(){
   document.getElementById('bb-label').textContent=
     pct===0?'Total estimado en '+( w?SL[w]:'el super'):
     `Llevás ${chk.length} de ${items.length}`;
-  document.getElementById('bb-total').textContent=tot>0?fmt(tot):'$0';
+  document.getElementById('bb-total').textContent=tot>0?fmt(tot)+'*':' $0';
 }
 function delItem(id){
   items=items.filter(i=>i.id!==id);
   renderResult();markDirty();
 }
-
 /* ── SAVE ── */
 function markDirty(){
   isSaved=false;
@@ -2283,7 +2135,6 @@ function resetSaveBtn(){
   btn.classList.remove('saved');
   btn.textContent='Guardar';
 }
-
 async function openSave(){
   // Verificar autenticación primero
   const user = await checkAuth();
@@ -2292,7 +2143,6 @@ async function openSave(){
     showAuthModal();
     return;
   }
-  
   pendingSaveAfterAuth = false;
   const d=new Date();
   document.getElementById('save-name').value=
@@ -2320,7 +2170,6 @@ async function confirmSave(){
     }, 300);
     return;
   }
-  
   const name=(document.getElementById('save-name').value||'').trim()||'Mi lista';
   const now=new Date();
   const res=items.filter(i=>i.chosen);
@@ -2350,7 +2199,6 @@ async function confirmSave(){
   btn.textContent='✓ Guardada';
   renderSaved();
 }
-
 /* ── SAVED LISTS ── */
 function renderSaved(){
   const wrap=document.getElementById('saved-wrap');
@@ -2368,7 +2216,6 @@ function renderSaved(){
     </div>
   `).join('');
 }
-
 function loadSaved(id){
   const l=saved.find(li=>li.id===id);if(!l)return;
   items=l.items.map(i=>({...i,open:false}));
@@ -2381,12 +2228,10 @@ function loadSaved(id){
   const btn=document.getElementById('btn-save');
   btn.classList.add('saved');btn.textContent='✓ Guardada';
 }
-
 function delSaved(id){
   saved=saved.filter(l=>l.id!==id);
   saveAll();renderSaved();
 }
-
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    INIT - Load products from Supabase on startup
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -2405,14 +2250,11 @@ window.closeSheet = closeSheet;
 window.confirmSave = confirmSave;
 window.loadSaved = loadSaved;
 window.delSaved = delSaved;
-
 // Init
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('[Listas] Iniciando app...');
-  
   // Verificar si hay una lista compartida en la URL
   checkForSharedList();
-  
   // Attach onPad to the textarea
   const padEl = document.getElementById('pad');
   if (padEl) {
@@ -2422,9 +2264,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Also run onPad on load to set initial button state
     onPad();
   }
-  
   renderSaved();
-  
   // Preload products silently in background
   loadProducts().then(() => {
     if (DB.length) {
@@ -2434,7 +2274,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.error('[Listas] Error en inicialización:', err);
   });
 });
-
 // Fallback: also call onPad on load if DOM already loaded
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
   setTimeout(() => {
