@@ -1,9 +1,25 @@
 
-import { defineConfig } from 'vite';
+import { defineConfig, Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
+
+// Plugin para servir listas.html desde /listas (Clean URLs en desarrollo)
+function cleanUrlPlugin(): Plugin {
+  return {
+    name: 'clean-url-plugin',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        if (req.url === '/listas' || req.url === '/listas/') {
+          req.url = '/listas.html';
+        }
+        next();
+      });
+    },
+  };
+}
 
 export default defineConfig({
   plugins: [
+    cleanUrlPlugin(),
     react({
       babel: {
         parserOpts: {

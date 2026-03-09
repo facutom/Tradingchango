@@ -194,5 +194,12 @@
       "statusCode": 200
     }
   ],
+  "redirects": [
+    {
+      "source": "/listas.html",
+      "destination": "/listas",
+      "statusCode": 301
+    }
+  ],
   "trailingSlash": false
 }
