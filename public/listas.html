@@ -32,25 +32,45 @@
   --red:#ef4444;
   --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
   --shadow-lg:0 10px 40px rgba(0,0,0,.10);
+  --primary:#22c55e;
+  --radius:12px;
 }
 html,body{
   height:100%;
-  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;
   background:var(--white);
   color:var(--ink);
   -webkit-font-smoothing:antialiased;
   overscroll-behavior:none;
   touch-action:manipulation;
+  font-size:16px;
+}
+/* ─── MOBILE-FIRST: Base styles optimized for mobile ─── */
+body{
+  padding-bottom:env(safe-area-inset-bottom, 20px);
 }
 /* ─── APP SHELL ─── */
 #app{
   min-height:100%;
   display:flex;
   flex-direction:column;
-  max-width:500px;
+  max-width:100%;
   margin:0 auto;
   position:relative;
 }
+
+/* Desktop: centered card */
+@media (min-width: 600px) {
+  #app {
+    max-width: 500px;
+    margin: 20px auto;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+    overflow: hidden;
+    background: var(--white);
+  }
+}
+
 /* ─── HEADER ─── */
 .hdr{
   display:flex;
@@ -347,20 +367,21 @@ html,body{
 }
 #pad{
   width:100%;
-  min-height:180px;
-  padding:16px 16px 12px;
+  min-height:200px;
+  padding:18px 18px 14px;
   border:none;outline:none;
   font-family:'Plus Jakarta Sans',system-ui,sans-serif;
-  font-size:16px; /* prevents iOS zoom */
-  line-height:1.9;
+  font-size:17px; /* prevents iOS zoom */
+  line-height:1.8;
   color:var(--ink);
   resize:none;
   background:transparent;
   caret-color:var(--g);
+  border-radius:12px;
 }
 #pad::placeholder{color:var(--ink3)}
 .pad-foot{
-  padding:8px 14px 10px;
+  padding:10px 16px 12px;
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -390,22 +411,23 @@ html,body{
 .btn-go{
   margin-top:12px;
   width:100%;
-  padding:12px;
+  padding:16px 20px;
   background:var(--ink);
   color:var(--white);
-  border:none;border-radius:12px;
+  border:none;border-radius:14px;
   font-family:'Plus Jakarta Sans',system-ui,sans-serif;
-  font-size:14px;font-weight:700;
+  font-size:16px;font-weight:700;
   cursor:pointer;
-  display:flex;align-items:center;justify-content:center;gap:6px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
   transition:all .15s;
   -webkit-user-select:none;user-select:none;
   letter-spacing:-.01em;
   flex-shrink:0;
+  min-height:52px;
 }
 .btn-go:not(:disabled):active{transform:scale(.98);background:#1a1a1a}
 .btn-go:disabled{opacity:.3;cursor:not-allowed}
-.go-arrow{font-size:14px;transition:transform .15s}
+.go-arrow{font-size:16px;transition:transform .15s}
 .btn-go:not(:disabled):hover .go-arrow{transform:translateX(3px)}
 /* saved lists */
 .saved-wrap{
@@ -496,15 +518,18 @@ html,body{
 .w-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .w-trophy{font-size:28px;animation:bounce 1s infinite}
 @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-.w-content{display:flex;justify-content:space-between;align-items:flex-end}
-.w-left{flex:1}
-.w-right{text-align:right}
+.w-content{display:flex;justify-content:center;align-items:center;gap:30px;padding:15px 0}
+.w-left{text-align:center;flex:1}
+.w-right{text-align:center}
 .w-super{
-  font-size:18px;font-weight:700;
+  font-size:16px;font-weight:700;
   letter-spacing:-.02em;
-  color:#22c55e;
+  color:var(--white);
   line-height:1;
   text-transform:uppercase;
+  background:rgba(255,255,255,0.15);
+  padding:8px 16px;
+  border-radius:20px;
 }
 .w-winner-label{
   font-size:11px;font-weight:700;
@@ -513,11 +538,19 @@ html,body{
   margin-top:3px;
 }
 .w-total{
-  font-size:28px;font-weight:900;
+  font-size:48px;font-weight:900;
   letter-spacing:-2px;
-  color:var(--white);
-  line-height:1;
-  text-shadow:0 2px 4px rgba(0,0,0,0.2);
+  color:#22c55e;
+  line-height:1.1;
+  text-shadow:0 2px 8px rgba(34,197,94,0.4);
+}
+.w-disclaimer{
+  font-size:9px;
+  color:rgba(255,255,255,0.7);
+  text-align:center;
+  line-height:1.2;
+  margin-top:8px;
+  padding:0 5px;
 }
 .w-save{
   display:inline-flex;align-items:center;gap:5px;
@@ -961,10 +994,8 @@ html,body{
         <!-- Winner -->
         <div class="winner" id="winner">
           <div class="w-header"><span class="w-label">Mejor precio para tu lista</span><span class="w-trophy">🏆</span></div>
-          <div class="w-content"><div class="w-left"><div class="w-total" id="w-total">$0*</div><div class="w-save hidden" id="w-save"><span id="w-save-txt"></span></div></div><div class="w-right"><div class="w-super" id="w-super">—</div></div></div>
+          <div class="w-content"><div class="w-left"><div class="w-total" id="w-total">$0*</div><div class="w-disclaimer">Valores estimados. La aplicación de beneficios y el precio final en caja dependen exclusivamente de las condiciones vigentes de cada comercio y entidad emisora.</div><div class="w-save hidden" id="w-save"><span id="w-save-txt"></span></div></div><div class="w-right"><div class="w-super" id="w-super">—</div></div></div>
         </div>
-        <!-- Disclaimer -->
-        <div class="disclaimer" id="disclaimer">*Valores estimados. La aplicación de beneficios y el precio final en caja dependen exclusivamente de las condiciones vigentes de cada comercio y entidad emisora.</div>
         <!-- Compare chips -->
         <div class="compare" id="compare"></div>
         <!-- List header -->
@@ -3380,9 +3411,13 @@ async function loadSaved(id){
   l.winner=newWinner;
   l.winnerTotal=newWinnerTotal;
   saveAll();
-  // Mostrar con cantidad si es mayor a 1
-  document.getElementById('pad').value=l.items.map(i=>i.qty > 1 ? i.qty + ' ' + i.q : i.q).join('\n');
-  onPad();
+  
+  // Solo mostrar en el bloc de notas si la lista NO está guardada
+  if (!isSaved) {
+    document.getElementById('pad').value=l.items.map(i=>i.qty > 1 ? i.qty + ' ' + i.q : i.q).join('\n');
+    onPad();
+  }
+  
   goResult();
 }
 function delSaved(id){
