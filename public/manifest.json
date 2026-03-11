@@ -1,7 +1,7 @@
 {
-  "short_name": "TradingChango",
-  "name": "TradingChango - Tradea los precios, maximizá el carrito",
-  "description": "Ahorrá comparando precios de supermercados en tiempo real.",
+  "short_name": "Listas",
+  "name": "Tradingchango - Listas",
+  "description": "Gestioná tus listas de compras y compará precios.",
   "icons": [
     {
       "src": "favicon.ico",
@@ -21,7 +21,7 @@
       "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "/listas",
   "display": "standalone",
   "theme_color": "#000000",
   "background_color": "#ffffff",

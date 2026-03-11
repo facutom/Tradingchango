@@ -1342,6 +1342,8 @@ const App: React.FC = () => {
           <Route path="/varios" element={<Navigate to="/" replace />} />
           <Route path="/buscar" element={<Navigate to="/" replace />} />
           <Route path="/listas" element={<Navigate to="/listas.html" replace />} />
+          <Route path="/listas.html" element={null} />
+          <Route path="/listas/*" element={<Navigate to="/listas.html" replace />} />
         </Routes>
       </Suspense>
 

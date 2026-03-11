@@ -12,6 +12,10 @@ function cleanUrlPlugin(): Plugin {
         if (req.url === '/listas' || req.url === '/listas/' || req.url === '/listas.html') {
           req.url = '/listas.html';
         }
+        // Rewrite /listas/lista_xxx -> /listas.html
+        if (req.url && req.url.startsWith('/listas/lista_')) {
+          req.url = '/listas.html';
+        }
         next();
       });
     },
