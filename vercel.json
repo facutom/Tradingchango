@@ -175,6 +175,14 @@
       "destination": "/listas.html"
     },
     {
+      "source": "/listas",
+      "destination": "/listas.html"
+    },
+    {
+      "source": "/listas.html",
+      "destination": "/listas.html"
+    },
+    {
       "source": "/sitemap.xml",
       "destination": "/sitemap.xml"
     },
@@ -187,25 +195,14 @@
       "destination": "/listas-sitemap.xml"
     },
     {
-      "source": "/listas",
-      "destination": "/listas.html"
-    },
-    {
-      "source": "/listas/",
-      "destination": "/listas.html"
-    },
-    {
-      "source": "/listas.html",
-      "destination": "/listas.html"
-    },
-    {
-      "source": "/listas/:path*",
-      "destination": "/listas.html"
-    },
-    {
-      "source": "/:path((?!sitemap.xml|sw.js|listas|listas.html).*)",
-      "destination": "/index.html",
-      "statusCode": 200
+      "source": "/((?!listas|listas.html|sitemap.xml|sw.js|api|assets).*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "tradingchango.com"
+        }
+      ],
+      "destination": "/index.html"
     }
   ],
   "trailingSlash": false
