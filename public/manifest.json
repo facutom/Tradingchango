@@ -1,6 +1,6 @@
 {
-  "short_name": "Listas",
-  "name": "Tradingchango - Listas",
+  "short_name": "ListasChango",
+  "name": "ListasChango - Listas de Compras",
   "description": "Gestioná tus listas de compras y compará precios.",
   "icons": [
     {
@@ -21,7 +21,7 @@
       "purpose": "any maskable"
     }
   ],
-  "start_url": "/listas",
+  "start_url": "/listas.html",
   "display": "standalone",
   "theme_color": "#000000",
   "background_color": "#ffffff",

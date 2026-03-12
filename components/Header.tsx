@@ -74,7 +74,7 @@ const Header: React.FC<HeaderProps> = memo(({
         <div className="flex items-center gap-3">
           <div className="hidden md:flex items-center gap-4 mr-2">
             <a 
-              href="/listas.html" 
+              href={window.location.hostname === 'localhost' || window.location.hostname.startsWith('localhost:') ? '/listas.html' : 'https://listas.tradingchango.com'} 
               className="bg-green-500 hover:bg-green-600 text-white text-center py-1.5 px-3 rounded-lg text-xs font-bold transition-colors cursor-pointer"
             >
               Listas
@@ -85,7 +85,7 @@ const Header: React.FC<HeaderProps> = memo(({
           </div>
 
           <a 
-            href="/listas.html" 
+            href={window.location.hostname === 'localhost' || window.location.hostname.startsWith('localhost:') ? '/listas.html' : 'https://listas.tradingchango.com'} 
             className="md:hidden w-8 h-8 flex items-center justify-center text-green-500 hover:text-green-600 transition-colors" 
             aria-label="Ir a Listas"
           >
