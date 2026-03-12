@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <!-- Redirección para subdomain listas -->
+  <!-- Redirección para subdomain listas (solo para desarrollo local) -->
   <script type="text/javascript">
     (function() {
       var host = window.location.hostname;
-      // Detectar subdomain listas en producción y desarrollo
-      if (host === 'listas.tradingchango.com' || host === 'www.listas.tradingchango.com' || host === 'listas.localhost' || host.startsWith('listas.localhost:')) {
-        window.location.href = '/listas.html' + window.location.pathname + window.location.search + window.location.hash;
+      // Solo para desarrollo local
+      if (host === 'listas.localhost' || host.startsWith('listas.localhost:')) {
+        window.location.href = '/listas.html';
       }
     })();
   </script>
+  <!-- Versión de la app para cache busting -->
   <!-- Versión de la app para cache busting -->
   <script>window.APP_VERSION = '1.0.1';</script>
   <script type="text/javascript">
