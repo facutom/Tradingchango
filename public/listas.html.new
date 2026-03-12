@@ -416,7 +416,7 @@ body{
 }
 .saved-hdr{
   display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:4px;
+  margin-bottom:10px;
 }
 .saved-hdr-txt{
   font-size:11px;font-weight:700;
@@ -494,8 +494,8 @@ body{
   color:rgba(255,255,255,.9);
   margin-bottom:6px;
 }
-.w-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-.w-trophy{font-size:36px;animation:bounce 1s infinite}
+.w-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.w-trophy{font-size:28px;animation:bounce 1s infinite}
 @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 .w-content{display:flex;justify-content:center;align-items:center;gap:30px;padding:15px 0}
 .w-left{text-align:center;flex:1}
@@ -509,13 +509,6 @@ body{
   background:rgba(255,255,255,0.15);
   padding:8px 16px;
   border-radius:20px;
-}
-.w-ganador{
-  font-size:10px;font-weight:700;
-  color:#22c55e;
-  margin-top:4px;
-  text-transform:uppercase;
-  letter-spacing:0.1em;
 }
 .w-winner-label{
   font-size:11px;font-weight:700;
@@ -963,7 +956,7 @@ body{
       <div class="view" id="v1">
         <div class="winner" id="winner">
           <div class="w-header"><span class="w-label">Mejor precio para tu lista</span><span class="w-trophy">🏆</span></div>
-          <div class="w-content"><div class="w-left"><div class="w-total" id="w-total">$0*</div><div class="w-disclaimer">Valores estimados. La aplicación de beneficios y el precio final en caja dependen exclusivamente de las condiciones vigentes de cada comercio y entidad emisora.</div><div class="w-save hidden" id="w-save"><span id="w-save-txt"></span></div></div><div class="w-right"><div class="w-super" id="w-super">—</div><div class="w-ganador">GANADOR</div></div></div>
+          <div class="w-content"><div class="w-left"><div class="w-total" id="w-total">$0*</div><div class="w-disclaimer">Valores estimados. La aplicación de beneficios y el precio final en caja dependen exclusivamente de las condiciones vigentes de cada comercio y entidad emisora.</div><div class="w-save hidden" id="w-save"><span id="w-save-txt"></span></div></div><div class="w-right"><div class="w-super" id="w-super">—</div></div></div>
         </div>
         <div class="compare" id="compare"></div>
         <div class="list-label">
@@ -1242,31 +1235,10 @@ async function shareList() {
     superProductCount[s] = 0;
     resolved.forEach(i => { if (i.chosen.p[s] && i.chosen.p[s] > 0) superProductCount[s]++; });
   });
-  
-  // Función para calcular el precio por unidad de un producto en un supermercado específico
-  const getPrecioPorUnidadSupermercado = (prod, supermercado) => {
-    const precio = prod.p[supermercado];
-    if (!precio || precio <= 0) return null;
-    if (!prod.contenido || prod.contenido <= 0) return precio; // Sin contenido, usar precio absoluto
-    let factor = 1;
-    const um = (prod.unidad || '').toLowerCase();
-    if (um === 'g' || um === 'gr') factor = 0.001;
-    else if (um === 'ml') factor = 0.001;
-    return precio / (prod.contenido * factor);
-  };
-  
-  // Calcular totales usando PRECIO POR UNIDAD
   SUPERS.forEach(s => {
     const superItems = resolved.filter(i => i.chosen.p[s] && i.chosen.p[s] > 0);
     if (superItems.length === totalItems && totalItems > 0) {
-      // Calcular el total usando precio por unidad
-      const t = resolved.reduce((sum, i) => {
-        const precioUnidad = getPrecioPorUnidadSupermercado(i.chosen, s);
-        if (precioUnidad !== null) {
-          return sum + (precioUnidad * (i.qty || 1));
-        }
-        return sum;
-      }, 0);
+      const t = resolved.reduce((sum, i) => sum + ((i.chosen.p[s] || 0) * (i.qty || 1)), 0);
       if (t > 0) totals[s] = t;
     }
   });
@@ -1546,11 +1518,10 @@ const SYNONYMS = {
   'yogurisimo': 'yogurisimo',
   'endulzar': 'azucar',
   'azucar': 'endulzar',
-  // Sinónimos para variaciones de palabras de cerveza
-  'birra': 'cerveza',
-  'birras': 'cerveza',
-  // Leche chocolatada es un producto específico, NO es lo mismo que chocolate
-  // No agregamos sinónimo porque "leche chocolatada" es diferente a "leche chocolate"
+  // Sinónimos para variaciones de palabras
+  'chocolatada': 'chocolate',
+  'chocolateada': 'chocolate',
+  'chocolat': 'chocolate',
   'lecches': 'leche',
   'leches': 'leche',
 };
@@ -1629,31 +1600,23 @@ function scoreProduct(product, tokens, negatedTokens, queryVolume) {
       }
     }
     if (marcaHit) {
-      tokenScore += 30; // Reducido de 100 a 30 para que no domine sobre el nombre
+      tokenScore += 100; // MARCA: peso muy alto para que domine
       brandMatchCount++;
     }
 
-    // NOMBRE: buscar en el nombre del producto - mayor peso que la marca
+    // NOMBRE: buscar en el nombre del producto
     // Usamos includes que es más laxo - busca substrings
     if (nombre.includes(token)) {
-      tokenScore += 50; // Aumentado de 30 a 50 para dar más peso al nombre que a la marca
+      tokenScore += 30;
     } else {
       // Si no encontró exact match, buscar con stem
       for (const w of nombre.split(' ')) {
-        if (stemMatch(w, token)) { tokenScore += 25; break; }
+        if (stemMatch(w, token)) { tokenScore += 15; break; }
       }
     }
 
-    // SUBCATEGORÍA - aumentar peso para priorizar por categoría
-    if (sub.includes(token)) {
-      tokenScore += 15; // aumentado de 5 a 15
-    }
-
-    // Bonus adicional si múltiples tokens coinciden con la subcategoría
-    const subMatches = tokens.filter(t => sub.includes(t)).length;
-    if (subMatches > 0) {
-      score += subMatches * 10; // Bonus por cada token que coincide con la categoría
-    }
+    // SUBCATEGORÍA
+    if (sub.includes(token)) tokenScore += 5;
 
     if (tokenScore === 0) allTokensFound = false;
     score += tokenScore;
@@ -1667,16 +1630,16 @@ function scoreProduct(product, tokens, negatedTokens, queryVolume) {
 
   // ── PASO 2: bonus globales ─────────────────────────────────────────────
 
-  // Penalización por tokens que no matchearon - reducir para permitir más coincidencias parciales
+  // Penalización por tokens que no matchearon - más fuerte para evitar falsos positivos
   const unmatchedTokens = tokens.filter(token => {
     const marcaWords = marca.split(' ').filter(w => w.length > 1);
     const inMarca = marcaWords.some(mw => mw === token || mw.includes(token) || token.includes(mw) || stemMatch(mw, token));
     const inNombre = nombre.includes(token) || nombre.split(' ').some(w => stemMatch(w, token));
     return !inMarca && !inNombre;
   });
-  // Penalización por tokens ausentes - reducir de -50 a -20 para ser más tolerante
+  // Penalización FUERTE por tokens ausentes - penalizar con -50 por cada token que no matchea
   if (unmatchedTokens.length > 0) {
-    score -= unmatchedTokens.length * 20;
+    score -= unmatchedTokens.length * 50;
     // Si hay más de la mitad de tokens ausentes, descartar completamente
     if (unmatchedTokens.length > tokens.length / 2) {
       return -1;
@@ -1684,7 +1647,7 @@ function scoreProduct(product, tokens, negatedTokens, queryVolume) {
   }
 
   // WORD MATCH BONUS: Si una palabra de búsqueda coincide exactamente con una palabra del nombre
-  // Aumentamos el bonus para priorizar productos que coincidan con más palabras
+  // Esto ayuda a priorizar productos donde las palabras coinciden como palabras completas
   const nombreWords = nombre.split(/\s+/).filter(w => w.length > 1);
   let exactWordMatches = 0;
   for (const token of tokens) {
@@ -1697,49 +1660,24 @@ function scoreProduct(product, tokens, negatedTokens, queryVolume) {
       }
     }
   }
-  // Bonus por cada coincidencia exacta de palabra - aumentar de 3 a 10 puntos
+  // Bonus por cada coincidencia exacta de palabra (max 3 bonus points por palabra)
   if (exactWordMatches > 0) {
-    score += exactWordMatches * 10;
-  }
-
-  // BONUS PALABRAS EN NOMBRE: Bonus basado en cuántas palabras del nombre coinciden con tokens del query
-  // Esto prioriza productos como "Leche Chocolate" cuando buscas "leche chocolatada" porque ambas palabras están en el nombre
-  let nombreTokensMatched = 0;
-  for (const nw of nombreWords) {
-    for (const token of tokens) {
-      if (nw === token || nw.includes(token) || token.includes(nw) || stemMatch(nw, token)) {
-        nombreTokensMatched++;
-        break;
-      }
-    }
-  }
-  // Bonus proporcional: si el nombre tiene 3 palabras y 2 coinciden con el query, dar bonus
-  if (nombreTokensMatched > 0 && nombreWords.length > 0) {
-    const nombreMatchRatio = nombreTokensMatched / nombreWords.length;
-    // Si más del 50% de las palabras del nombre coinciden con el query, dar bonus
-    if (nombreMatchRatio >= 0.5) {
-      score += Math.floor(nombreMatchRatio * 100);
-    }
+    score += exactWordMatches * 3;
   }
 
   // BONUS ESPECIAL: Si TODAS las palabras de búsqueda coinciden con el nombre
   // Este es el boost clave para YOGURISIMO sin endulzar / sin azucar
-  // Cuando el usuario busca 2+ palabras y todas están en el nombre, ese producto debe subir al primer puesto
+  // Cuando el usuario busca 3 palabras y las 3 están en el nombre, ese producto debe subir al primer puesto
   if (exactWordMatches === tokens.length && tokens.length >= 2) {
-    score += 200; // Bonus gigante para asegurar primer puesto cuando hay match completo
-  }
-
-  // BONUS PROPORCIONAL: Bonus adicional basado en el porcentaje de tokens que coinciden
-  // Esto asegura que productos con más coincidencias parciales suban en el ranking
-  const matchPercentage = tokens.length > 0 ? exactWordMatches / tokens.length : 0;
-  if (matchPercentage >= 0.5) {
-    score += Math.floor(matchPercentage * 50); // Bonus de hasta 50 puntos basado en % de match
+    score += 100; // Bonus gigante para asegurar primer puesto
   }
 
   // BONUS ADICIONAL: Si la marca coincide Y hay al menos 2 tokens de búsqueda
-  // Reducido de 300 a 50 para que no domine sobre el nombre del producto
+  // Este boost ayuda a que productos de una marca específica aparezcan primero
+  // cuando el usuario busca "marca + caracteristica" (ej: "yogurisimo sin azucar")
+  // Aumentamos el boost para asegurar que la marca domine sobre coincidencias parciales
   if (brandMatchCount > 0 && tokens.length >= 2) {
-    score += 50;
+    score += 300;
   }
 
   // Bonus x1.4 si todos los tokens matchearon
@@ -1826,18 +1764,8 @@ async function doMatch(query) {
       return score > 0 ? { ...product, _score: score } : null;
     }).filter(Boolean);
 
-    // Ordenar por score, y en caso de empate, por precio por unidad (más barato primero)
-    scored.sort((a, b) => {
-      // Primero por score
-      if (b._score !== a._score) {
-        return b._score - a._score;
-      }
-      // Si hay empate en score, ordenar por precio por unidad (más barato primero)
-      const precioA = a.precioPorUnidad ?? Infinity;
-      const precioB = b.precioPorUnidad ?? Infinity;
-      return precioA - precioB;
-    });
-    console.log('[doMatch] Results:', scored.length, 'products, top5:', scored.slice(0,5).map(p => ({n: p.n, cat: p.sub || p.cat || 'N/A', score: p._score, precioUnidad: p.precioPorUnidad})));
+    scored.sort((a, b) => b._score - a._score);
+    console.log('[doMatch] Results:', scored.length, 'products, top3:', scored.slice(0,3).map(p => ({n: p.n, score: p._score})));
     return scored.slice(0, 8);
   } catch(err) {
     // Fallback silencioso: nunca rompe la app
@@ -1887,26 +1815,6 @@ function transformProduct(p) {
   if (p.p_coto) prices.coto = p.p_coto;
   if (p.p_dia) prices.dia = p.p_dia;
   if (p.p_masonline) prices.masonline = p.p_masonline;
-  
-  // Calcular precio por unidad de medida
-  let precioPorUnidad = null;
-  if (p.contenido_numerico && p.contenido_numerico > 0) {
-    const menores = Object.values(prices).filter(v => v && v > 0);
-    if (menores.length > 0) {
-      const menorPrecio = Math.min(...menores);
-      // Normalizar a kg o lt
-      let factor = 1;
-      const um = (p.unidad_medida || '').toLowerCase();
-      if (um === 'g' || um === 'gr') factor = 0.001;
-      else if (um === 'ml') factor = 0.001;
-      else if (um === 'kg') factor = 1;
-      else if (um === 'l') factor = 1;
-      else if (um === 'kg') factor = 1;
-      // Si es por unidad, no normalizamos
-      precioPorUnidad = menorPrecio / (p.contenido_numerico * factor);
-    }
-  }
-  
   return {
     id: p.id,
     n: p.nombre,
@@ -1917,10 +1825,7 @@ function transformProduct(p) {
     p: prices,
     url: p.url_jumbo || p.url_carrefour || p.url_coto || p.url_dia || p.url_masonline || '',
     ean: p.ean || [],
-    img: p.imagen_url || '',
-    contenido: p.contenido_numerico || null,
-    unidad: p.unidad_medida || '',
-    precioPorUnidad: precioPorUnidad
+    img: p.imagen_url || ''
   };
 }
 
@@ -1940,7 +1845,7 @@ async function loadProducts() {
     }
     const { data, error } = await supabaseClient
       .from('productos')
-      .select('id, nombre, marca, categoria, subcategoria, ean, p_jumbo, p_carrefour, p_coto, p_dia, p_masonline, url_jumbo, url_carrefour, url_coto, url_dia, url_masonline, imagen_url, contenido_numerico, unidad_medida')
+      .select('id, nombre, marca, categoria, subcategoria, ean, p_jumbo, p_carrefour, p_coto, p_dia, p_masonline, url_jumbo, url_carrefour, url_coto, url_dia, url_masonline, imagen_url')
       .order('nombre');
     // Cargar en batches de 1000 hasta obtener todos
     let allData = data || [];
@@ -1948,7 +1853,7 @@ async function loadProducts() {
     while (loadedCount > 0) {
       const { data: moreData } = await supabaseClient
         .from('productos')
-        .select('id, nombre, marca, categoria, subcategoria, ean, p_jumbo, p_carrefour, p_coto, p_dia, p_masonline, url_jumbo, url_carrefour, url_coto, url_dia, url_masonline, imagen_url, contenido_numerico, unidad_medida')
+        .select('id, nombre, marca, categoria, subcategoria, ean, p_jumbo, p_carrefour, p_coto, p_dia, p_masonline, url_jumbo, url_carrefour, url_coto, url_dia, url_masonline, imagen_url')
         .order('nombre')
         .range(loadedCount, loadedCount + 999);
       if (!moreData || moreData.length === 0) break;
@@ -1984,43 +1889,8 @@ const nor = (s) => {
     .replace(/\s+/g, ' ').trim();
   return normalized;
 };
-// minP: precio mínimo considerando precio por unidad si está disponible
-const minP = p => { 
-  // Si tiene precio por unidad calculado, usarlo
-  if (p.precioPorUnidad && p.precioPorUnidad > 0) {
-    return p.precioPorUnidad;
-  }
-  // Sinon fallback al precio mínimo absoluto
-  const v = SUPERS.map(s => p.p[s]).filter(Boolean); 
-  return v.length ? Math.min(...v) : 0; 
-};
-// bestS: mejor supermercado considerando precio por unidad
-const bestS = p => { 
-  let b = null, bv = Infinity; 
-  // Usar precio por unidad si está disponible
-  if (p.precioPorUnidad && p.precioPorUnidad > 0) {
-    bv = p.precioPorUnidad;
-    // Encontrar el supermercado con el menor precio
-    for (const s of SUPERS) {
-      if (p.p[s] && p.p[s] > 0) {
-        // Calcular precio por unidad para este supermercado
-        let factor = 1;
-        const um = (p.unidad || '').toLowerCase();
-        if (um === 'g' || um === 'gr') factor = 0.001;
-        else if (um === 'ml') factor = 0.001;
-        const precioUnidad = p.p[s] / (p.contenido * factor);
-        if (precioUnidad < bv) {
-          bv = precioUnidad;
-          b = s;
-        }
-      }
-    }
-    return b;
-  }
-  // Fallback al precio absoluto
-  SUPERS.forEach(s => { if (p.p[s] && p.p[s] < bv) { bv = p.p[s]; b = s; } }); 
-  return b; 
-};
+const minP = p => { const v = SUPERS.map(s => p.p[s]).filter(Boolean); return v.length ? Math.min(...v) : 0; };
+const bestS = p => { let b = null, bv = Infinity; SUPERS.forEach(s => { if (p.p[s] && p.p[s] < bv) { bv = p.p[s]; b = s; } }); return b; };
 const fmt = v => '$' + Math.round(v).toLocaleString('es-AR');
 
 /* memory — localStorage */
@@ -2156,30 +2026,10 @@ function renderResult() {
     superProductCount[s] = 0;
     resolved.forEach(i => { if (i.chosen.p[s] && i.chosen.p[s] > 0) superProductCount[s]++; });
   });
-  
-  // Función para calcular el precio por unidad de un producto en un supermercado específico
-  const getPrecioPorUnidadSupermercado = (prod, supermercado) => {
-    const precio = prod.p[supermercado];
-    if (!precio || precio <= 0) return null;
-    if (!prod.contenido || prod.contenido <= 0) return precio; // Sin contenido, usar precio absoluto
-    let factor = 1;
-    const um = (prod.unidad || '').toLowerCase();
-    if (um === 'g' || um === 'gr') factor = 0.001;
-    else if (um === 'ml') factor = 0.001;
-    return precio / (prod.contenido * factor);
-  };
-  
-  // Calcular totales usando PRECIO POR UNIDAD
   SUPERS.forEach(s => {
     const superItems = resolved.filter(i => i.chosen.p[s] && i.chosen.p[s] > 0);
     if (superItems.length === totalItems && totalItems > 0) {
-      const t = resolved.reduce((sum, i) => {
-        const precioUnidad = getPrecioPorUnidadSupermercado(i.chosen, s);
-        if (precioUnidad !== null) {
-          return sum + (precioUnidad * (i.qty || 1));
-        }
-        return sum;
-      }, 0);
+      const t = resolved.reduce((sum, i) => sum + ((i.chosen.p[s] || 0) * (i.qty || 1)), 0);
       if (t > 0) totals[s] = t;
     }
   });
@@ -2384,12 +2234,6 @@ function toggleChk(id) {
 
 function toggleDrawer(id) {
   const it = items.find(i => i.id === id); if (!it) return;
-  // Cerrar todos los demás drawers antes de abrir el actual
-  items.forEach(item => {
-    if (item.id !== id && item.open) {
-      item.open = false;
-    }
-  });
   it.open = !it.open;
   renderItems(getWinner());
   if (it.open) {
