@@ -14,25 +14,17 @@
       ]
     }
   ],
-  "redirects": [
-    {
-      "source": "/",
-      "destination": "/listas.html",
-      "statusCode": 200,
-      "has": [
-        { "type": "host", "value": "listas.tradingchango.com" }
-      ]
-    },
-    {
-      "source": "/",
-      "destination": "/index.html",
-      "statusCode": 200,
-      "has": [
-        { "type": "host", "value": "tradingchango.com" }
-      ]
-    }
-  ],
   "rewrites": [
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "listas.tradingchango.com"
+        }
+      ],
+      "destination": "/listas-site/index.html"
+    },
     {
       "source": "/listas",
       "destination": "/listas.html"
