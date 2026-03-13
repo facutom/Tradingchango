@@ -17,47 +17,55 @@
   "rewrites": [
     {
       "source": "/",
-      "has": [
+      "missing": [
         {
           "type": "host",
           "value": "listas.tradingchango.com"
         }
       ],
-      "destination": "/listas.html"
+      "destination": "/index.html"
     },
     {
       "source": "/",
       "has": [
         {
           "type": "host",
-          "value": "tradingchango.com"
+          "value": "listas.tradingchango.com"
         }
       ],
-      "destination": "/index.html"
+      "destination": "/listas.html"
     },
     {
       "source": "/listas",
       "destination": "/listas.html"
     },
     {
-      "source": "/((?!listas|listas.html|api|assets|sitemap.xml|sw.js).*)",
-      "has": [
-        {
-          "type": "host",
-          "value": "tradingchango.com"
-        }
-      ],
-      "destination": "/index.html"
+      "source": "/listas.html",
+      "destination": "/listas.html"
     },
     {
-      "source": "/((?!listas|listas.html|api|assets|sitemap.xml|sw.js).*)",
-      "has": [
-        {
-          "type": "host",
-          "value": "listas.tradingchango.com"
-        }
-      ],
-      "destination": "/listas.html"
+      "source": "/listas-sitemap.xml",
+      "destination": "/listas-sitemap.xml"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "/sitemap.xml"
+    },
+    {
+      "source": "/sw.js",
+      "destination": "/sw.js"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    },
+    {
+      "source": "/assets/:path*",
+      "destination": "/assets/:path*"
+    },
+    {
+      "source": "/:path",
+      "destination": "/index.html"
     }
   ],
   "trailingSlash": false
