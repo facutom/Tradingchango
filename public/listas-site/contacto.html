@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#ffffff">
+<meta name="description" content="Contacto - TradingChango - Comunicate con nosotros">
+<title>Contacto - TradingChango</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/png" href="/logo192.png">
+<link rel="apple-touch-icon" href="/logo192.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --g: #22c55e;
+  --gd:#16a34a;
+  --ink:#1f1f1f;
+  --ink2:#4b5563;
+  --ink3:#6b7280;
+  --bg:#f3f4f6;
+  --white:#ffffff;
+  --border:#e5e7eb;
+  --border2:#d1d5db;
+  --red:#ef4444;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --shadow-lg:0 10px 40px rgba(0,0,0,.10);
+  --primary:#22c55e;
+  --radius:12px;
+}
+html,body{
+  height:100%;
+  font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;
+  background:var(--white);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+  overscroll-behavior:none;
+  touch-action:manipulation;
+  font-size:16px;
+}
+body{
+  padding-bottom:env(safe-area-inset-bottom, 20px);
+}
+#app{
+  min-height:100%;
+  display:flex;
+  flex-direction:column;
+  max-width:100%;
+  margin:0 auto;
+  position:relative;
+}
+@media (min-width: 600px) {
+  #app {
+    max-width: 500px;
+    margin: 20px auto;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+    overflow: hidden;
+    background: var(--white);
+  }
+}
+.hdr{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:calc(env(safe-area-inset-top,12px) + 12px) 20px 12px;
+  padding-top:calc(env(safe-area-inset-top) + 12px);
+  background:var(--white);
+  flex-shrink:0;
+}
+.hdr-logo{
+  font-size:18px;
+  display:flex;
+  align-items:center;
+  font-weight:800;
+  letter-spacing:-1px;
+  color:#131722;
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  gap:8px;
+  text-decoration:none;
+}
+.logo-icon{position:relative;display:inline-flex;align-items:center;justify-content:center;font-size:22px}
+.logo-icon-wrapper {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.logo .fa-cart-shopping {
+  font-size: 20px !important;
+  color: inherit !important;
+}
+.trend-icon-overlay {
+  position: absolute !important;
+  top: -4px !important;
+  right: -6px !important;
+  font-size: 11px !important;
+  color: #22c55e !important;
+  background-color: white !important;
+  border-radius: 50% !important;
+  padding: 1px !important;
+}
+.logo-icon .fa-cart-shopping{font-size:22px;color:inherit}
+.trend-icon{position:absolute;top:-6px;right:-8px;font-size:12px;color:var(--g);background:#fff;border-radius:50%;padding:2px;display:flex}
+.hdr-logo span{color:var(--g)}
+.hdr-right{display:flex;gap:6px;flex-shrink:0;min-width:0}
+.hbtn{
+  width:36px;height:32px;
+  border-radius:8px;
+  border:1.5px solid var(--border2);
+  background:var(--white);
+  color:var(--ink2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;cursor:pointer;
+  transition:all .12s;
+  -webkit-user-select:none;user-select:none;
+  flex-shrink:0;
+  text-decoration:none;
+}
+.hbtn:active{background:var(--bg);transform:scale(.95)}
+.hbtn-wide{
+  width:auto;min-width:60px;padding:0 10px;font-size:13px;
+}
+.content{
+  flex:1;
+  padding:20px;
+  overflow-y:auto;
+}
+.content h1{
+  font-size:24px;
+  font-weight:800;
+  letter-spacing:-0.5px;
+  line-height:1.15;
+  margin-bottom:20px;
+  color:var(--ink);
+}
+.content h2{
+  font-size:18px;
+  font-weight:700;
+  margin:24px 0 12px;
+  color:var(--ink);
+}
+.content p{
+  line-height:1.7;
+  margin-bottom:16px;
+  color:var(--ink2);
+  font-size:15px;
+}
+.content a{
+  color:var(--primary);
+  text-decoration:none;
+}
+.content a:hover{
+  text-decoration:underline;
+}
+.contact-option{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:14px 16px;
+  background:#f9fafb;
+  border-radius:12px;
+  text-decoration:none;
+  color:var(--ink);
+  transition:background 0.2s;
+  margin-bottom:12px;
+}
+.contact-option:hover{
+  background:#f3f4f6;
+}
+.contact-option i{
+  font-size:20px;
+  color:var(--primary);
+  width:28px;
+  text-align:center;
+}
+.contact-option-text{
+  flex:1;
+}
+.contact-option-title{
+  font-weight:600;
+  font-size:15px;
+  margin-bottom:2px;
+}
+.contact-option-desc{
+  font-size:13px;
+  color:var(--ink3);
+}
+.site-footer {
+  background:#ffffff;
+  border-top:none;
+  padding:12px 16px;
+  margin-top:auto;
+  flex-shrink:0;
+  text-align:center;
+  position:relative;
+}
+.footer-creator {
+  display:flex;
+  justify-content:center;
+  margin-bottom:8px;
+}
+.footer-creator-link {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 10px;
+  background:#f3f4f6;
+  border-radius:8px;
+  color:#6b7280;
+  font-size:11px;
+  font-weight:500;
+  text-decoration:none;
+  transition:background .12s;
+}
+.footer-creator-link:hover {
+  background:#e5e7eb;
+}
+.footer-creator-img {
+  width:16px;
+  height:16px;
+  border-radius:50%;
+}
+.footer-links {
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:12px;
+  margin-bottom:8px;
+}
+.footer-link {
+  font-size:11px;
+  color:#6b7280;
+  text-decoration:none;
+  white-space:nowrap;
+  transition:color .12s;
+}
+.footer-link:hover {
+  color:#000;
+}
+.footer-copyright {
+  font-size:9px;
+  font-weight:700;
+  color:#9ca3af;
+  text-transform:uppercase;
+  letter-spacing:0.2em;
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- HEADER -->
+  <div class="hdr">
+    <a href="/listas.html" class="hdr-logo">
+      <div class="logo-icon-wrapper"><i class="fa-solid fa-cart-shopping"></i><i class="fa-solid fa-arrow-trend-up trend-icon-overlay"></i></div><span style="font-family:'Inter',system-ui,sans-serif;font-size:1.15em"><span style="color:#16a34a">Listas</span><span style="color:#000000">Chango</span></span>
+    </a>
+    <div class="hdr-right">
+      <a href="/listas.html" class="hbtn hbtn-wide"><i class="fa-solid fa-plus"></i> Nueva</a>
+    </div>
+  </div>
+  
+  <!-- CONTENT -->
+  <div class="content">
+    <h1>Contacto</h1>
+    
+    <p>¿Tenés una sugerencia, detectaste un error o te interesa colaborar con TradingChango?</p>
+    
+    <p>Estamos abiertos a propuestas de publicidad, alianzas, integraciones y proyectos profesionales vinculados a datos, consumo y tecnología.</p>
+    
+    <p>Escribinos y te responderemos a la brevedad.</p>
+    
+    <a href="mailto:soporte@tradingchango.com" class="contact-option">
+      <i class="fa-solid fa-envelope"></i>
+      <div class="contact-option-text">
+        <div class="contact-option-title">Email</div>
+        <div class="contact-option-desc">soporte@tradingchango.com</div>
+      </div>
+    </a>
+    
+    <a href="https://x.com/tradingchango" target="_blank" rel="noopener noreferrer" class="contact-option">
+      <i class="fa-brands fa-x-twitter"></i>
+      <div class="contact-option-text">
+        <div class="contact-option-title">Twitter / X</div>
+        <div class="contact-option-desc">@tradingchango</div>
+      </div>
+    </a>
+    
+    <a href="https://tradingchango.com" target="_blank" rel="noopener noreferrer" class="contact-option">
+      <i class="fa-solid fa-globe"></i>
+      <div class="contact-option-text">
+        <div class="contact-option-title">Sitio Principal</div>
+        <div class="contact-option-desc">tradingchango.com</div>
+      </div>
+    </a>
+  </div>
+  
+  <!-- FOOTER -->
+  <div class="site-footer">
+    <div class="footer-creator">
+      <a href="https://linktr.ee/facutom" target="_blank" rel="noopener noreferrer" class="footer-creator-link">
+        <img src="https://ugc.production.linktr.ee/2fb027da-4522-4b25-8855-39f77182ce8b_mQO6eyvY-400x400.png?io=true&size=avatar-v3_0&format=webp&resize=40x40" alt="Facu Tom" class="footer-creator-img" width="20" height="20" loading="lazy" decoding="async" />
+        Creado por @facutom
+      </a>
+    </div>
+    <div class="footer-links">
+      <a href="https://tradingchango.com" class="footer-link" target="_blank" rel="noopener noreferrer">TradingChango</a>
+      <a href="/acerca-de.html" class="footer-link">Acerca de</a>
+      <a href="/contacto.html" class="footer-link">Contacto</a>
+      <a href="/terminos.html" class="footer-link">Términos</a>
+      <a href="https://x.com/tradingchango" target="_blank" rel="noopener noreferrer" class="footer-link">Twitter</a>
+    </div>
+    <p class="footer-copyright">© 2026 TradingChango Todos los derechos reservados.</p>
+  </div>
+</div>
+</body>
+</html>

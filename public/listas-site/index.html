@@ -983,9 +983,10 @@ body{
       </a>
     </div>
     <div class="footer-links">
-      <a href="https://tradingchango.com/acerca-de" class="footer-link">Acerca de</a>
-      <a href="https://tradingchango.com/contacto" class="footer-link">Contacto</a>
-      <a href="https://tradingchango.com/terminos" class="footer-link">Terminos</a>
+      <a href="https://tradingchango.com" class="footer-link" target="_blank" rel="noopener noreferrer">Tradingchango</a>
+      <a href="/acerca-de" class="footer-link">Acerca de</a>
+      <a href="/contacto" class="footer-link">Contacto</a>
+      <a href="/terminos" class="footer-link">Terminos</a>
       <a href="https://x.com/tradingchango" target="_blank" rel="noopener noreferrer" class="footer-link">Twitter</a>
     </div>
     <p class="footer-copyright">© 2026 TradingChango Todos los derechos reservados.</p>
@@ -1116,7 +1117,7 @@ async function installApp() {
     }
     deferredPrompt = null;
   } else {
-    window.open('https://tradingchango.com', '_blank');
+    window.open('https://listas.tradingchango.com', '_blank');
   }
 }
 function closeAppBanner() {
@@ -1294,7 +1295,7 @@ async function shareList() {
   }
   const currentOrigin = window.location.origin;
   // Siempre usar el dominio principal para compartir
-  const shareUrl = `https://tradingchango.com/listas.html?lista=${shareId}`;
+  const shareUrl = `https://listas.tradingchango.com?lista=${shareId}`;
   const winnerName = displayWinner ? SL[displayWinner] : null;
   const lines = ['🛒 Lista del super — TradingChango', ''];
   if (!displayWinner) { lines.push('⚠️ Ningún supermercado tiene productos en tu lista.'); lines.push(''); }
