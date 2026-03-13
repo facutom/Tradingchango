@@ -983,9 +983,9 @@ body{
       </a>
     </div>
     <div class="footer-links">
-      <a href="/acerca-de" class="footer-link">Acerca de</a>
-      <a href="/contacto" class="footer-link">Contacto</a>
-      <a href="/terminos" class="footer-link">Terminos</a>
+      <a href="https://tradingchango.com/acerca-de" class="footer-link">Acerca de</a>
+      <a href="https://tradingchango.com/contacto" class="footer-link">Contacto</a>
+      <a href="https://tradingchango.com/terminos" class="footer-link">Terminos</a>
       <a href="https://x.com/tradingchango" target="_blank" rel="noopener noreferrer" class="footer-link">Twitter</a>
     </div>
     <p class="footer-copyright">© 2026 TradingChango Todos los derechos reservados.</p>
@@ -1293,7 +1293,8 @@ async function shareList() {
     try { await saveListToSupabase(shareId); } catch(e) { console.warn('Error guardando lista:', e); }
   }
   const currentOrigin = window.location.origin;
-  const shareUrl = `${currentOrigin}/listas.html?lista=${shareId}`;
+  // Siempre usar el dominio principal para compartir
+  const shareUrl = `https://tradingchango.com/listas.html?lista=${shareId}`;
   const winnerName = displayWinner ? SL[displayWinner] : null;
   const lines = ['🛒 Lista del super — TradingChango', ''];
   if (!displayWinner) { lines.push('⚠️ Ningún supermercado tiene productos en tu lista.'); lines.push(''); }
