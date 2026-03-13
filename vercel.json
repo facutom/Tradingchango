@@ -15,26 +15,15 @@
     }
   ],
   "rewrites": [
+
     {
-      "source": "/",
+      "source": "/(.*)",
       "has": [
-        {
-          "type": "host",
-          "value": "listas.tradingchango.com"
-        }
+        { "type": "host", "value": "listas.tradingchango.com" }
       ],
       "destination": "/listas-site/index.html"
     },
-    {
-      "source": "/:path",
-      "has": [
-        {
-          "type": "host",
-          "value": "listas.tradingchango.com"
-        }
-      ],
-      "destination": "/listas-site/index.html"
-    },
+
     {
       "source": "/listas",
       "destination": "/listas.html"
@@ -63,8 +52,9 @@
       "source": "/assets/:path*",
       "destination": "/assets/:path*"
     },
+
     {
-      "source": "/:path",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ],
