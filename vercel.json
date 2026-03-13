@@ -26,6 +26,16 @@
       "destination": "/listas-site/index.html"
     },
     {
+      "source": "/:path",
+      "has": [
+        {
+          "type": "host",
+          "value": "listas.tradingchango.com"
+        }
+      ],
+      "destination": "/listas-site/index.html"
+    },
+    {
       "source": "/listas",
       "destination": "/listas.html"
     },
