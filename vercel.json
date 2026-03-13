@@ -15,7 +15,48 @@
     }
   ],
   "rewrites": [
-
+    {
+      "source": "/acerca-de",
+      "has": [
+        { "type": "host", "value": "listas.tradingchango.com" }
+      ],
+      "destination": "/listas-site/acerca-de.html"
+    },
+    {
+      "source": "/contacto",
+      "has": [
+        { "type": "host", "value": "listas.tradingchango.com" }
+      ],
+      "destination": "/listas-site/contacto.html"
+    },
+    {
+      "source": "/terminos",
+      "has": [
+        { "type": "host", "value": "listas.tradingchango.com" }
+      ],
+      "destination": "/listas-site/terminos.html"
+    },
+    {
+      "source": "/acerca-de.html",
+      "has": [
+        { "type": "host", "value": "listas.tradingchango.com" }
+      ],
+      "destination": "/listas-site/acerca-de.html"
+    },
+    {
+      "source": "/contacto.html",
+      "has": [
+        { "type": "host", "value": "listas.tradingchango.com" }
+      ],
+      "destination": "/listas-site/contacto.html"
+    },
+    {
+      "source": "/terminos.html",
+      "has": [
+        { "type": "host", "value": "listas.tradingchango.com" }
+      ],
+      "destination": "/listas-site/terminos.html"
+    },
     {
       "source": "/(.*)",
       "has": [
