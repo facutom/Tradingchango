@@ -581,10 +581,10 @@ body{
   letter-spacing:-.02em;
   color:var(--ink);
   display:flex;align-items:center;justify-content:space-between;
-  background:linear-gradient(180deg,rgba(34,197,94,0.08) 0%,transparent 100%);
+  background:var(--white);
   border-bottom:1px solid var(--border2);
 }
-.prog-txt{color:var(--ink2);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none}
+.prog-txt{color:var(--ink2);font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;background:var(--white);padding:4px 8px;border-radius:6px}
 .prog-txt b{color:var(--gd)}
 .items{
   padding:4px 12px;
@@ -658,13 +658,14 @@ body{
 .add-item-sugg-price{font-size:12px;font-weight:700;color:#22c55e}
 .icard{
   background:var(--white);
-  border:1px solid var(--border);
+  border:none;
   border-radius:10px;
   overflow:hidden;
   box-shadow:0 1px 2px rgba(0,0,0,0.05);
   animation:rowIn .25s ease backwards;
-  transition:border-color .15s;
+  transition:border-color .15s,background .15s;
 }
+.icard:hover{background:#f9fafb}
 @keyframes rowIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .icard.done{opacity:.38}
 .icard.done .ic-name{text-decoration:line-through;color:var(--ink2)}
@@ -758,10 +759,12 @@ body{
   display:flex;align-items:center;gap:10px;
   padding:12px 12px;
   background:var(--bg);
-  border:1.5px dashed var(--border2);
+  border:none;
   border-radius:12px;
   opacity:.6;
+  transition:background .15s;
 }
+.nf-row:hover{background:#e5e7eb}
 .nf-row.done{
   opacity:.38;
 }
