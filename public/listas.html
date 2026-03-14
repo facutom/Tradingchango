@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -75,7 +75,6 @@ body{
   background:var(--white);
   max-width:100%;
   overflow:hidden;
-  border-bottom:1px solid #e5e7eb;
 }
 .app-banner {
   display:none;
@@ -315,12 +314,16 @@ body{
   padding-bottom:calc(env(safe-area-inset-bottom) + 100px);
 }
 .v0-label{
-  font-size:11px;
+  font-size:14px;
   font-weight:700;
-  letter-spacing:.1em;
+  letter-spacing:.05em;
   text-transform:uppercase;
   color:var(--g);
   margin-bottom:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
 }
 .v0-title{
   font-size:24px;
@@ -330,12 +333,14 @@ body{
   margin-bottom:20px;
   color:var(--ink);
   width:100%;
+  text-align:center;
 }
 .v0-subtitle{
   font-size:14px;
   color:#6b7280;
   margin-bottom:16px;
   margin-top:-12px;
+  text-align:center;
 }
 .pad-box{
   background:var(--white);
@@ -932,7 +937,7 @@ body{
     <div class="views-track" id="track">
       <!-- VIEW 0: NOTEPAD -->
       <div class="view" id="v0">
-        <div class="v0-label">Lista Inteligente</div>
+        <div class="v0-label"><i class="fa-solid fa-robot"></i>Lista Inteligente</div>
         <div class="v0-title">¿Qué comprás esta semana?</div>
         <div class="v0-subtitle">Armá tu lista como siempre. Nosotros comparamos los precios por vos y te decimos dónde ahorrar hoy!</div>
         <div class="products-status" id="products-status" style="display:none;align-items:center;gap:6px;margin-bottom:12px;padding:8px 12px;background:#f0fdf4;border-radius:10px;font-size:12px;font-weight:600;color:#16a34a;">
